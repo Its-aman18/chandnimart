@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chandnimart</title>
+    <title>Chandni Beauty Parlour — Ghughali, Maharajganj</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
@@ -30,7 +30,7 @@
             --text: #3d2535;
             --muted: #8a6070;
             --card-bg: #fff9f7;
-            --shadow: rgba(232, 73, 106, 0.15);
+            --shadow: rgba(232, 73, 106, 0.15)
         }
 
         html {
@@ -44,6 +44,7 @@
             overflow-x: hidden
         }
 
+        /* LOADING */
         .loading {
             position: fixed;
             inset: 0;
@@ -108,6 +109,7 @@
             }
         }
 
+        /* HEADER */
         header {
             position: fixed;
             top: 0;
@@ -136,7 +138,8 @@
         .logo-wrap {
             display: flex;
             align-items: center;
-            gap: 12px
+            gap: 12px;
+            text-decoration: none
         }
 
         .logo-icon {
@@ -149,7 +152,8 @@
             justify-content: center;
             box-shadow: 0 4px 16px var(--shadow);
             position: relative;
-            overflow: hidden
+            overflow: hidden;
+            flex-shrink: 0
         }
 
         .logo-icon::after {
@@ -199,7 +203,8 @@
             font-size: 0.9rem;
             font-weight: 500;
             position: relative;
-            padding-bottom: 4px
+            padding-bottom: 4px;
+            transition: color 0.3s
         }
 
         .nav-links a::after {
@@ -211,6 +216,10 @@
             height: 1.5px;
             background: var(--rose);
             transition: width 0.3s ease
+        }
+
+        .nav-links a:hover {
+            color: var(--rose)
         }
 
         .nav-links a:hover::after {
@@ -234,7 +243,8 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 10px var(--shadow);
-            transition: transform 0.3s, box-shadow 0.3s
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none
         }
 
         .cart-btn:hover {
@@ -308,7 +318,9 @@
             cursor: pointer;
             padding: 4px;
             z-index: 1100;
-            position: relative
+            position: relative;
+            background: none;
+            border: none
         }
 
         .menu-toggle span {
@@ -334,6 +346,7 @@
             transform: translateY(-7.5px) rotate(-45deg)
         }
 
+        /* MOBILE DRAWER */
         .mobile-menu-overlay {
             display: none;
             position: fixed;
@@ -380,7 +393,8 @@
         .mobile-drawer-logo {
             display: flex;
             align-items: center;
-            gap: 10px
+            gap: 10px;
+            text-decoration: none
         }
 
         .mobile-drawer-logo .md-logo-icon {
@@ -546,6 +560,16 @@
             text-align: center
         }
 
+        .mobile-contact-row a {
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.3s
+        }
+
+        .mobile-contact-row a:hover {
+            color: var(--rose)
+        }
+
         .mobile-social {
             display: flex;
             gap: 0.6rem;
@@ -571,11 +595,11 @@
             color: white
         }
 
+        /* HERO */
         .hero {
             margin-top: 80px;
             min-height: 92vh;
-            background: linear-gradient(135deg, rgba(232, 73, 106, 0.08), rgba(201, 168, 76, 0.06)),
-                url('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1400') center/cover;
+            background: linear-gradient(135deg, rgba(232, 73, 106, 0.08), rgba(201, 168, 76, 0.06)), url('https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1400') center/cover;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -663,7 +687,10 @@
             transition: transform 0.3s, box-shadow 0.3s;
             box-shadow: 0 6px 24px rgba(232, 73, 106, 0.4);
             border: none;
-            cursor: pointer
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px
         }
 
         .btn-primary:hover {
@@ -680,7 +707,10 @@
             font-weight: 600;
             font-size: 0.95rem;
             border: 2px solid rgba(255, 255, 255, 0.5);
-            transition: all 0.3s
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px
         }
 
         .btn-outline:hover {
@@ -688,6 +718,7 @@
             border-color: white
         }
 
+        /* PETALS */
         .petal {
             position: fixed;
             pointer-events: none;
@@ -711,6 +742,7 @@
             }
         }
 
+        /* SECTIONS */
         .section-wrap {
             max-width: 1400px;
             margin: 0 auto;
@@ -751,6 +783,7 @@
             border-radius: 2px
         }
 
+        /* ABOUT */
         .about-bg {
             background: linear-gradient(135deg, #fff4f7, #fff9f0)
         }
@@ -820,6 +853,7 @@
             margin-top: 4px
         }
 
+        /* SEARCH */
         .search-section {
             background: var(--dark);
             padding: 60px 5%
@@ -1008,6 +1042,7 @@
             color: white
         }
 
+        /* SORT & GRID */
         .sort-row {
             display: flex;
             align-items: center;
@@ -1268,13 +1303,15 @@
         .no-results i {
             font-size: 3rem;
             color: var(--blush);
-            margin-bottom: 1rem
+            margin-bottom: 1rem;
+            display: block
         }
 
         .no-results p {
             color: var(--muted)
         }
 
+        /* MODAL */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -1530,6 +1567,7 @@
             color: white
         }
 
+        /* PRICE LIST */
         .services-bg {
             background: linear-gradient(135deg, #fff4f7, #fff9f0)
         }
@@ -1587,7 +1625,8 @@
             align-items: center;
             padding: 10px 0;
             border-bottom: 1px solid rgba(232, 73, 106, 0.1);
-            transition: all 0.3s
+            transition: all 0.3s;
+            cursor: pointer
         }
 
         .svc-item:last-child {
@@ -1610,6 +1649,31 @@
             font-size: 0.95rem
         }
 
+        .svc-book-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 1rem;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--rose), var(--gold));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 14px var(--shadow)
+        }
+
+        .svc-book-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow)
+        }
+
+        /* SHOP */
         .shop-bg {
             background: var(--cream)
         }
@@ -1691,6 +1755,7 @@
             box-shadow: 0 4px 16px var(--shadow)
         }
 
+        /* GALLERY */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -1742,6 +1807,7 @@
             font-size: 2rem
         }
 
+        /* CONTACT */
         .contact-bg {
             background: linear-gradient(135deg, #1a1015, #2d1520)
         }
@@ -1800,6 +1866,16 @@
             margin: 0
         }
 
+        .info-row a {
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            transition: color 0.3s
+        }
+
+        .info-row a:hover {
+            color: var(--gold-light)
+        }
+
         .contact-form {
             background: white;
             border-radius: 20px;
@@ -1850,6 +1926,7 @@
             resize: vertical
         }
 
+        /* CART */
         .cart-overlay {
             position: fixed;
             inset: 0;
@@ -2006,7 +2083,11 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px
         }
 
         .checkout-btn:hover {
@@ -2014,6 +2095,7 @@
             box-shadow: 0 8px 30px var(--shadow)
         }
 
+        /* TOAST */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -2027,7 +2109,7 @@
             font-weight: 500;
             opacity: 0;
             pointer-events: none;
-            z-index: 3000;
+            z-index: 4000;
             transition: all 0.4s ease;
             display: flex;
             align-items: center;
@@ -2044,6 +2126,7 @@
             color: var(--gold)
         }
 
+        /* FOOTER */
         footer {
             background: var(--dark);
             color: rgba(255, 255, 255, 0.7);
@@ -2063,7 +2146,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 1rem
+            margin-bottom: 1rem;
+            text-decoration: none
         }
 
         .footer-logo-text h3 {
@@ -2102,7 +2186,10 @@
             color: rgba(255, 255, 255, 0.55);
             text-decoration: none;
             font-size: 0.85rem;
-            transition: color 0.3s
+            transition: color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px
         }
 
         .footer-links a:hover {
@@ -2144,6 +2231,84 @@
             color: rgba(255, 255, 255, 0.35)
         }
 
+        /* WHATSAPP FLOAT */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 24px rgba(37, 211, 102, 0.4);
+            z-index: 1500;
+            text-decoration: none;
+            transition: all 0.3s;
+            animation: waPulse 2.5s ease-in-out infinite
+        }
+
+        .whatsapp-float i {
+            color: white;
+            font-size: 1.6rem
+        }
+
+        .whatsapp-float:hover {
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.5)
+        }
+
+        @keyframes waPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 6px 24px rgba(37, 211, 102, 0.4)
+            }
+
+            50% {
+                box-shadow: 0 6px 40px rgba(37, 211, 102, 0.7)
+            }
+        }
+
+        /* PHONE CTA BAR */
+        .phone-cta {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--rose), var(--gold));
+            padding: 10px 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1400;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2)
+        }
+
+        .phone-cta a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .phone-cta-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem
+        }
+
+        /* SCROLL ANIMATIONS */
         .reveal {
             opacity: 0;
             transform: translateY(30px);
@@ -2177,6 +2342,7 @@
             transform: translateX(0)
         }
 
+        /* RESPONSIVE */
         @media(max-width:900px) {
             .menu-toggle {
                 display: flex
@@ -2232,6 +2398,14 @@
             .admin-btn span {
                 display: none
             }
+
+            .phone-cta {
+                display: flex
+            }
+
+            .whatsapp-float {
+                bottom: 80px
+            }
         }
 
         @media(max-width:600px) {
@@ -2255,33 +2429,56 @@
                 width: 100%;
                 right: -100%
             }
+
+            .contact-form {
+                padding: 1.5rem
+            }
         }
     </style>
 </head>
 
 <body>
 
+    <!-- LOADING -->
     <div class="loading" id="loading">
         <div class="loading-logo">✦ CHANDNIMART</div>
         <div class="loading-bar"></div>
     </div>
 
+    <!-- PETALS -->
     <div id="petals"></div>
+
+    <!-- TOAST -->
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
 
+    <!-- WHATSAPP FLOAT BUTTON -->
+    <a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20an%20appointment." class="whatsapp-float"
+        target="_blank" rel="noopener" title="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- MOBILE PHONE CTA BAR -->
+    <div class="phone-cta" id="phoneCta">
+        <a href="tel:+918953946893"><i class="fas fa-phone"></i> Call: +91 8953946893</a>
+        <a href="https://wa.me/918953946893" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+        <button class="phone-cta-close" onclick="document.getElementById('phoneCta').style.display='none'">✕</button>
+    </div>
+
+    <!-- HEADER -->
     <header id="header">
         <nav>
-            <div class="logo-wrap">
+            <a href="#home" class="logo-wrap">
                 <div class="logo-icon"><i class="fas fa-crown"></i></div>
                 <div>
                     <div class="logo-name">Chandni</div>
                     <div class="logo-sub">Beauty Parlour</div>
                 </div>
-            </div>
+            </a>
             <ul class="nav-links">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#service-products">Services</a></li>
+                <li><a href="#services">Price List</a></li>
                 <li><a href="#shop">Products</a></li>
                 <li><a href="#gallery">Gallery</a></li>
                 <li><a href="#contact">Contact</a></li>
@@ -2291,25 +2488,27 @@
                     <i class="fas fa-plus-circle"></i>
                     <span>Add Product</span>
                 </button>
-                <div class="cart-btn" onclick="toggleCart()">
+                <button class="cart-btn" onclick="toggleCart()" aria-label="Open cart">
                     <i class="fas fa-shopping-bag"></i>
                     <span class="cart-badge" id="cartBadge">0</span>
-                </div>
-                <div class="menu-toggle" id="menuToggle" onclick="toggleMobileMenu()">
+                </button>
+                <button class="menu-toggle" id="menuToggle" onclick="toggleMobileMenu()" aria-label="Toggle menu">
                     <span></span><span></span><span></span>
-                </div>
+                </button>
             </div>
         </nav>
     </header>
 
+    <!-- MOBILE OVERLAY -->
     <div class="mobile-menu-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
 
+    <!-- MOBILE DRAWER -->
     <div class="mobile-drawer" id="mobileDrawer">
         <div class="mobile-drawer-header">
-            <div class="mobile-drawer-logo">
+            <a class="mobile-drawer-logo" href="#home" onclick="closeMobileMenu()">
                 <div class="md-logo-icon"><i class="fas fa-crown"></i></div>
                 <span>Chandni</span>
-            </div>
+            </a>
             <button class="mobile-drawer-close" onclick="closeMobileMenu()"><i class="fas fa-times"></i></button>
         </div>
         <ul class="mobile-nav-links">
@@ -2324,6 +2523,10 @@
             <li><a href="#service-products" onclick="closeMobileMenu()">
                     <div class="nav-icon"><i class="fas fa-spa"></i></div><span class="nav-text">Services</span><i
                         class="fas fa-chevron-right nav-arrow"></i>
+                </a></li>
+            <li><a href="#services" onclick="closeMobileMenu()">
+                    <div class="nav-icon"><i class="fas fa-list-alt"></i></div><span class="nav-text">Price
+                        List</span><i class="fas fa-chevron-right nav-arrow"></i>
                 </a></li>
             <li><a href="#shop" onclick="closeMobileMenu()">
                     <div class="nav-icon"><i class="fas fa-shopping-bag"></i></div><span
@@ -2343,16 +2546,23 @@
         </button>
         <div class="mobile-drawer-footer">
             <div class="mobile-contact-row"><i class="fas fa-map-marker-alt"></i> Ghughali, Maharajganj (273151)</div>
-            <div class="mobile-contact-row"><i class="fas fa-phone"></i> +91 8953946893</div>
+            <div class="mobile-contact-row"><i class="fas fa-phone"></i><a href="tel:+918953946893">+91 8953946893</a>
+            </div>
+            <div class="mobile-contact-row"><i class="fas fa-envelope"></i><a
+                    href="mailto:amangupt7373@gmail.com">amangupt7373@gmail.com</a></div>
             <div class="mobile-contact-row"><i class="fas fa-clock"></i> Open 24×7</div>
             <div class="mobile-social">
-                <a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1" target="_blank"><i
-                        class="fab fa-instagram"></i></a>
-                <a href="https://wa.me/918953946893" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1" target="_blank"
+                    rel="noopener" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20an%20appointment."
+                    target="_blank" rel="noopener" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="tel:+918953946893" title="Call Us"><i class="fas fa-phone"></i></a>
+                <a href="mailto:amangupt7373@gmail.com" title="Email Us"><i class="fas fa-envelope"></i></a>
             </div>
         </div>
     </div>
 
+    <!-- HERO -->
     <section id="home">
         <div class="hero">
             <div class="hero-content">
@@ -2361,12 +2571,13 @@
                 <p>Professional bridal makeup, hair styling, facials, mehendi & more — where every woman shines.</p>
                 <div class="hero-btns">
                     <a href="#contact" class="btn-primary"><i class="fas fa-calendar-check"></i> Book Appointment</a>
-                    <a href="#service-products" class="btn-outline">Explore Services</a>
+                    <a href="#service-products" class="btn-outline"><i class="fas fa-spa"></i> Explore Services</a>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- ABOUT -->
     <section id="about" class="about-bg">
         <div class="section-wrap">
             <div class="about-grid">
@@ -2400,11 +2611,19 @@
                             <div class="stat-label">Clients Served</div>
                         </div>
                     </div>
+                    <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap">
+                        <a href="#contact" class="btn-primary" style="font-size:0.9rem;padding:12px 28px"><i
+                                class="fas fa-calendar-check"></i> Book Now</a>
+                        <a href="tel:+918953946893" class="btn-primary"
+                            style="font-size:0.9rem;padding:12px 28px;background:linear-gradient(135deg,var(--gold),#a8892a)"><i
+                                class="fas fa-phone"></i> Call Now</a>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- SEARCH -->
     <section class="search-section">
         <div class="search-wrap">
             <h2>Find Your Perfect <em style="color:var(--gold-light);font-style:italic">Service</em></h2>
@@ -2436,6 +2655,7 @@
         </div>
     </section>
 
+    <!-- SERVICES & PRODUCTS GRID -->
     <section id="service-products" class="service-products-bg">
         <div class="section-wrap">
             <div class="section-header reveal">
@@ -2465,6 +2685,7 @@
         </div>
     </section>
 
+    <!-- PRICE LIST -->
     <section id="services" class="services-bg">
         <div class="section-wrap">
             <div class="section-header reveal">
@@ -2479,16 +2700,24 @@
                         <div class="svc-img-title">Bridal Makeup</div>
                     </div>
                     <div class="svc-body">
-                        <div class="svc-item"><span class="svc-item-name">HD Bridal Makeup</span><span
-                                class="svc-item-price">₹8,000</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Airbrush Bridal Makeup</span><span
+                        <div class="svc-item" onclick="addToCart('HD Bridal Makeup',8000)"><span
+                                class="svc-item-name">HD Bridal Makeup</span><span class="svc-item-price">₹8,000</span>
+                        </div>
+                        <div class="svc-item" onclick="addToCart('Airbrush Bridal Makeup',12000)"><span
+                                class="svc-item-name">Airbrush Bridal Makeup</span><span
                                 class="svc-item-price">₹12,000</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Traditional Bridal Makeup</span><span
+                        <div class="svc-item" onclick="addToCart('Traditional Bridal Makeup',6500)"><span
+                                class="svc-item-name">Traditional Bridal Makeup</span><span
                                 class="svc-item-price">₹6,500</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Pre-Bridal Package</span><span
+                        <div class="svc-item" onclick="addToCart('Pre-Bridal Package',15000)"><span
+                                class="svc-item-name">Pre-Bridal Package</span><span
                                 class="svc-item-price">₹15,000</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Bridal Trial Makeup</span><span
+                        <div class="svc-item" onclick="addToCart('Bridal Trial Makeup',2500)"><span
+                                class="svc-item-name">Bridal Trial Makeup</span><span
                                 class="svc-item-price">₹2,500</span></div>
+                        <a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20Bridal%20Makeup."
+                            target="_blank" rel="noopener" class="svc-book-btn"><i class="fab fa-whatsapp"></i> Book via
+                            WhatsApp</a>
                     </div>
                 </div>
                 <div class="svc-card reveal" style="transition-delay:0.1s">
@@ -2497,16 +2726,22 @@
                         <div class="svc-img-title">Party Makeup</div>
                     </div>
                     <div class="svc-body">
-                        <div class="svc-item"><span class="svc-item-name">Party Makeup Regular</span><span
+                        <div class="svc-item" onclick="addToCart('Party Makeup Regular',2500)"><span
+                                class="svc-item-name">Party Makeup Regular</span><span
                                 class="svc-item-price">₹2,500</span></div>
-                        <div class="svc-item"><span class="svc-item-name">HD Party Makeup</span><span
-                                class="svc-item-price">₹3,500</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Smokey Eye Makeup</span><span
-                                class="svc-item-price">₹3,000</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Glam Makeup</span><span
-                                class="svc-item-price">₹4,000</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Engagement Makeup</span><span
-                                class="svc-item-price">₹5,000</span></div>
+                        <div class="svc-item" onclick="addToCart('HD Party Makeup',3500)"><span class="svc-item-name">HD
+                                Party Makeup</span><span class="svc-item-price">₹3,500</span></div>
+                        <div class="svc-item" onclick="addToCart('Smokey Eye Makeup',3000)"><span
+                                class="svc-item-name">Smokey Eye Makeup</span><span class="svc-item-price">₹3,000</span>
+                        </div>
+                        <div class="svc-item" onclick="addToCart('Glam Makeup',4000)"><span class="svc-item-name">Glam
+                                Makeup</span><span class="svc-item-price">₹4,000</span></div>
+                        <div class="svc-item" onclick="addToCart('Engagement Makeup',5000)"><span
+                                class="svc-item-name">Engagement Makeup</span><span class="svc-item-price">₹5,000</span>
+                        </div>
+                        <a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20Party%20Makeup."
+                            target="_blank" rel="noopener" class="svc-book-btn"><i class="fab fa-whatsapp"></i> Book via
+                            WhatsApp</a>
                     </div>
                 </div>
                 <div class="svc-card reveal" style="transition-delay:0.2s">
@@ -2515,16 +2750,23 @@
                         <div class="svc-img-title">Hair Styling</div>
                     </div>
                     <div class="svc-body">
-                        <div class="svc-item"><span class="svc-item-name">Hair Cut & Style</span><span
-                                class="svc-item-price">₹800</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Hair Coloring</span><span
-                                class="svc-item-price">₹3,500</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Bridal Hair Styling</span><span
+                        <div class="svc-item" onclick="addToCart('Hair Cut & Style',800)"><span
+                                class="svc-item-name">Hair Cut & Style</span><span class="svc-item-price">₹800</span>
+                        </div>
+                        <div class="svc-item" onclick="addToCart('Hair Coloring',3500)"><span class="svc-item-name">Hair
+                                Coloring</span><span class="svc-item-price">₹3,500</span></div>
+                        <div class="svc-item" onclick="addToCart('Bridal Hair Styling',4000)"><span
+                                class="svc-item-name">Bridal Hair Styling</span><span
                                 class="svc-item-price">₹4,000</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Hair Spa Treatment</span><span
+                        <div class="svc-item" onclick="addToCart('Hair Spa Treatment',2000)"><span
+                                class="svc-item-name">Hair Spa Treatment</span><span
                                 class="svc-item-price">₹2,000</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Keratin Treatment</span><span
-                                class="svc-item-price">₹8,000</span></div>
+                        <div class="svc-item" onclick="addToCart('Keratin Treatment',8000)"><span
+                                class="svc-item-name">Keratin Treatment</span><span class="svc-item-price">₹8,000</span>
+                        </div>
+                        <a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20Hair%20Styling."
+                            target="_blank" rel="noopener" class="svc-book-btn"><i class="fab fa-whatsapp"></i> Book via
+                            WhatsApp</a>
                     </div>
                 </div>
                 <div class="svc-card reveal" style="transition-delay:0.1s">
@@ -2533,16 +2775,21 @@
                         <div class="svc-img-title">Facial & Cleanup</div>
                     </div>
                     <div class="svc-body">
-                        <div class="svc-item"><span class="svc-item-name">Basic Cleanup</span><span
-                                class="svc-item-price">₹600</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Gold Facial</span><span
-                                class="svc-item-price">₹2,500</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Diamond Facial</span><span
-                                class="svc-item-price">₹3,000</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Fruit Facial</span><span
-                                class="svc-item-price">₹1,500</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Anti-Aging Facial</span><span
-                                class="svc-item-price">₹3,500</span></div>
+                        <div class="svc-item" onclick="addToCart('Basic Cleanup',600)"><span class="svc-item-name">Basic
+                                Cleanup</span><span class="svc-item-price">₹600</span></div>
+                        <div class="svc-item" onclick="addToCart('Gold Facial',2500)"><span class="svc-item-name">Gold
+                                Facial</span><span class="svc-item-price">₹2,500</span></div>
+                        <div class="svc-item" onclick="addToCart('Diamond Facial',3000)"><span
+                                class="svc-item-name">Diamond Facial</span><span class="svc-item-price">₹3,000</span>
+                        </div>
+                        <div class="svc-item" onclick="addToCart('Fruit Facial',1500)"><span class="svc-item-name">Fruit
+                                Facial</span><span class="svc-item-price">₹1,500</span></div>
+                        <div class="svc-item" onclick="addToCart('Anti-Aging Facial',3500)"><span
+                                class="svc-item-name">Anti-Aging Facial</span><span class="svc-item-price">₹3,500</span>
+                        </div>
+                        <a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20a%20Facial."
+                            target="_blank" rel="noopener" class="svc-book-btn"><i class="fab fa-whatsapp"></i> Book via
+                            WhatsApp</a>
                     </div>
                 </div>
                 <div class="svc-card reveal" style="transition-delay:0.2s">
@@ -2551,22 +2798,31 @@
                         <div class="svc-img-title">Mehendi Design</div>
                     </div>
                     <div class="svc-body">
-                        <div class="svc-item"><span class="svc-item-name">Simple Mehendi Design</span><span
+                        <div class="svc-item" onclick="addToCart('Simple Mehendi Design',500)"><span
+                                class="svc-item-name">Simple Mehendi Design</span><span
                                 class="svc-item-price">₹500</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Arabic Mehendi</span><span
-                                class="svc-item-price">₹1,200</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Bridal Mehendi (Full Hands)</span><span
+                        <div class="svc-item" onclick="addToCart('Arabic Mehendi',1200)"><span
+                                class="svc-item-name">Arabic Mehendi</span><span class="svc-item-price">₹1,200</span>
+                        </div>
+                        <div class="svc-item" onclick="addToCart('Bridal Mehendi (Full Hands)',3000)"><span
+                                class="svc-item-name">Bridal Mehendi (Full Hands)</span><span
                                 class="svc-item-price">₹3,000</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Rajasthani Mehendi</span><span
+                        <div class="svc-item" onclick="addToCart('Rajasthani Mehendi',2500)"><span
+                                class="svc-item-name">Rajasthani Mehendi</span><span
                                 class="svc-item-price">₹2,500</span></div>
-                        <div class="svc-item"><span class="svc-item-name">Feet Mehendi Design</span><span
+                        <div class="svc-item" onclick="addToCart('Feet Mehendi Design',1500)"><span
+                                class="svc-item-name">Feet Mehendi Design</span><span
                                 class="svc-item-price">₹1,500</span></div>
+                        <a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20Mehendi%20Design."
+                            target="_blank" rel="noopener" class="svc-book-btn"><i class="fab fa-whatsapp"></i> Book via
+                            WhatsApp</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- SHOP -->
     <section id="shop" class="shop-bg">
         <div class="section-wrap">
             <div class="section-header reveal">
@@ -2674,6 +2930,7 @@
         </div>
     </section>
 
+    <!-- GALLERY -->
     <section id="gallery" style="background:linear-gradient(135deg,#fff4f7,#fff9f0)">
         <div class="section-wrap">
             <div class="section-header reveal">
@@ -2719,9 +2976,15 @@
                     <div class="gal-overlay"><i class="fas fa-expand"></i></div>
                 </div>
             </div>
+            <div style="text-align:center;margin-top:2rem">
+                <a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1" target="_blank"
+                    rel="noopener" class="btn-primary" style="background:linear-gradient(135deg,#e1306c,#833ab4)"><i
+                        class="fab fa-instagram"></i> See More on Instagram</a>
+            </div>
         </div>
     </section>
 
+    <!-- CONTACT -->
     <section id="contact" class="contact-bg">
         <div class="section-wrap">
             <div class="contact-grid">
@@ -2733,14 +2996,15 @@
                         <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
                         <div>
                             <h4>Location</h4>
-                            <p>Ghughali, Maharajganj, Uttar Pradesh (273151)</p>
+                            <p><a href="https://maps.google.com/?q=Ghughali,Maharajganj,Uttar+Pradesh+273151"
+                                    target="_blank" rel="noopener">Ghughali, Maharajganj, Uttar Pradesh (273151)</a></p>
                         </div>
                     </div>
                     <div class="info-row">
                         <div class="info-icon"><i class="fas fa-phone"></i></div>
                         <div>
                             <h4>Phone</h4>
-                            <p>+91 8953946893</p>
+                            <p><a href="tel:+918953946893">+91 8953946893</a></p>
                         </div>
                     </div>
                     <div class="info-row">
@@ -2754,15 +3018,32 @@
                         <div class="info-icon"><i class="fab fa-whatsapp"></i></div>
                         <div>
                             <h4>WhatsApp</h4>
-                            <p>+91 8953946893</p>
+                            <p><a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20an%20appointment."
+                                    target="_blank" rel="noopener">+91 8953946893 — Chat Now</a></p>
                         </div>
                     </div>
                     <div class="info-row">
                         <div class="info-icon"><i class="fas fa-envelope"></i></div>
                         <div>
                             <h4>Email</h4>
-                            <p>amangupt7373@gmail.com</p>
+                            <p><a href="mailto:amangupt7373@gmail.com">amangupt7373@gmail.com</a></p>
                         </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-icon"><i class="fab fa-instagram"></i></div>
+                        <div>
+                            <h4>Instagram</h4>
+                            <p><a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1"
+                                    target="_blank" rel="noopener">@chandani_beauty_parlor</a></p>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem">
+                        <a href="tel:+918953946893" class="btn-primary" style="font-size:0.88rem;padding:12px 24px"><i
+                                class="fas fa-phone"></i> Call Now</a>
+                        <a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20an%20appointment."
+                            target="_blank" rel="noopener" class="btn-primary"
+                            style="font-size:0.88rem;padding:12px 24px;background:linear-gradient(135deg,#25d366,#128c7e)"><i
+                                class="fab fa-whatsapp"></i> WhatsApp</a>
                     </div>
                 </div>
                 <div class="contact-form reveal-right">
@@ -2790,69 +3071,100 @@
                         </div>
                         <div class="form-group"><label>Your Message</label><textarea id="fmsg"
                                 placeholder="Tell us about your requirements..." required></textarea></div>
-                        <button type="submit" class="btn-primary" style="width:100%"><i class="fas fa-envelope"></i>
-                            Send Message</button>
+                        <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                            <button type="submit" class="btn-primary" style="flex:1;justify-content:center"><i
+                                    class="fas fa-envelope"></i> Send via Email</button>
+                            <button type="button" onclick="sendWhatsApp()" class="btn-primary"
+                                style="flex:1;justify-content:center;background:linear-gradient(135deg,#25d366,#128c7e)"><i
+                                    class="fab fa-whatsapp"></i> Send via WhatsApp</button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- FOOTER -->
     <footer>
         <div class="footer-grid">
             <div>
-                <div class="footer-logo-wrap">
+                <a href="#home" class="footer-logo-wrap">
                     <div class="logo-icon" style="width:40px;height:40px"><i class="fas fa-crown"
                             style="font-size:1rem"></i></div>
                     <div class="footer-logo-text">
                         <h3>Chandni</h3><span>BEAUTY PARLOUR</span>
                     </div>
-                </div>
-                <p>Your beauty, our passion. Making you look and feel beautiful every single day.</p>
+                </a>
+                <p>Your beauty, our passion. Making you look and feel beautiful every single day. Open 24×7 in Ghughali,
+                    Maharajganj.</p>
                 <div class="social-row">
                     <a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1" class="social-link"
-                        target="_blank"><i class="fab fa-instagram"></i></a>
-                    <a href="https://wa.me/918953946893" class="social-link" target="_blank"><i
+                        target="_blank" rel="noopener" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="https://wa.me/918953946893?text=Hello!%20I%20want%20to%20book%20an%20appointment."
+                        class="social-link" target="_blank" rel="noopener" title="WhatsApp"><i
                             class="fab fa-whatsapp"></i></a>
+                    <a href="tel:+918953946893" class="social-link" title="Call"><i class="fas fa-phone"></i></a>
+                    <a href="mailto:amangupt7373@gmail.com" class="social-link" title="Email"><i
+                            class="fas fa-envelope"></i></a>
                 </div>
             </div>
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul class="footer-links">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#service-products">Services</a></li>
-                    <li><a href="#shop">Products</a></li>
-                    <li><a href="#gallery">Gallery</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="#home"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Home</a></li>
+                    <li><a href="#about"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>About Us</a></li>
+                    <li><a href="#service-products"><i class="fas fa-chevron-right"
+                                style="font-size:0.7rem"></i>Services</a></li>
+                    <li><a href="#services"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Price List</a>
+                    </li>
+                    <li><a href="#shop"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Products</a></li>
+                    <li><a href="#gallery"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Gallery</a></li>
+                    <li><a href="#contact"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Contact</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Our Services</h4>
                 <ul class="footer-links">
-                    <li><a href="#service-products">Bridal Makeup</a></li>
-                    <li><a href="#service-products">Party Makeup</a></li>
-                    <li><a href="#service-products">Hair Styling</a></li>
-                    <li><a href="#service-products">Facial & Cleanup</a></li>
-                    <li><a href="#service-products">Mehendi Design</a></li>
+                    <li><a href="#services"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Bridal
+                            Makeup</a></li>
+                    <li><a href="#services"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Party
+                            Makeup</a></li>
+                    <li><a href="#services"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Hair
+                            Styling</a></li>
+                    <li><a href="#services"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Facial &
+                            Cleanup</a></li>
+                    <li><a href="#services"><i class="fas fa-chevron-right" style="font-size:0.7rem"></i>Mehendi
+                            Design</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Contact</h4>
                 <ul class="footer-links">
-                    <li><a href="#">Ghughali, Maharajganj (273151)</a></li>
-                    <li><a href="tel:+918953946893">+91 8953946893</a></li>
-                    <li><a href="mailto:amangupt7373@gmail.com">amangupt7373@gmail.com</a></li>
-                    <li><a href="#">Open 24×7</a></li>
+                    <li><a href="https://maps.google.com/?q=Ghughali,Maharajganj,UP+273151" target="_blank"
+                            rel="noopener"><i class="fas fa-map-marker-alt" style="font-size:0.75rem"></i>Ghughali,
+                            Maharajganj (273151)</a></li>
+                    <li><a href="tel:+918953946893"><i class="fas fa-phone" style="font-size:0.75rem"></i>+91
+                            8953946893</a></li>
+                    <li><a href="mailto:amangupt7373@gmail.com"><i class="fas fa-envelope"
+                                style="font-size:0.75rem"></i>amangupt7373@gmail.com</a></li>
+                    <li><a href="https://wa.me/918953946893" target="_blank" rel="noopener"><i class="fab fa-whatsapp"
+                                style="font-size:0.75rem"></i>WhatsApp Us</a></li>
+                    <li><a href="https://www.instagram.com/chandani_beauty_parlor" target="_blank" rel="noopener"><i
+                                class="fab fa-instagram" style="font-size:0.75rem"></i>@chandani_beauty_parlor</a></li>
+                    <li><a href="#home"><i class="fas fa-clock" style="font-size:0.75rem"></i>Open 24×7</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
             <p>© 2026 Chandni Beauty Parlour. All Rights Reserved. Made with <span style="color:var(--rose)">♥</span> in
-                Maharajganj</p>
+                Maharajganj &nbsp;|&nbsp; <a href="tel:+918953946893"
+                    style="color:rgba(255,255,255,0.4);text-decoration:none">+91 8953946893</a> &nbsp;|&nbsp; <a
+                    href="mailto:amangupt7373@gmail.com"
+                    style="color:rgba(255,255,255,0.4);text-decoration:none">amangupt7373@gmail.com</a></p>
         </div>
     </footer>
 
+    <!-- CART OVERLAY & DRAWER -->
     <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
     <div class="cart-drawer" id="cartDrawer">
         <div class="cart-header">
@@ -2869,6 +3181,7 @@
         </div>
     </div>
 
+    <!-- ADD PRODUCT MODAL -->
     <div class="modal-overlay" id="addProductModal" onclick="closeModalOutside(event)">
         <div class="modal-box">
             <div class="modal-header">
@@ -2987,6 +3300,7 @@
     </div>
 
     <script>
+        /* ===== DATA ===== */
         let allItems = [
             { id: 1, category: 'bridal', name: 'HD Bridal Makeup', desc: 'High-definition finish for a flawless, camera-ready bridal look that lasts all day.', price: 8000, unit: 'session', img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=500', isNew: false },
             { id: 2, category: 'bridal', name: 'Airbrush Bridal Makeup', desc: 'Ultra-smooth airbrush application for a light, natural-looking yet stunning bridal glow.', price: 12000, unit: 'session', img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=500', isNew: false },
@@ -3011,6 +3325,7 @@
         let nextId = 20, activeCategory = 'all', currentPage = 1, filteredItems = [...allItems];
         const ITEMS_PER_PAGE = 12;
 
+        /* ===== RENDER GRID ===== */
         function renderItems(items) {
             const grid = document.getElementById('serviceProductsGrid');
             const noResults = document.getElementById('noResults');
@@ -3060,6 +3375,7 @@
 
         function scrollToGrid() { document.getElementById('service-products').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 
+        /* ===== SEARCH ===== */
         let searchTimeout;
         function handleSearch() {
             clearTimeout(searchTimeout);
@@ -3069,20 +3385,9 @@
                 showAutocomplete(q); applyFilters(false);
             }, 200);
         }
-
         function triggerSearch() { closeAutocomplete(); applyFilters(true); }
-
-        function handleSearchKey(e) {
-            if (e.key === 'Enter') { e.preventDefault(); closeAutocomplete(); applyFilters(true); }
-            if (e.key === 'Escape') clearSearch();
-        }
-
-        function clearSearch() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('searchClearBtn').style.display = 'none';
-            closeAutocomplete(); applyFilters(false);
-        }
-
+        function handleSearchKey(e) { if (e.key === 'Enter') { e.preventDefault(); closeAutocomplete(); applyFilters(true); } if (e.key === 'Escape') clearSearch(); }
+        function clearSearch() { document.getElementById('searchInput').value = ''; document.getElementById('searchClearBtn').style.display = 'none'; closeAutocomplete(); applyFilters(false); }
         function showAutocomplete(q) {
             const dropdown = document.getElementById('autocompleteDropdown');
             if (!q || q.length < 2) { closeAutocomplete(); return; }
@@ -3091,31 +3396,13 @@
             dropdown.innerHTML = matches.map(item => `<div class="autocomplete-item" onclick="selectAutocomplete('${item.name.replace(/'/g, "\\'")}')"><i class="fas fa-search"></i><span>${highlightMatch(item.name, q)}</span><span class="ac-cat">${getCategoryLabel(item.category)}</span><span class="ac-price">₹${item.price.toLocaleString('en-IN')}</span></div>`).join('');
             dropdown.classList.add('show');
         }
-
-        function highlightMatch(text, q) {
-            const idx = text.toLowerCase().indexOf(q.toLowerCase());
-            if (idx === -1) return text;
-            return text.substring(0, idx) + `<strong style="color:var(--rose)">${text.substring(idx, idx + q.length)}</strong>` + text.substring(idx + q.length);
-        }
-
-        function selectAutocomplete(name) {
-            document.getElementById('searchInput').value = name;
-            document.getElementById('searchClearBtn').style.display = 'block';
-            closeAutocomplete(); applyFilters(true);
-        }
-
+        function highlightMatch(text, q) { const idx = text.toLowerCase().indexOf(q.toLowerCase()); if (idx === -1) return text; return text.substring(0, idx) + `<strong style="color:var(--rose)">${text.substring(idx, idx + q.length)}</strong>` + text.substring(idx + q.length); }
+        function selectAutocomplete(name) { document.getElementById('searchInput').value = name; document.getElementById('searchClearBtn').style.display = 'block'; closeAutocomplete(); applyFilters(true); }
         function closeAutocomplete() { document.getElementById('autocompleteDropdown').classList.remove('show'); }
+        document.addEventListener('click', (e) => { if (!e.target.closest('.search-box') && !e.target.closest('.autocomplete-dropdown')) closeAutocomplete(); });
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-box') && !e.target.closest('.autocomplete-dropdown')) closeAutocomplete();
-        });
-
-        function filterCategory(cat, el) {
-            activeCategory = cat;
-            document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
-            el.classList.add('active'); currentPage = 1; applyFilters(true);
-        }
-
+        /* ===== FILTERS ===== */
+        function filterCategory(cat, el) { activeCategory = cat; document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active')); el.classList.add('active'); currentPage = 1; applyFilters(true); }
         function applyFilters(scrollToResults = false) {
             const q = document.getElementById('searchInput').value.toLowerCase().trim();
             filteredItems = allItems.filter(item => {
@@ -3124,18 +3411,12 @@
                 return catMatch && nameMatch;
             });
             const statsEl = document.getElementById('searchStats');
-            if (q || activeCategory !== 'all') {
-                statsEl.classList.add('show');
-                document.getElementById('statFound').textContent = filteredItems.length;
-                document.getElementById('statCat').textContent = activeCategory === 'all' ? 'All' : getCategoryLabel(activeCategory);
-                document.getElementById('statQuery').textContent = q || '—';
-            } else { statsEl.classList.remove('show'); }
+            if (q || activeCategory !== 'all') { statsEl.classList.add('show'); document.getElementById('statFound').textContent = filteredItems.length; document.getElementById('statCat').textContent = activeCategory === 'all' ? 'All' : getCategoryLabel(activeCategory); document.getElementById('statQuery').textContent = q || '—'; }
+            else { statsEl.classList.remove('show'); }
             applySort();
             if (scrollToResults) setTimeout(() => scrollToGrid(), 100);
         }
-
         function applySortAndRender() { applySort(); }
-
         function applySort() {
             const sort = document.getElementById('sortSelect').value;
             const sorted = [...filteredItems];
@@ -3147,166 +3428,104 @@
             filteredItems = sorted; renderItems(filteredItems);
         }
 
+        /* ===== MODAL ===== */
         let currentStep = 1;
-
         function openAddProductModal() { document.getElementById('addProductModal').classList.add('open'); document.body.style.overflow = 'hidden'; resetModalForm(); }
         function closeAddProductModal() { document.getElementById('addProductModal').classList.remove('open'); document.body.style.overflow = ''; }
         function closeModalOutside(e) { if (e.target === document.getElementById('addProductModal')) closeAddProductModal(); }
-
-        function resetModalForm() {
-            document.getElementById('addProductForm').reset();
-            document.getElementById('imgPreviewBox').innerHTML = '<div class="preview-placeholder"><i class="fas fa-image"></i>Paste an image URL above to preview</div>';
-            document.getElementById('imgPreviewBox').classList.remove('has-img');
-            goToStep(1, false);
-        }
-
+        function resetModalForm() { document.getElementById('addProductForm').reset(); document.getElementById('imgPreviewBox').innerHTML = '<div class="preview-placeholder"><i class="fas fa-image"></i>Paste an image URL above to preview</div>'; document.getElementById('imgPreviewBox').classList.remove('has-img'); goToStep(1, false); }
         function goToStep(step, validate = true) {
             if (validate && step > currentStep) {
-                if (currentStep === 1) {
-                    if (!document.getElementById('pName').value.trim()) { showToast('Please enter a product name!'); return; }
-                    if (!document.getElementById('pCategory').value) { showToast('Please select a category!'); return; }
-                    if (!document.getElementById('pPrice').value || Number(document.getElementById('pPrice').value) < 1) { showToast('Please enter a valid price!'); return; }
-                }
+                if (currentStep === 1) { if (!document.getElementById('pName').value.trim()) { showToast('Please enter a product name!'); return; } if (!document.getElementById('pCategory').value) { showToast('Please select a category!'); return; } if (!document.getElementById('pPrice').value || Number(document.getElementById('pPrice').value) < 1) { showToast('Please enter a valid price!'); return; } }
                 if (currentStep === 2) { if (!document.getElementById('pDesc').value.trim()) { showToast('Please enter a description!'); return; } }
             }
-            document.getElementById('formStep1').style.display = 'none';
-            document.getElementById('formStep2').style.display = 'none';
-            document.getElementById('formStep3').style.display = 'none';
-            document.getElementById(`formStep${step}`).style.display = 'block';
-            currentStep = step;
-            for (let i = 1; i <= 3; i++) {
-                const indicator = document.getElementById(`step${i}Indicator`);
-                indicator.classList.remove('active', 'done');
-                if (i < step) indicator.classList.add('done');
-                else if (i === step) indicator.classList.add('active');
-            }
+            document.getElementById('formStep1').style.display = 'none'; document.getElementById('formStep2').style.display = 'none'; document.getElementById('formStep3').style.display = 'none';
+            document.getElementById(`formStep${step}`).style.display = 'block'; currentStep = step;
+            for (let i = 1; i <= 3; i++) { const ind = document.getElementById(`step${i}Indicator`); ind.classList.remove('active', 'done'); if (i < step) ind.classList.add('done'); else if (i === step) ind.classList.add('active'); }
         }
-
-        function previewImage() {
-            const url = document.getElementById('pImg').value.trim();
-            const box = document.getElementById('imgPreviewBox');
-            if (!url) { box.innerHTML = '<div class="preview-placeholder"><i class="fas fa-image"></i>Paste an image URL above to preview</div>'; box.classList.remove('has-img'); return; }
-            const img = document.createElement('img');
-            img.onload = () => { box.innerHTML = ''; box.appendChild(img); box.classList.add('has-img'); };
-            img.onerror = () => { box.innerHTML = '<div class="preview-placeholder"><i class="fas fa-exclamation-triangle" style="color:var(--rose)"></i>Could not load image. Check URL.</div>'; box.classList.remove('has-img'); };
-            img.src = url; img.style.cssText = 'width:100%;height:100%;object-fit:cover';
-        }
-
+        function previewImage() { const url = document.getElementById('pImg').value.trim(); const box = document.getElementById('imgPreviewBox'); if (!url) { box.innerHTML = '<div class="preview-placeholder"><i class="fas fa-image"></i>Paste an image URL above to preview</div>'; box.classList.remove('has-img'); return; } const img = document.createElement('img'); img.onload = () => { box.innerHTML = ''; box.appendChild(img); box.classList.add('has-img'); }; img.onerror = () => { box.innerHTML = '<div class="preview-placeholder"><i class="fas fa-exclamation-triangle" style="color:var(--rose)"></i>Could not load image.</div>'; box.classList.remove('has-img'); }; img.src = url; img.style.cssText = 'width:100%;height:100%;object-fit:cover'; }
         function setSampleImg(url) { document.getElementById('pImg').value = url; previewImage(); }
-
         function submitProduct(e) {
             e.preventDefault();
-            const name = document.getElementById('pName').value.trim();
-            const category = document.getElementById('pCategory').value;
-            const price = Number(document.getElementById('pPrice').value);
-            const desc = document.getElementById('pDesc').value.trim();
-            const unit = document.getElementById('pUnit').value;
-            const isNew = document.getElementById('pIsNew').value === 'yes';
-            const img = document.getElementById('pImg').value.trim();
+            const name = document.getElementById('pName').value.trim(), category = document.getElementById('pCategory').value, price = Number(document.getElementById('pPrice').value), desc = document.getElementById('pDesc').value.trim(), unit = document.getElementById('pUnit').value, isNew = document.getElementById('pIsNew').value === 'yes', img = document.getElementById('pImg').value.trim();
             if (!name || !category || !price || !desc || !img) { showToast('Please fill in all required fields!'); return; }
-            const newItem = { id: nextId++, category, name, desc, price, unit, img, isNew };
-            allItems.unshift(newItem); currentPage = 1;
-            document.getElementById('sortSelect').value = 'newest';
-            applyFilters(false); closeAddProductModal();
+            allItems.unshift({ id: nextId++, category, name, desc, price, unit, img, isNew }); currentPage = 1;
+            document.getElementById('sortSelect').value = 'newest'; applyFilters(false); closeAddProductModal();
             showToast(`✨ "${name}" added successfully!`);
             setTimeout(() => { document.getElementById('service-products').scrollIntoView({ behavior: 'smooth' }); }, 400);
         }
 
+        /* ===== CART ===== */
         let cart = [];
-
         function addToCart(name, price) {
             cart.push({ name, price }); renderCart();
-            const badge = document.getElementById('cartBadge');
-            badge.textContent = cart.length; badge.classList.add('pop');
-            setTimeout(() => badge.classList.remove('pop'), 300);
+            const badge = document.getElementById('cartBadge'); badge.textContent = cart.length; badge.classList.add('pop'); setTimeout(() => badge.classList.remove('pop'), 300);
             showToast(`${name} added to cart!`);
         }
-
         function removeFromCart(i) { cart.splice(i, 1); renderCart(); document.getElementById('cartBadge').textContent = cart.length; }
-
         function renderCart() {
-            const list = document.getElementById('cartList');
-            const total = cart.reduce((s, i) => s + i.price, 0);
+            const list = document.getElementById('cartList'); const total = cart.reduce((s, i) => s + i.price, 0);
             document.getElementById('cartTotal').textContent = '₹' + total.toLocaleString('en-IN');
             if (!cart.length) { list.innerHTML = '<div class="cart-empty"><i class="fas fa-shopping-bag"></i><p>Your cart is empty</p></div>'; return; }
             list.innerHTML = cart.map((item, i) => `<div class="c-item"><div class="c-item-info"><div class="c-item-name">${item.name}</div><div class="c-item-price">₹${item.price.toLocaleString('en-IN')}</div></div><button class="c-item-remove" onclick="removeFromCart(${i})"><i class="fas fa-times"></i></button></div>`).join('');
         }
-
-        function toggleCart() {
-            document.getElementById('cartOverlay').classList.toggle('open');
-            document.getElementById('cartDrawer').classList.toggle('open');
-        }
-
+        function toggleCart() { document.getElementById('cartOverlay').classList.toggle('open'); document.getElementById('cartDrawer').classList.toggle('open'); }
         function checkout() {
             if (!cart.length) { showToast('Cart is empty!'); return; }
-            const msg = 'Hello! I want to book:\n' + cart.map(i => `• ${i.name} - ₹${i.price}`).join('\n');
+            const msg = 'Hello! I want to book from Chandni Beauty Parlour:\n' + cart.map(i => `• ${i.name} - ₹${i.price.toLocaleString('en-IN')}`).join('\n') + '\n\nPlease confirm my booking. Thank you!';
             window.open('https://wa.me/918953946893?text=' + encodeURIComponent(msg), '_blank');
         }
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            document.getElementById('toastMsg').textContent = msg;
-            t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
-        }
-
+        /* ===== CONTACT FORM ===== */
         function handleForm(e) {
             e.preventDefault();
-            const name = document.getElementById('fname').value.trim();
-            const phone = document.getElementById('fphone').value.trim();
-            const service = document.getElementById('fservice').value || 'Not specified';
-            const msg = document.getElementById('fmsg').value.trim();
+            const name = document.getElementById('fname').value.trim(), phone = document.getElementById('fphone').value.trim(), service = document.getElementById('fservice').value || 'Not specified', msg = document.getElementById('fmsg').value.trim();
             const subject = encodeURIComponent(`Booking Enquiry from ${name} — Chandni Beauty Parlour`);
             const body = encodeURIComponent(`Name: ${name}\nPhone: ${phone}\nService: ${service}\n\nMessage:\n${msg}`);
             window.location.href = `mailto:amangupt7373@gmail.com?subject=${subject}&body=${body}`;
             showToast(`✅ Thank you ${name}! Opening your email app...`);
             e.target.reset();
         }
+        function sendWhatsApp() {
+            const name = document.getElementById('fname').value.trim() || 'Customer', phone = document.getElementById('fphone').value.trim() || 'Not provided', service = document.getElementById('fservice').value || 'Not specified', msg = document.getElementById('fmsg').value.trim() || 'I would like to book an appointment.';
+            const waMsg = `Hello! I want to book an appointment.\n\nName: ${name}\nPhone: ${phone}\nService: ${service}\n\nMessage: ${msg}`;
+            window.open('https://wa.me/918953946893?text=' + encodeURIComponent(waMsg), '_blank');
+        }
 
-        window.addEventListener('load', () => {
-            setTimeout(() => document.getElementById('loading').classList.add('hide'), 1500);
-            applyFilters(false);
-        });
+        /* ===== TOAST ===== */
+        function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
 
-        window.addEventListener('scroll', () => {
-            document.getElementById('header').classList.toggle('scrolled', window.scrollY > 20);
-        });
+        /* ===== INIT ===== */
+        window.addEventListener('load', () => { setTimeout(() => document.getElementById('loading').classList.add('hide'), 1500); applyFilters(false); });
+        window.addEventListener('scroll', () => { document.getElementById('header').classList.toggle('scrolled', window.scrollY > 20); });
 
+        /* ===== MOBILE MENU ===== */
         function toggleMobileMenu() {
-            const drawer = document.getElementById('mobileDrawer');
-            const overlay = document.getElementById('mobileOverlay');
-            const toggle = document.getElementById('menuToggle');
+            const drawer = document.getElementById('mobileDrawer'), overlay = document.getElementById('mobileOverlay'), toggle = document.getElementById('menuToggle');
             if (drawer.classList.contains('open')) { closeMobileMenu(); }
             else { drawer.classList.add('open'); overlay.classList.add('open'); toggle.classList.add('active'); document.body.style.overflow = 'hidden'; }
         }
+        function closeMobileMenu() { document.getElementById('mobileDrawer').classList.remove('open'); document.getElementById('mobileOverlay').classList.remove('open'); document.getElementById('menuToggle').classList.remove('active'); document.body.style.overflow = ''; }
 
-        function closeMobileMenu() {
-            document.getElementById('mobileDrawer').classList.remove('open');
-            document.getElementById('mobileOverlay').classList.remove('open');
-            document.getElementById('menuToggle').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
+        /* ===== PETALS ===== */
         (function () {
             const container = document.getElementById('petals');
             const colors = ['#f7a8bb', '#e8496a', '#c9a84c', '#f0d080', '#ffccdd'];
-            for (let i = 0; i < 12; i++) {
-                const p = document.createElement('div'); p.className = 'petal';
-                p.style.cssText = `left:${Math.random() * 100}%;background:${colors[Math.floor(Math.random() * colors.length)]};animation-duration:${10 + Math.random() * 20}s;animation-delay:${Math.random() * 15}s;width:${4 + Math.random() * 8}px;height:${4 + Math.random() * 8}px;`;
-                container.appendChild(p);
-            }
+            for (let i = 0; i < 12; i++) { const p = document.createElement('div'); p.className = 'petal'; p.style.cssText = `left:${Math.random() * 100}%;background:${colors[Math.floor(Math.random() * colors.length)]};animation-duration:${10 + Math.random() * 20}s;animation-delay:${Math.random() * 15}s;width:${4 + Math.random() * 8}px;height:${4 + Math.random() * 8}px;`; container.appendChild(p); }
         })();
 
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-        }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+        /* ===== SCROLL REVEAL ===== */
+        const observer = new IntersectionObserver(entries => { entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); }); }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
         document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el => observer.observe(el));
 
-        document.querySelectorAll('a[href^="#"]').forEach(a => {
-            a.addEventListener('click', e => {
-                e.preventDefault();
-                const target = document.querySelector(a.getAttribute('href'));
-                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
+        /* ===== SMOOTH SCROLL for ALL anchor links ===== */
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a[href^="#"]');
+            if (!link) return;
+            const href = link.getAttribute('href');
+            if (href === '#' || !href) return;
+            const target = document.querySelector(href);
+            if (target) { e.preventDefault(); const offset = 80; const top = target.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top, behavior: 'smooth' }); }
         });
     </script>
 </body>
