@@ -295,6 +295,7 @@
             }
         }
 
+        /* ===== ADMIN BUTTON ===== */
         .admin-btn {
             cursor: pointer;
             padding: 8px 14px;
@@ -316,6 +317,88 @@
         .admin-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4)
+        }
+
+        /* Hidden by default for public */
+        .admin-btn {
+            display: none
+        }
+
+        .admin-btn.visible {
+            display: flex
+        }
+
+        /* Admin login trigger — subtle lock icon in nav */
+        .admin-login-btn {
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            background: rgba(201, 168, 76, 0.12);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid rgba(201, 168, 76, 0.3);
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            position: relative
+        }
+
+        .admin-login-btn:hover {
+            background: rgba(201, 168, 76, 0.25);
+            border-color: var(--gold)
+        }
+
+        .admin-login-btn i {
+            color: var(--gold);
+            font-size: 0.85rem
+        }
+
+        .admin-login-btn .admin-tooltip {
+            position: absolute;
+            bottom: -32px;
+            right: 0;
+            background: var(--dark);
+            color: white;
+            font-size: 0.68rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s
+        }
+
+        .admin-login-btn:hover .admin-tooltip {
+            opacity: 1
+        }
+
+        /* Admin status badge */
+        .admin-status-badge {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(201, 168, 76, 0.15), rgba(232, 73, 106, 0.1));
+            border: 1.5px solid rgba(201, 168, 76, 0.4);
+            border-radius: 50px;
+            font-size: 0.75rem;
+            color: var(--gold);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s
+        }
+
+        .admin-status-badge.show {
+            display: flex
+        }
+
+        .admin-status-badge i {
+            font-size: 0.7rem
+        }
+
+        .admin-status-badge:hover {
+            background: rgba(201, 168, 76, 0.25)
         }
 
         /* ===== HAMBURGER ===== */
@@ -358,7 +441,6 @@
         }
 
         /* ===== MOBILE DRAWER ===== */
-        /* FIX: Use visibility+opacity instead of display:none so transitions work */
         .mobile-menu-overlay {
             position: fixed;
             inset: 0;
@@ -532,7 +614,7 @@
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             gap: 8px;
@@ -540,6 +622,10 @@
             box-shadow: 0 4px 16px rgba(201, 168, 76, 0.3);
             width: calc(100% - 3rem);
             -webkit-tap-highlight-color: transparent
+        }
+
+        .mobile-add-btn.admin-visible {
+            display: flex
         }
 
         .mobile-add-btn:active {
@@ -907,7 +993,6 @@
             border-color: var(--gold)
         }
 
-        /* FIX: font-size:16px prevents iOS auto-zoom on input focus */
         .search-box input {
             flex: 1;
             padding: 14px 20px;
@@ -1073,7 +1158,6 @@
             font-size: 0.85rem
         }
 
-        /* FIX: font-size:16px prevents iOS zoom */
         .sort-select {
             padding: 8px 14px;
             border: 2px solid #f0e8ec;
@@ -1429,7 +1513,6 @@
             color: var(--rose)
         }
 
-        /* FIX: font-size:16px prevents iOS auto-zoom */
         .modal-form-group input,
         .modal-form-group textarea,
         .modal-form-group select {
@@ -1927,7 +2010,6 @@
             margin-bottom: 6px
         }
 
-        /* FIX: 16px min font for iOS zoom prevention */
         .form-group input,
         .form-group textarea,
         .form-group select {
@@ -1974,7 +2056,6 @@
             visibility: visible
         }
 
-        /* FIX: Use right-based slide instead of percentage for cart on mobile */
         .cart-drawer {
             position: fixed;
             top: 0;
@@ -2181,7 +2262,6 @@
             padding: 3rem 5% 1.5rem
         }
 
-        /* FIX: Add padding-bottom to body for phone CTA bar */
         .footer-grid {
             max-width: 1400px;
             margin: 0 auto;
@@ -2414,6 +2494,176 @@
             transform: translateX(0)
         }
 
+        /* ===== ADMIN LOGIN MODAL ===== */
+        #adminLoginModal .modal-box {
+            max-width: 400px
+        }
+
+        .admin-login-form {
+            padding: 0
+        }
+
+        .admin-login-header {
+            background: linear-gradient(135deg, #1a1015, #2d1520);
+            border-radius: 24px 24px 0 0;
+            padding: 2rem 1.8rem;
+            text-align: center
+        }
+
+        .admin-lock-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--gold), #a8892a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 8px 24px rgba(201, 168, 76, 0.4)
+        }
+
+        .admin-lock-icon i {
+            font-size: 1.8rem;
+            color: white
+        }
+
+        .admin-login-header h3 {
+            font-family: 'Playfair Display', serif;
+            color: white;
+            font-size: 1.4rem;
+            margin-bottom: 0.3rem
+        }
+
+        .admin-login-header p {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.82rem
+        }
+
+        .admin-login-body {
+            padding: 1.8rem
+        }
+
+        .admin-pw-wrap {
+            position: relative
+        }
+
+        .admin-pw-wrap input {
+            width: 100%;
+            padding: 13px 46px 13px 14px;
+            border: 2px solid #f0e8ec;
+            border-radius: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+            color: var(--text);
+            transition: border-color 0.3s;
+            background: #fdf9fb;
+            outline: none;
+            -webkit-appearance: none
+        }
+
+        .admin-pw-wrap input:focus {
+            border-color: var(--gold)
+        }
+
+        .admin-pw-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        .admin-login-submit {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--gold), #a8892a);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s;
+            letter-spacing: 0.5px
+        }
+
+        .admin-login-submit:active {
+            transform: scale(0.97)
+        }
+
+        .admin-error-msg {
+            background: #fff0f3;
+            border: 1px solid #f7a8bb;
+            color: var(--rose);
+            font-size: 0.82rem;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-top: 0.8rem;
+            display: none;
+            align-items: center;
+            gap: 8px
+        }
+
+        .admin-error-msg.show {
+            display: flex
+        }
+
+        .admin-hint {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 1rem;
+            line-height: 1.5
+        }
+
+        .admin-hint a {
+            color: var(--rose);
+            text-decoration: none;
+            font-weight: 600
+        }
+
+        /* Admin logout confirm */
+        .admin-logout-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.8rem 1.5rem;
+            background: rgba(201, 168, 76, 0.08);
+            border-top: 1px solid rgba(201, 168, 76, 0.2)
+        }
+
+        .admin-logout-row span {
+            font-size: 0.8rem;
+            color: var(--muted);
+            flex: 1
+        }
+
+        .admin-logout-btn {
+            padding: 6px 14px;
+            background: none;
+            border: 1.5px solid rgba(232, 73, 106, 0.3);
+            color: var(--rose);
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        .admin-logout-btn:hover {
+            background: var(--rose);
+            color: white;
+            border-color: var(--rose)
+        }
+
         /* ===== RESPONSIVE ===== */
         @media(max-width:900px) {
             .menu-toggle {
@@ -2470,7 +2720,6 @@
                 display: flex
             }
 
-            /* FIX: Push content above phone CTA bar on mobile */
             body {
                 padding-bottom: 56px
             }
@@ -2618,8 +2867,8 @@
             <a href="#home" class="logo-wrap">
                 <div class="logo-icon"><i class="fas fa-crown"></i></div>
                 <div>
-                    <div class="logo-name">CHANDNIMART</div>
-                    <div class="logo-sub">GHUGHALI</div>
+                    <div class="logo-name">Chandnimart</div>
+                    <div class="logo-sub">ghughali</div>
                 </div>
             </a>
             <ul class="nav-links">
@@ -2632,9 +2881,21 @@
                 <li><a href="#contact">Contact</a></li>
             </ul>
             <div class="nav-actions">
-                <button class="admin-btn" onclick="openAddProductModal()">
+                <!-- Admin status badge (shown when logged in) -->
+                <div class="admin-status-badge" id="adminStatusBadge" onclick="showAdminMenu()"
+                    title="Admin Mode Active">
+                    <i class="fas fa-shield-alt"></i> Admin
+                </div>
+                <!-- Add product button (only visible to admin) -->
+                <button class="admin-btn" id="adminAddBtn" onclick="openAddProductModal()">
                     <i class="fas fa-plus-circle"></i>
                     <span>Add Product</span>
+                </button>
+                <!-- Admin login button (always visible, subtle) -->
+                <button class="admin-login-btn" id="adminLoginTrigger" onclick="handleAdminBtnClick()"
+                    aria-label="Admin Login" title="Admin Panel">
+                    <i class="fas fa-lock" id="adminLockIcon"></i>
+                    <span class="admin-tooltip" id="adminTooltip">Admin Login</span>
                 </button>
                 <button class="cart-btn" onclick="toggleCart()" aria-label="Open cart">
                     <i class="fas fa-shopping-bag"></i>
@@ -2690,9 +2951,18 @@
                         Book</span><i class="fas fa-chevron-right nav-arrow"></i>
                 </a></li>
         </ul>
-        <button class="mobile-add-btn" onclick="closeMobileMenu(); setTimeout(openAddProductModal,350)">
+        <!-- Admin add button in drawer — only visible to admin -->
+        <button class="mobile-add-btn" id="mobileAddBtn"
+            onclick="closeMobileMenu(); setTimeout(openAddProductModal,350)">
             <i class="fas fa-plus-circle"></i> Add New Product / Service
         </button>
+        <!-- Admin login option in drawer -->
+        <div id="mobileAdminLoginRow" style="margin:0 1.5rem 0.5rem;display:flex;gap:0.6rem">
+            <button id="mobileAdminLoginBtn" onclick="closeMobileMenu();setTimeout(openAdminLoginModal,200)"
+                style="flex:1;padding:10px;background:rgba(201,168,76,0.1);border:1.5px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent">
+                <i class="fas fa-lock"></i> Admin Login
+            </button>
+        </div>
         <div class="mobile-drawer-footer">
             <div class="mobile-contact-row"><i class="fas fa-map-marker-alt"></i> Ghughali, Maharajganj (273151)</div>
             <div class="mobile-contact-row"><i class="fas fa-phone"></i><a href="tel:+918953946893">+91 8953946893</a>
@@ -3330,6 +3600,36 @@
         </div>
     </div>
 
+    <!-- ===== ADMIN LOGIN MODAL ===== -->
+    <div class="modal-overlay" id="adminLoginModal" onclick="closeAdminLoginOutside(event)">
+        <div class="modal-box" style="max-width:400px">
+            <div class="admin-login-header">
+                <div class="admin-lock-icon"><i class="fas fa-shield-alt" id="adminLoginIcon"></i></div>
+                <h3 id="adminLoginTitle">Admin Login</h3>
+                <p id="adminLoginSubtitle">Enter your password to access admin panel</p>
+            </div>
+            <div class="admin-login-body">
+                <div class="modal-form-group">
+                    <label
+                        style="font-size:0.85rem;font-weight:600;color:var(--text);margin-bottom:6px;display:block">Admin
+                        Password</label>
+                    <div class="admin-pw-wrap">
+                        <input type="password" id="adminPwInput" placeholder="Enter admin password"
+                            onkeydown="adminLoginKey(event)" autocomplete="current-password">
+                        <button class="admin-pw-toggle" onclick="toggleAdminPw()" type="button" tabindex="-1"><i
+                                class="fas fa-eye" id="pwEyeIcon"></i></button>
+                    </div>
+                </div>
+                <div class="admin-error-msg" id="adminErrorMsg"><i class="fas fa-exclamation-circle"></i><span
+                        id="adminErrorText">Incorrect password. Please try again.</span></div>
+                <button class="admin-login-submit" onclick="attemptAdminLogin()"><i class="fas fa-unlock-alt"
+                        style="margin-right:8px"></i>Login as Admin</button>
+                <p class="admin-hint">Default password: <strong style="color:var(--rose)">chandni@2026</strong><br>You
+                    can change this in the code.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- ADD PRODUCT MODAL -->
     <div class="modal-overlay" id="addProductModal" onclick="closeModalOutside(event)">
         <div class="modal-box">
@@ -3341,6 +3641,15 @@
                 <button class="modal-close" onclick="closeAddProductModal()" aria-label="Close">✕</button>
             </div>
             <div class="modal-body">
+                <!-- Admin info bar inside modal -->
+                <div
+                    style="display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(201,168,76,0.1),rgba(232,73,106,0.06));border:1.5px solid rgba(201,168,76,0.25);border-radius:10px;padding:10px 14px;margin-bottom:1.2rem">
+                    <i class="fas fa-shield-alt" style="color:var(--gold);font-size:0.9rem"></i>
+                    <span style="font-size:0.8rem;color:var(--muted)">Logged in as <strong
+                            style="color:var(--gold)">Admin</strong> — changes visible to all visitors</span>
+                    <button onclick="adminLogout()"
+                        style="margin-left:auto;background:none;border:1.5px solid rgba(232,73,106,0.3);color:var(--rose);border-radius:20px;font-size:0.72rem;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;-webkit-tap-highlight-color:transparent">Logout</button>
+                </div>
                 <div class="modal-steps">
                     <div class="modal-step active" id="step1Indicator">
                         <div class="step-dot">1</div><span class="step-label">Basic Info</span>
@@ -3447,7 +3756,135 @@
     </div>
 
     <script>
-        /* ===== DATA ===== */
+        /* ===================================
+           ADMIN AUTH SYSTEM
+        =================================== */
+        // ⚙️ CHANGE THIS PASSWORD to something secret
+        const ADMIN_PASSWORD = 'chandni@2026';
+        let isAdminLoggedIn = false;
+
+        function handleAdminBtnClick() {
+            if (isAdminLoggedIn) {
+                // If already admin, show options
+                showAdminMenu();
+            } else {
+                openAdminLoginModal();
+            }
+        }
+
+        function openAdminLoginModal() {
+            document.getElementById('adminLoginModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => document.getElementById('adminPwInput').focus(), 400);
+            document.getElementById('adminPwInput').value = '';
+            document.getElementById('adminErrorMsg').classList.remove('show');
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('adminLoginModal').classList.remove('open');
+            document.body.style.overflow = '';
+            document.getElementById('adminPwInput').value = '';
+            document.getElementById('adminErrorMsg').classList.remove('show');
+        }
+
+        function closeAdminLoginOutside(e) {
+            if (e.target === document.getElementById('adminLoginModal')) closeAdminLoginModal();
+        }
+
+        function toggleAdminPw() {
+            const input = document.getElementById('adminPwInput');
+            const icon = document.getElementById('pwEyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        function adminLoginKey(e) {
+            if (e.key === 'Enter') attemptAdminLogin();
+            if (e.key === 'Escape') closeAdminLoginModal();
+        }
+
+        let loginAttempts = 0;
+        function attemptAdminLogin() {
+            const pw = document.getElementById('adminPwInput').value;
+            const errorEl = document.getElementById('adminErrorMsg');
+            const errorText = document.getElementById('adminErrorText');
+
+            if (pw === ADMIN_PASSWORD) {
+                // SUCCESS
+                loginAttempts = 0;
+                isAdminLoggedIn = true;
+                closeAdminLoginModal();
+                updateAdminUI(true);
+                showToast('🔓 Admin mode activated! You can now add products.');
+            } else {
+                // FAIL
+                loginAttempts++;
+                document.getElementById('adminPwInput').value = '';
+                errorEl.classList.add('show');
+                if (loginAttempts >= 3) {
+                    errorText.textContent = `Incorrect password. ${5 - loginAttempts > 0 ? (5 - loginAttempts) + ' attempts remaining.' : 'Too many attempts.'}`;
+                } else {
+                    errorText.textContent = 'Incorrect password. Please try again.';
+                }
+                // Shake animation on input
+                const input = document.getElementById('adminPwInput');
+                input.style.borderColor = 'var(--rose)';
+                input.style.animation = 'shake 0.4s ease';
+                setTimeout(() => { input.style.animation = ''; input.style.borderColor = ''; }, 500);
+            }
+        }
+
+        function adminLogout() {
+            isAdminLoggedIn = false;
+            updateAdminUI(false);
+            closeAddProductModal();
+            showToast('🔒 Logged out from admin mode.');
+        }
+
+        function showAdminMenu() {
+            if (!isAdminLoggedIn) return;
+            // If admin, clicking the lock opens add product or shows a quick menu
+            openAddProductModal();
+        }
+
+        function updateAdminUI(loggedIn) {
+            const addBtn = document.getElementById('adminAddBtn');
+            const mobileAddBtn = document.getElementById('mobileAddBtn');
+            const statusBadge = document.getElementById('adminStatusBadge');
+            const lockIcon = document.getElementById('adminLockIcon');
+            const tooltip = document.getElementById('adminTooltip');
+            const mobileLoginRow = document.getElementById('mobileAdminLoginRow');
+
+            if (loggedIn) {
+                addBtn.classList.add('visible');
+                mobileAddBtn.classList.add('admin-visible');
+                statusBadge.classList.add('show');
+                lockIcon.className = 'fas fa-unlock-alt';
+                tooltip.textContent = 'Add Product / Logout';
+                mobileLoginRow.style.display = 'none';
+            } else {
+                addBtn.classList.remove('visible');
+                mobileAddBtn.classList.remove('admin-visible');
+                statusBadge.classList.remove('show');
+                lockIcon.className = 'fas fa-lock';
+                tooltip.textContent = 'Admin Login';
+                mobileLoginRow.style.display = 'flex';
+            }
+        }
+
+        // Shake keyframe injection
+        const shakeStyle = document.createElement('style');
+        shakeStyle.textContent = '@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}';
+        document.head.appendChild(shakeStyle);
+
+        /* ===================================
+           DATA
+        =================================== */
         let allItems = [
             { id: 1, category: 'bridal', name: 'HD Bridal Makeup', desc: 'High-definition finish for a flawless, camera-ready bridal look that lasts all day.', price: 8000, unit: 'session', img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=500', isNew: false },
             { id: 2, category: 'bridal', name: 'Airbrush Bridal Makeup', desc: 'Ultra-smooth airbrush application for a light, natural-looking yet stunning bridal glow.', price: 12000, unit: 'session', img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=500', isNew: false },
@@ -3545,9 +3982,18 @@
             filteredItems = sorted; renderItems(filteredItems);
         }
 
-        /* ===== MODAL ===== */
+        /* ===== ADD PRODUCT MODAL ===== */
         let currentStep = 1;
-        function openAddProductModal() { document.getElementById('addProductModal').classList.add('open'); document.body.style.overflow = 'hidden'; resetModalForm(); }
+        function openAddProductModal() {
+            // Guard: only admin can open this
+            if (!isAdminLoggedIn) {
+                openAdminLoginModal();
+                return;
+            }
+            document.getElementById('addProductModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+            resetModalForm();
+        }
         function closeAddProductModal() { document.getElementById('addProductModal').classList.remove('open'); document.body.style.overflow = ''; }
         function closeModalOutside(e) { if (e.target === document.getElementById('addProductModal')) closeAddProductModal(); }
         function resetModalForm() { document.getElementById('addProductForm').reset(); document.getElementById('imgPreviewBox').innerHTML = '<div class="preview-placeholder"><i class="fas fa-image"></i>Paste an image URL above to preview</div>'; document.getElementById('imgPreviewBox').classList.remove('has-img'); goToStep(1, false); }
@@ -3564,11 +4010,12 @@
         function setSampleImg(url) { document.getElementById('pImg').value = url; previewImage(); }
         function submitProduct(e) {
             e.preventDefault();
+            if (!isAdminLoggedIn) { showToast('⚠️ Admin access required!'); return; }
             const name = document.getElementById('pName').value.trim(), category = document.getElementById('pCategory').value, price = Number(document.getElementById('pPrice').value), desc = document.getElementById('pDesc').value.trim(), unit = document.getElementById('pUnit').value, isNew = document.getElementById('pIsNew').value === 'yes', img = document.getElementById('pImg').value.trim();
             if (!name || !category || !price || !desc || !img) { showToast('Please fill in all required fields!'); return; }
             allItems.unshift({ id: nextId++, category, name, desc, price, unit, img, isNew }); currentPage = 1;
             document.getElementById('sortSelect').value = 'newest'; applyFilters(false); closeAddProductModal();
-            showToast(`✨ "${name}" added successfully!`);
+            showToast(`✨ "${name}" added to the catalog!`);
             setTimeout(() => { document.getElementById('service-products').scrollIntoView({ behavior: 'smooth' }); }, 400);
         }
 
@@ -3605,8 +4052,7 @@
         function toggleMobileMenu() {
             const drawer = document.getElementById('mobileDrawer'), overlay = document.getElementById('mobileOverlay'), toggle = document.getElementById('menuToggle');
             const isOpen = drawer.classList.contains('open');
-            if (isOpen) { closeMobileMenu(); }
-            else { drawer.classList.add('open'); overlay.classList.add('open'); toggle.classList.add('active'); document.body.style.overflow = 'hidden'; }
+            if (isOpen) { closeMobileMenu(); } else { drawer.classList.add('open'); overlay.classList.add('open'); toggle.classList.add('active'); document.body.style.overflow = 'hidden'; }
         }
         function closeMobileMenu() {
             const drawer = document.getElementById('mobileDrawer'), overlay = document.getElementById('mobileOverlay'), toggle = document.getElementById('menuToggle');
@@ -3614,7 +4060,7 @@
         }
 
         /* ===== INIT ===== */
-        window.addEventListener('load', () => { setTimeout(() => document.getElementById('loading').classList.add('hide'), 1500); applyFilters(false); });
+        window.addEventListener('load', () => { setTimeout(() => document.getElementById('loading').classList.add('hide'), 1500); applyFilters(false); updateAdminUI(false); });
         window.addEventListener('scroll', () => { document.getElementById('header').classList.toggle('scrolled', window.scrollY > 20); }, { passive: true });
 
         /* ===== PETALS ===== */
@@ -3638,11 +4084,12 @@
             if (target) { e.preventDefault(); const offset = 72; const top = target.getBoundingClientRect().top + window.scrollY - offset; window.scrollTo({ top, behavior: 'smooth' }); }
         });
 
-        /* ===== BACK BUTTON closes mobile menu/cart/modal ===== */
+        /* ===== BACK BUTTON ===== */
         window.addEventListener('popstate', () => {
             if (document.getElementById('mobileDrawer').classList.contains('open')) closeMobileMenu();
             if (document.getElementById('cartDrawer').classList.contains('open')) toggleCart();
             if (document.getElementById('addProductModal').classList.contains('open')) closeAddProductModal();
+            if (document.getElementById('adminLoginModal').classList.contains('open')) closeAdminLoginModal();
         });
     </script>
 </body>
