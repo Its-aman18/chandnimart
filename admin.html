@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChandniMart — Admin Panel</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --brand: #e8602c;
+            --brand-deep: #b5451b;
+            --gold: #d4a843;
+            --gold-light: #f0cc6e;
+            --dark: #1c0f08;
+            --cream: #fdf6ee;
+            --ivory: #fff9f3;
+            --text: #3d1f10;
+            --muted: #8a6250;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --shadow: rgba(232, 96, 44, .18);
+            --sidebar: 220px
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f5f0ea;
+            color: var(--text);
+            min-height: 100vh
+        }
+
+        /* ── LOGIN ── */
+        .login-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--dark), #2d1208);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .4);
+            text-align: center
+        }
+
+        .login-logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--brand), var(--gold));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            box-shadow: 0 8px 24px var(--shadow)
+        }
+
+        .login-logo i {
+            color: white;
+            font-size: 1.6rem
+        }
+
+        .login-card h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: var(--dark);
+            margin-bottom: .3rem
+        }
+
+        .login-card p {
+            font-size: .85rem;
+            color: var(--muted);
+            margin-bottom: 2rem
+        }
+
+        .login-field {
+            margin-bottom: 1rem;
+            text-align: left
+        }
+
+        .login-field label {
+            display: block;
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 5px
+        }
+
+        .login-field input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid rgba(232, 96, 44, .15);
+            border-radius: 11px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color .3s;
+            background: #fdf9f5
+        }
+
+        .login-field input:focus {
+            border-color: var(--brand)
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: .5rem;
+            transition: all .3s
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow)
+        }
+
+        .login-err {
+            background: #fff0ed;
+            border: 1px solid rgba(239, 68, 68, .2);
+            color: var(--red);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: .83rem;
+            margin-bottom: 1rem;
+            display: none
+        }
+
+        .login-hint {
+            font-size: .75rem;
+            color: var(--muted);
+            margin-top: 1.2rem;
+            padding: 10px 14px;
+            background: var(--cream);
+            border-radius: 10px;
+            line-height: 1.6
+        }
+
+        .login-hint strong {
+            color: var(--brand)
+        }
+
+        /* ── ADMIN LAYOUT ── */
+        .admin-app {
+            display: none;
+            min-height: 100vh
+        }
+
+        .admin-app.active {
+            display: flex
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar);
+            background: linear-gradient(180deg, var(--dark), #2d1208);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 100;
+            transition: transform .35s cubic-bezier(.22, 1, .36, 1)
+        }
+
+        .sidebar-logo {
+            padding: 1.4rem 1.2rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .08)
+        }
+
+        .sidebar-logo-mark {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--brand), var(--gold));
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: .6rem
+        }
+
+        .sidebar-logo-mark i {
+            color: white;
+            font-size: 1rem
+        }
+
+        .sidebar-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            color: var(--gold-light);
+            font-weight: 700
+        }
+
+        .sidebar-sub {
+            font-size: .62rem;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, .4);
+            text-transform: uppercase
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: .8rem 0;
+            overflow-y: auto
+        }
+
+        .nav-group-label {
+            font-size: .6rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .3);
+            padding: .8rem 1.2rem .3rem;
+            font-weight: 600
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: .75rem 1.2rem;
+            color: rgba(255, 255, 255, .6);
+            text-decoration: none;
+            font-size: .85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .25s;
+            border-left: 3px solid transparent;
+            margin: .1rem 0
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, .06);
+            color: rgba(255, 255, 255, .9)
+        }
+
+        .sidebar-link.active {
+            background: rgba(232, 96, 44, .18);
+            color: white;
+            border-left-color: var(--brand)
+        }
+
+        .sidebar-link i {
+            width: 18px;
+            text-align: center;
+            font-size: .9rem
+        }
+
+        .sidebar-link .badge {
+            margin-left: auto;
+            background: var(--brand);
+            color: white;
+            font-size: .6rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 50px
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.2rem;
+            border-top: 1px solid rgba(255, 255, 255, .07)
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 9px 14px;
+            background: rgba(239, 68, 68, .15);
+            border: 1px solid rgba(239, 68, 68, .25);
+            color: rgba(255, 100, 100, .9);
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            transition: all .3s
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, .3)
+        }
+
+        /* Main area */
+        .admin-main {
+            margin-left: var(--sidebar);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh
+        }
+
+        .topbar {
+            background: white;
+            padding: .9rem 1.8rem;
+            border-bottom: 1px solid rgba(232, 96, 44, .1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .05)
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .topbar-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark)
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: .8rem
+        }
+
+        .topbar-admin-badge {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--cream);
+            border: 1px solid rgba(232, 96, 44, .15);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--brand)
+        }
+
+        .topbar-admin-badge i {
+            font-size: .75rem
+        }
+
+        .hamburger-mob {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 6px
+        }
+
+        .hamburger-mob span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: var(--brand);
+            margin: 4px 0;
+            border-radius: 2px
+        }
+
+        /* Content */
+        .admin-content {
+            flex: 1;
+            padding: 1.8rem
+        }
+
+        /* Panels */
+        .panel {
+            display: none
+        }
+
+        .panel.active {
+            display: block
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.8rem
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.4rem 1.5rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .05);
+            border: 1px solid rgba(232, 96, 44, .07);
+            display: flex;
+            align-items: center;
+            gap: 1rem
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0
+        }
+
+        .stat-icon.orange {
+            background: linear-gradient(135deg, var(--brand), var(--brand-deep))
+        }
+
+        .stat-icon.gold {
+            background: linear-gradient(135deg, var(--gold), #c49030)
+        }
+
+        .stat-icon.green {
+            background: linear-gradient(135deg, var(--green), #16a34a)
+        }
+
+        .stat-icon.rose {
+            background: linear-gradient(135deg, #c94070, #a0305a)
+        }
+
+        .stat-icon i {
+            color: white;
+            font-size: 1.1rem
+        }
+
+        .stat-num {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1
+        }
+
+        .stat-label {
+            font-size: .75rem;
+            color: var(--muted);
+            margin-top: 2px
+        }
+
+        /* Section card */
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .05);
+            border: 1px solid rgba(232, 96, 44, .07);
+            overflow: hidden;
+            margin-bottom: 1.5rem
+        }
+
+        .section-card-head {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid rgba(232, 96, 44, .08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .8rem
+        }
+
+        .section-card-head h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .section-card-head h2 i {
+            color: var(--brand);
+            font-size: .9rem
+        }
+
+        .section-card-body {
+            padding: 1.5rem
+        }
+
+        /* Search + filter row */
+        .search-filter-row {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap
+        }
+
+        .admin-search {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: #fdf9f5;
+            border: 1.5px solid rgba(232, 96, 44, .15);
+            border-radius: 50px;
+            padding: 8px 14px;
+            flex: 1;
+            min-width: 200px
+        }
+
+        .admin-search input {
+            border: none;
+            background: none;
+            outline: none;
+            font-family: 'Outfit', sans-serif;
+            font-size: .84rem;
+            color: var(--text);
+            width: 100%
+        }
+
+        .admin-search i {
+            color: var(--muted);
+            font-size: .82rem
+        }
+
+        .admin-search:focus-within {
+            border-color: var(--brand)
+        }
+
+        .filter-sel {
+            padding: 8px 14px;
+            border: 1.5px solid rgba(232, 96, 44, .15);
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .83rem;
+            color: var(--text);
+            background: white;
+            outline: none;
+            cursor: pointer
+        }
+
+        .filter-sel:focus {
+            border-color: var(--brand)
+        }
+
+        /* Products table */
+        .prod-table-wrap {
+            overflow-x: auto
+        }
+
+        .prod-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .83rem
+        }
+
+        .prod-table th {
+            background: var(--cream);
+            color: var(--text);
+            font-weight: 700;
+            padding: .8rem 1rem;
+            text-align: left;
+            font-size: .75rem;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            border-bottom: 2px solid rgba(232, 96, 44, .1)
+        }
+
+        .prod-table td {
+            padding: .75rem 1rem;
+            border-bottom: 1px solid rgba(232, 96, 44, .06);
+            vertical-align: middle
+        }
+
+        .prod-table tr:hover td {
+            background: rgba(253, 246, 238, .5)
+        }
+
+        .prod-table tr:last-child td {
+            border-bottom: none
+        }
+
+        .prod-thumb {
+            width: 46px;
+            height: 46px;
+            border-radius: 8px;
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0
+        }
+
+        .prod-name-cell {
+            display: flex;
+            align-items: center;
+            gap: .8rem
+        }
+
+        .prod-name-cell .name {
+            font-weight: 600;
+            color: var(--dark)
+        }
+
+        .prod-name-cell .brand {
+            font-size: .72rem;
+            color: var(--muted);
+            font-style: italic
+        }
+
+        .cat-chip {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: .66rem;
+            font-weight: 700;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            background: rgba(232, 96, 44, .1);
+            color: var(--brand)
+        }
+
+        .badge-chip {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 50px;
+            font-size: .63rem;
+            font-weight: 700;
+            text-transform: uppercase
+        }
+
+        .bc-sale {
+            background: #fef2f2;
+            color: #ef4444
+        }
+
+        .bc-new {
+            background: #f0fdf4;
+            color: #16a34a
+        }
+
+        .bc-popular {
+            background: #fffbeb;
+            color: #d97706
+        }
+
+        .bc-trending {
+            background: #fdf4ff;
+            color: #9333ea
+        }
+
+        .bc-none {
+            background: #f5f5f5;
+            color: #999
+        }
+
+        .tbl-actions {
+            display: flex;
+            gap: .5rem
+        }
+
+        .tbl-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .82rem;
+            transition: all .2s
+        }
+
+        .tbl-btn.edit {
+            background: rgba(59, 130, 246, .1);
+            color: var(--blue)
+        }
+
+        .tbl-btn.edit:hover {
+            background: var(--blue);
+            color: white
+        }
+
+        .tbl-btn.del {
+            background: rgba(239, 68, 68, .1);
+            color: var(--red)
+        }
+
+        .tbl-btn.del:hover {
+            background: var(--red);
+            color: white
+        }
+
+        .tbl-btn.view {
+            background: rgba(232, 96, 44, .1);
+            color: var(--brand)
+        }
+
+        .tbl-btn.view:hover {
+            background: var(--brand);
+            color: white
+        }
+
+        .price-cell {
+            font-weight: 700;
+            color: var(--brand-deep)
+        }
+
+        .old-price-cell {
+            font-size: .73rem;
+            color: var(--muted);
+            text-decoration: line-through
+        }
+
+        /* Add/Edit Form Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(28, 15, 8, .75);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 22px;
+            width: 100%;
+            max-width: 680px;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .35);
+            transform: scale(.92);
+            transition: transform .3s cubic-bezier(.175, .885, .32, 1.275)
+        }
+
+        .modal-overlay.open .modal-box {
+            transform: scale(1)
+        }
+
+        .modal-head {
+            padding: 1.3rem 1.5rem;
+            background: linear-gradient(135deg, var(--brand-deep), var(--dark));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 22px 22px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 5
+        }
+
+        .modal-head h3 {
+            font-family: 'Cormorant Garamond', serif;
+            color: white;
+            font-size: 1.35rem;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, .15);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, .3)
+        }
+
+        .modal-body {
+            padding: 1.8rem
+        }
+
+        .form-section-title {
+            font-size: .75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--brand);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid rgba(232, 96, 44, .1);
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem
+        }
+
+        .form-grid.full {
+            grid-template-columns: 1fr
+        }
+
+        .form-group {
+            margin-bottom: 0
+        }
+
+        .form-group label {
+            display: block;
+            font-size: .79rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 5px
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 13px;
+            border: 2px solid rgba(232, 96, 44, .12);
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            color: var(--text);
+            background: #fdf9f5;
+            outline: none;
+            transition: border-color .3s;
+            -webkit-appearance: none
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--brand);
+            background: white
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical
+        }
+
+        .form-group .hint {
+            font-size: .7rem;
+            color: var(--muted);
+            margin-top: 4px
+        }
+
+        .img-preview-row {
+            display: flex;
+            gap: .8rem;
+            align-items: center;
+            margin-top: .6rem
+        }
+
+        .img-preview {
+            width: 70px;
+            height: 70px;
+            border-radius: 10px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid rgba(232, 96, 44, .15);
+            flex-shrink: 0;
+            background-color: var(--cream)
+        }
+
+        .modal-footer {
+            padding: 1.2rem 1.8rem;
+            border-top: 1px solid rgba(232, 96, 44, .08);
+            display: flex;
+            gap: .8rem;
+            justify-content: flex-end;
+            background: #fdf9f5;
+            border-radius: 0 0 22px 22px
+        }
+
+        .btn-save {
+            padding: 11px 26px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .9rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: all .3s
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow)
+        }
+
+        .btn-cancel {
+            padding: 11px 22px;
+            background: white;
+            border: 2px solid rgba(232, 96, 44, .15);
+            color: var(--muted);
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .3s
+        }
+
+        .btn-cancel:hover {
+            border-color: var(--brand);
+            color: var(--brand)
+        }
+
+        /* Delete Confirm */
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(28, 15, 8, .75);
+            backdrop-filter: blur(6px);
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem
+        }
+
+        .confirm-overlay.open {
+            opacity: 1;
+            visibility: visible
+        }
+
+        .confirm-box {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+            transform: scale(.9);
+            transition: transform .3s
+        }
+
+        .confirm-overlay.open .confirm-box {
+            transform: scale(1)
+        }
+
+        .confirm-icon {
+            width: 60px;
+            height: 60px;
+            background: #fef2f2;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem
+        }
+
+        .confirm-icon i {
+            color: var(--red);
+            font-size: 1.5rem
+        }
+
+        .confirm-box h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: .5rem
+        }
+
+        .confirm-box p {
+            font-size: .85rem;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: .8rem;
+            justify-content: center
+        }
+
+        .btn-del-confirm {
+            padding: 10px 22px;
+            background: var(--red);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .3s
+        }
+
+        .btn-del-confirm:hover {
+            background: #dc2626
+        }
+
+        /* Toast */
+        .admin-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--dark);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: .85rem;
+            font-weight: 500;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: all .4s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .3)
+        }
+
+        .admin-toast.show {
+            opacity: 1
+        }
+
+        .admin-toast i {
+            font-size: .9rem
+        }
+
+        .admin-toast.success i {
+            color: var(--green)
+        }
+
+        .admin-toast.error i {
+            color: var(--red)
+        }
+
+        .admin-toast.info i {
+            color: var(--gold)
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--muted)
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: rgba(232, 96, 44, .2);
+            display: block;
+            margin-bottom: 1rem
+        }
+
+        .empty-state h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: .4rem
+        }
+
+        .empty-state p {
+            font-size: .85rem
+        }
+
+        /* Pagination */
+        .admin-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(232, 96, 44, .07);
+            flex-wrap: wrap;
+            gap: .6rem
+        }
+
+        .page-info {
+            font-size: .8rem;
+            color: var(--muted)
+        }
+
+        .page-btns {
+            display: flex;
+            gap: .4rem
+        }
+
+        .pg-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1.5px solid rgba(232, 96, 44, .15);
+            background: white;
+            color: var(--text);
+            font-size: .82rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s
+        }
+
+        .pg-btn.active {
+            background: var(--brand);
+            color: white;
+            border-color: transparent
+        }
+
+        .pg-btn:disabled {
+            opacity: .35;
+            cursor: not-allowed
+        }
+
+        /* Action bar */
+        .action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: .8rem
+        }
+
+        .action-bar h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: .6rem
+        }
+
+        .action-bar h1 i {
+            color: var(--brand);
+            font-size: 1.1rem
+        }
+
+        .btn-add-product {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .88rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: all .3s;
+            box-shadow: 0 4px 16px var(--shadow)
+        }
+
+        .btn-add-product:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow)
+        }
+
+        /* Settings panel */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem
+        }
+
+        .setting-item {
+            background: var(--cream);
+            border-radius: 12px;
+            padding: 1.2rem 1.4rem;
+            border: 1px solid rgba(232, 96, 44, .1)
+        }
+
+        .setting-item h4 {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: .3rem
+        }
+
+        .setting-item p {
+            font-size: .78rem;
+            color: var(--muted);
+            line-height: 1.5
+        }
+
+        .setting-badge {
+            display: inline-block;
+            margin-top: .7rem;
+            padding: 4px 12px;
+            background: rgba(34, 197, 94, .15);
+            color: var(--green);
+            border-radius: 50px;
+            font-size: .72rem;
+            font-weight: 700
+        }
+
+        .pw-change-form {
+            margin-top: 1rem
+        }
+
+        .pw-change-form .form-group {
+            margin-bottom: .8rem
+        }
+
+        .btn-pw-save {
+            padding: 9px 20px;
+            background: var(--brand);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .3s
+        }
+
+        .btn-pw-save:hover {
+            background: var(--brand-deep)
+        }
+
+        /* Dashboard quick actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem
+        }
+
+        .qa-card {
+            background: white;
+            border-radius: 14px;
+            padding: 1.3rem;
+            border: 1.5px solid rgba(232, 96, 44, .08);
+            cursor: pointer;
+            transition: all .3s;
+            text-align: center
+        }
+
+        .qa-card:hover {
+            border-color: var(--brand);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px var(--shadow)
+        }
+
+        .qa-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto .8rem
+        }
+
+        .qa-card h4 {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--dark)
+        }
+
+        .qa-card p {
+            font-size: .75rem;
+            color: var(--muted);
+            margin-top: 2px
+        }
+
+        /* Recent activity */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: .8rem
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .9rem;
+            padding: .8rem 0;
+            border-bottom: 1px solid rgba(232, 96, 44, .06)
+        }
+
+        .activity-item:last-child {
+            border-bottom: none
+        }
+
+        .activity-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px
+        }
+
+        .activity-dot.add {
+            background: var(--green)
+        }
+
+        .activity-dot.edit {
+            background: var(--blue)
+        }
+
+        .activity-dot.del {
+            background: var(--red)
+        }
+
+        .activity-text {
+            font-size: .83rem;
+            color: var(--text);
+            line-height: 1.4
+        }
+
+        .activity-time {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: 2px
+        }
+
+        /* Responsive */
+        @media(max-width:768px) {
+            .sidebar {
+                transform: translateX(-100%)
+            }
+
+            .sidebar.mob-open {
+                transform: translateX(0)
+            }
+
+            .admin-main {
+                margin-left: 0
+            }
+
+            .hamburger-mob {
+                display: block
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .admin-content {
+                padding: 1rem
+            }
+        }
+
+        @media(max-width:480px) {
+            .stats-bar {
+                grid-template-columns: 1fr
+            }
+
+            .prod-table {
+                font-size: .75rem
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════ LOGIN PAGE ═══════ -->
+    <div class="login-page" id="loginPage">
+        <div class="login-card">
+            <div class="login-logo"><i class="fas fa-shield-alt"></i></div>
+            <h1>Admin Login</h1>
+            <p>ChandniMart — Secure Admin Panel</p>
+            <div class="login-err" id="loginErr"><i class="fas fa-exclamation-circle"></i> Wrong username or password.
+                Try again.</div>
+            <div class="login-field">
+                <label>Username</label>
+                <input type="text" id="loginUser" placeholder="Enter admin username" autocomplete="username">
+            </div>
+            <div class="login-field">
+                <label>Password</label>
+                <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password"
+                    onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <button class="login-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Login to Admin
+                Panel</button>
+            <div class="login-hint">
+                Default: <strong>admin</strong> / <strong>chandni@2026</strong><br>
+                Change your password in Settings after login.
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ADMIN APP ═══════ -->
+    <div class="admin-app" id="adminApp">
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-mark"><i class="fas fa-store"></i></div>
+                <div class="sidebar-title">ChandniMart</div>
+                <div class="sidebar-sub">Admin Panel</div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-group-label">Main</div>
+                <div class="sidebar-link active" onclick="showPanel('dashboard',this)"><i
+                        class="fas fa-home"></i>Dashboard</div>
+                <div class="sidebar-link" onclick="showPanel('products',this)"><i class="fas fa-box-open"></i>Products
+                    <span class="badge" id="prodCountBadge">0</span></div>
+
+                <div class="nav-group-label" style="margin-top:.5rem">Manage</div>
+                <div class="sidebar-link" onclick="showPanel('addProduct',this)"><i class="fas fa-plus-circle"></i>Add
+                    New Product</div>
+                <div class="sidebar-link" onclick="showPanel('categories',this)"><i
+                        class="fas fa-th-large"></i>Categories</div>
+                <div class="sidebar-link" onclick="showPanel('settings',this)"><i class="fas fa-cog"></i>Settings</div>
+
+                <div class="nav-group-label" style="margin-top:.5rem">Store</div>
+                <div class="sidebar-link" onclick="window.open('index.html','_blank')"><i
+                        class="fas fa-external-link-alt"></i>View Website</div>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="admin-main">
+            <!-- Topbar -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger-mob"
+                        onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+                    <div class="topbar-title" id="topbarTitle">Dashboard</div>
+                </div>
+                <div class="topbar-right">
+                    <div class="topbar-admin-badge"><i class="fas fa-user-shield"></i><span
+                            id="adminUserLabel">admin</span></div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="admin-content">
+
+                <!-- ── DASHBOARD ── -->
+                <div class="panel active" id="panel-dashboard">
+                    <div class="action-bar">
+                        <h1><i class="fas fa-home"></i> Dashboard</h1>
+                        <button class="btn-add-product" onclick="showPanel('addProduct',null)"><i
+                                class="fas fa-plus"></i> Add Product</button>
+                    </div>
+                    <div class="stats-bar" id="statsBar"></div>
+                    <div class="quick-actions" id="quickActions"></div>
+                    <div class="section-card">
+                        <div class="section-card-head">
+                            <h2><i class="fas fa-history"></i> Recent Activity</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <div class="activity-list" id="activityList">
+                                <div class="empty-state"><i class="fas fa-history"></i>
+                                    <h3>No activity yet</h3>
+                                    <p>Add or edit products to see activity here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── PRODUCTS LIST ── -->
+                <div class="panel" id="panel-products">
+                    <div class="action-bar">
+                        <h1><i class="fas fa-box-open"></i> All Products</h1>
+                        <button class="btn-add-product" onclick="showPanel('addProduct',null)"><i
+                                class="fas fa-plus"></i> Add Product</button>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-card-head">
+                            <h2><i class="fas fa-list"></i> Product List</h2>
+                            <div class="search-filter-row" style="margin:0">
+                                <div class="admin-search">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="tableSearch" placeholder="Search products, brands…"
+                                        oninput="renderTable()">
+                                </div>
+                                <select class="filter-sel" id="tableFilter" onchange="renderTable()">
+                                    <option value="">All Categories</option>
+                                    <option value="lipcare">Lip Care</option>
+                                    <option value="foundation">Foundation</option>
+                                    <option value="eyemakeup">Eye Makeup</option>
+                                    <option value="skincare">Skincare</option>
+                                    <option value="haircare">Hair Care</option>
+                                    <option value="suncare">Sun Care</option>
+                                    <option value="nailcare">Nail Care</option>
+                                    <option value="fragrance">Fragrance</option>
+                                    <option value="parlour">Parlour Items</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="prod-table-wrap">
+                            <table class="prod-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Product</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Badge</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prodTableBody"></tbody>
+                            </table>
+                            <div id="tableEmpty" class="empty-state" style="display:none"><i
+                                    class="fas fa-box-open"></i>
+                                <h3>No products found</h3>
+                                <p>Try a different search or category filter.</p>
+                            </div>
+                        </div>
+                        <div class="admin-pagination" id="tablePagination"></div>
+                    </div>
+                </div>
+
+                <!-- ── ADD PRODUCT ── -->
+                <div class="panel" id="panel-addProduct">
+                    <div class="action-bar">
+                        <h1><i class="fas fa-plus-circle"></i> Add New Product</h1>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-card-head">
+                            <h2><i class="fas fa-box"></i> Product Details</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <div id="addProductForm">
+                                <!-- rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── CATEGORIES ── -->
+                <div class="panel" id="panel-categories">
+                    <div class="action-bar">
+                        <h1><i class="fas fa-th-large"></i> Categories</h1>
+                    </div>
+                    <div class="stats-bar" id="catStatsBar"></div>
+                    <div class="section-card">
+                        <div class="section-card-head">
+                            <h2><i class="fas fa-th-large"></i> Category Overview</h2>
+                        </div>
+                        <div class="section-card-body" id="catOverviewBody"></div>
+                    </div>
+                </div>
+
+                <!-- ── SETTINGS ── */-->
+                <div class="panel" id="panel-settings">
+                    <div class="action-bar">
+                        <h1><i class="fas fa-cog"></i> Settings</h1>
+                    </div>
+                    <div class="section-card" style="margin-bottom:1.5rem">
+                        <div class="section-card-head">
+                            <h2><i class="fas fa-user-shield"></i> Admin Credentials</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <div class="settings-grid">
+                                <div class="setting-item">
+                                    <h4>Current Username</h4>
+                                    <p>Your admin login username.</p>
+                                    <input type="text" id="setUsername"
+                                        style="width:100%;margin-top:.7rem;padding:9px 12px;border:2px solid rgba(232,96,44,.15);border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;outline:none;background:#fdf9f5"
+                                        placeholder="Username">
+                                </div>
+                                <div class="setting-item">
+                                    <h4>Change Password</h4>
+                                    <p>Enter your new password.</p>
+                                    <input type="password" id="setPassword"
+                                        style="width:100%;margin-top:.7rem;padding:9px 12px;border:2px solid rgba(232,96,44,.15);border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;outline:none;background:#fdf9f5"
+                                        placeholder="New password">
+                                </div>
+                            </div>
+                            <div style="margin-top:1rem">
+                                <button class="btn-pw-save" onclick="saveCredentials()"><i class="fas fa-save"></i> Save
+                                    Credentials</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-card-head">
+                            <h2><i class="fas fa-database"></i> Data Management</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <div class="settings-grid">
+                                <div class="setting-item">
+                                    <h4>Export Products</h4>
+                                    <p>Download all products as a JSON file for backup.</p>
+                                    <button onclick="exportProducts()"
+                                        style="margin-top:.8rem;padding:8px 18px;background:var(--blue);color:white;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer"><i
+                                            class="fas fa-download"></i> Export JSON</button>
+                                </div>
+                                <div class="setting-item">
+                                    <h4>Reset to Defaults</h4>
+                                    <p>Restore original 55 products. This cannot be undone.</p>
+                                    <button onclick="resetToDefaults()"
+                                        style="margin-top:.8rem;padding:8px 18px;background:var(--red);color:white;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer"><i
+                                            class="fas fa-undo"></i> Reset Data</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /admin-content -->
+        </div><!-- /admin-main -->
+    </div><!-- /admin-app -->
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3 id="editModalTitle"><i class="fas fa-edit"></i> Edit Product</h3>
+                <button class="modal-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="editModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                <button class="btn-save" onclick="saveEdit()"><i class="fas fa-save"></i> Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-box">
+            <div class="confirm-icon"><i class="fas fa-trash"></i></div>
+            <h3>Delete Product?</h3>
+            <p id="confirmText">Are you sure you want to delete this product? This cannot be undone.</p>
+            <div class="confirm-actions">
+                <button class="btn-cancel" onclick="closeConfirm()" style="padding:10px 22px">Cancel</button>
+                <button class="btn-del-confirm" onclick="executeDelete()"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="admin-toast" id="adminToast"><i class="fas fa-check-circle"></i><span id="adminToastMsg"></span></div>
+
+    <script>
+        /* ══════════════════════════════════════
+           DEFAULT PRODUCTS (same 55 as website)
+        ══════════════════════════════════════ */
+        const DEFAULT_PRODUCTS = [
+            { id: 1, cat: 'lipcare', brand: 'Lakme', name: '9to5 Matte Lipstick', desc: 'Long-stay matte finish in 30 bold shades. Comfortable, non-drying formula.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: 'popular' },
+            { id: 2, cat: 'lipcare', brand: 'Maybelline', name: 'SuperStay Matte Ink', desc: 'Transfer-proof liquid lipstick. Lasts up to 16 hours without touch-ups.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'trending' },
+            { id: 3, cat: 'lipcare', brand: "L'Oréal", name: 'Infallible Lip Colour', desc: '2-step colour + balm system for full-day colour with moisturised lips.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'sale' },
+            { id: 4, cat: 'lipcare', brand: 'Nykaa', name: 'Matte to Last Lip Crayon', desc: 'Bullet crayon for precise, velvety matte application.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'new' },
+            { id: 5, cat: 'lipcare', brand: 'Revlon', name: 'Super Lustrous Lip Gloss', desc: 'High-shine glossy formula with aloe vera & vitamin E.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: '' },
+            { id: 6, cat: 'lipcare', brand: 'Lakme', name: 'Lip Love Lip Balm SPF 15', desc: 'Tinted moisturising lip balm with SPF protection.', price: 179, oldPrice: 229, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'popular' },
+            { id: 7, cat: 'foundation', brand: 'Maybelline', name: 'Fit Me Matte Foundation', desc: 'Controls shine, blurs pores. Natural finish in 40+ shades.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1513379733131-47fc74b45fc7?w=400', badge: 'popular' },
+            { id: 8, cat: 'foundation', brand: 'Lakme', name: 'Perfecting Liquid Foundation', desc: 'Lightweight, buildable coverage with vitamin E. SPF 20.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400', badge: '' },
+            { id: 9, cat: 'foundation', brand: "L'Oréal", name: 'True Match Super-Blendable', desc: 'Micro-fine blending formula that matches skin texture and tone.', price: 699, oldPrice: 899, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'sale' },
+            { id: 10, cat: 'foundation', brand: 'Nykaa', name: 'Skin Tint BB Cream SPF 20', desc: '5-in-1 tinted moisturiser — hydrates, covers, protects & primes.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'new' },
+            { id: 11, cat: 'foundation', brand: 'Lotus', name: 'Ecostay Insta-Matte BB Cream', desc: 'Herbal BB cream with long-lasting matte finish.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400', badge: '' },
+            { id: 12, cat: 'foundation', brand: 'Lakme', name: 'Compact Powder (Pressed)', desc: 'Smooth-finish compact that blurs imperfections & controls shine.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400', badge: 'popular' },
+            { id: 13, cat: 'eyemakeup', brand: 'Lakme', name: 'Eyeconic Kajal', desc: 'Intense black kajal with stay-proof formula. Smooth glide.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'popular' },
+            { id: 14, cat: 'eyemakeup', brand: 'Maybelline', name: 'Colossal Kajal 12H', desc: 'Bold, smudge-proof kajal. Lasts 12 hours. 99% black.', price: 219, oldPrice: 279, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'trending' },
+            { id: 15, cat: 'eyemakeup', brand: 'Nykaa', name: '24 Shade Eyeshadow Palette', desc: 'Pigmented matte + shimmer shades for day-to-night looks.', price: 799, oldPrice: 1099, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'new' },
+            { id: 16, cat: 'eyemakeup', brand: "L'Oréal", name: 'Voluminous Lash Mascara', desc: 'Ultra-volumising mascara with wavy bristle brush.', price: 649, oldPrice: 849, img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400', badge: 'sale' },
+            { id: 17, cat: 'eyemakeup', brand: 'Lakme', name: 'Absolute Precision Eye Liner', desc: 'Micro-precision felt-tip liner for sharp cat-eye looks.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: '' },
+            { id: 18, cat: 'eyemakeup', brand: 'Swiss Beauty', name: 'Blush & Highlighter Duo', desc: 'Coral blush with champagne highlight for natural glow.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400', badge: 'popular' },
+            { id: 19, cat: 'skincare', brand: 'Himalaya', name: 'Neem Purifying Face Wash', desc: 'Anti-bacterial neem formula for pimple-free, clear skin.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'popular' },
+            { id: 20, cat: 'skincare', brand: 'Mamaearth', name: 'Vitamin C Face Serum', desc: '10% Vitamin C + turmeric for brightening, glowing skin.', price: 499, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'trending' },
+            { id: 21, cat: 'skincare', brand: "Pond's", name: 'Super Light Gel Moisturiser', desc: 'Oil-free gel with hyaluronic acid for 72h deep hydration.', price: 279, oldPrice: 349, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'popular' },
+            { id: 22, cat: 'skincare', brand: 'Olay', name: 'Total Effects 7-in-1 Cream', desc: 'Fights 7 signs of ageing for visibly younger-looking skin.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'sale' },
+            { id: 23, cat: 'skincare', brand: 'WOW Skin', name: 'Niacinamide 10% Serum', desc: 'Pore-minimising, brightening serum that fades dark spots.', price: 549, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'new' },
+            { id: 24, cat: 'skincare', brand: 'Biotique', name: 'Bio Papaya Face Scrub', desc: 'Natural papaya scrub for deep exfoliation and radiance.', price: 179, oldPrice: 229, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400', badge: '' },
+            { id: 25, cat: 'skincare', brand: 'Everyuth', name: 'Walnut Apricot Scrub', desc: 'Classic scrub for deep pore cleansing and smooth skin.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=400', badge: 'popular' },
+            { id: 26, cat: 'skincare', brand: 'Lotus', name: 'Under Eye Brightening Cream', desc: 'Reduces dark circles and puffiness for brighter eyes.', price: 349, oldPrice: 449, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: '' },
+            { id: 27, cat: 'skincare', brand: 'Mamaearth', name: 'Night Repair Face Cream', desc: 'Retinol + bakuchiol night cream for skin repair.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'new' },
+            { id: 28, cat: 'haircare', brand: 'Parachute', name: 'Advansed Coconut Hair Oil', desc: 'Pure coconut oil enriched with vitamin E for strong hair.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: 'popular' },
+            { id: 29, cat: 'haircare', brand: 'Bajaj', name: 'Almond Drops Hair Oil', desc: 'Enriched with almond extracts for thick hair growth.', price: 249, oldPrice: 299, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: '' },
+            { id: 30, cat: 'haircare', brand: 'TRESemmé', name: 'Keratin Smooth Shampoo', desc: 'Salon-smooth keratin shampoo for frizz control and shine.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1515688594390-b649af70d282?w=400', badge: 'popular' },
+            { id: 31, cat: 'haircare', brand: 'Mamaearth', name: 'Onion Hair Fall Shampoo', desc: 'Red onion oil shampoo that controls hair fall.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'trending' },
+            { id: 32, cat: 'haircare', brand: 'Mamaearth', name: 'Banana & Honey Hair Mask', desc: 'Deep conditioning mask for soft, silky, manageable hair.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'new' },
+            { id: 33, cat: 'haircare', brand: 'WOW Skin', name: 'Anti-Frizz Hair Serum', desc: 'Instant smoothening serum that tames frizz and adds shine.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: 'sale' },
+            { id: 34, cat: 'haircare', brand: 'Dove', name: 'Intense Repair Conditioner', desc: 'Keratin repair formula that fixes breakage and nourishes.', price: 249, oldPrice: 319, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: '' },
+            { id: 35, cat: 'suncare', brand: 'Lotus', name: 'Safe Sun UV Screen SPF 50', desc: 'Broad-spectrum PA+++ sunscreen, no white cast.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400', badge: 'popular' },
+            { id: 36, cat: 'suncare', brand: 'Lakme', name: 'Sun Expert Ultra Matte SPF 40', desc: 'Matte finish sunscreen ideal for oily skin.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400', badge: '' },
+            { id: 37, cat: 'suncare', brand: 'Mamaearth', name: 'Hydragel SPF 50 Sunscreen', desc: 'Water-gel sunscreen with aloe vera — cooling & hydrating.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400', badge: 'new' },
+            { id: 38, cat: 'suncare', brand: 'Biotique', name: 'Bio Sandalwood SPF 50+', desc: 'Ayurvedic sunscreen with sandalwood. Protects and brightens.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'sale' },
+            { id: 39, cat: 'nailcare', brand: 'Lakme', name: 'True Wear Nail Colour', desc: '70-shade nail colour range with chip-resistant formula.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'popular' },
+            { id: 40, cat: 'nailcare', brand: 'Revlon', name: 'ColorStay Gel Envy Polish', desc: '2-step gel-like shine nail colour. Up to 11 days wear.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'trending' },
+            { id: 41, cat: 'nailcare', brand: 'Nykaa', name: 'Matte Nail Paint Set (5pc)', desc: 'Set of 5 trending matte nail colours in earthy tones.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
+            { id: 42, cat: 'nailcare', brand: 'Generic', name: 'Nail Art Tools Kit', desc: 'Dotting tools, striping tape, brush set & stickers.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: '' },
+            { id: 43, cat: 'fragrance', brand: 'Fogg', name: 'Fogg Black Collection EDP', desc: 'Woody oriental fragrance with rich oud and musk.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'popular' },
+            { id: 44, cat: 'fragrance', brand: 'Engage', name: 'Engage W1 Perfume Body Spray', desc: 'Floral fruity scent with rose and peach notes.', price: 249, oldPrice: 299, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: '' },
+            { id: 45, cat: 'fragrance', brand: 'Dove', name: 'Original Deodorant Spray', desc: '48h anti-perspirant protection with mild fragrance.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'popular' },
+            { id: 46, cat: 'fragrance', brand: 'Yardley', name: 'English Lavender EDT', desc: 'Classic lavender fragrance — light, floral, everyday.', price: 349, oldPrice: 449, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: 'sale' },
+            { id: 47, cat: 'fragrance', brand: 'Wild Stone', name: 'Forest Spice Perfume', desc: 'Bold masculine scent with spicy and woody notes.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'new' },
+            { id: 48, cat: 'parlour', brand: 'Rica', name: 'Wax Beans Kit — Stripless', desc: 'Professional stripless hot wax beans for hair removal.', price: 799, oldPrice: 999, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'popular' },
+            { id: 49, cat: 'parlour', brand: 'VLCC', name: 'Diamond Bleach Kit', desc: 'Premium diamond bleach with activator for instant glow.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: '' },
+            { id: 50, cat: 'parlour', brand: 'O3+', name: 'Gold Facial Kit (6 Steps)', desc: 'Complete professional gold facial for deep glow.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'popular' },
+            { id: 51, cat: 'parlour', brand: 'Shahnaz Husain', name: 'Diamond Skin Radiance Kit', desc: 'Age-defying diamond kit with exfoliator, gel, mask & cream.', price: 899, oldPrice: 1199, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: 'sale' },
+            { id: 52, cat: 'parlour', brand: 'Fem', name: 'Natural Henna Mehendi Cones', desc: 'Ready-to-use natural henna cones — dark colour, easy design.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1598980704601-ceffa9d10bc6?w=400', badge: '' },
+            { id: 53, cat: 'parlour', brand: 'VLCC', name: 'Eyebrow Threading Kit', desc: 'Precision threading thread + shaping wax strips.', price: 299, oldPrice: 0, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
+            { id: 54, cat: 'parlour', brand: 'Lotus', name: 'Skin Whitening Detan Pack', desc: 'Instant detan face pack with kojic acid for fairness.', price: 249, oldPrice: 329, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'trending' },
+            { id: 55, cat: 'parlour', brand: 'Generic', name: 'Makeup Brush Set — 12 pcs', desc: 'Professional kabuki, contouring and blending brushes.', price: 999, oldPrice: 1499, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400', badge: 'sale' },
+        ];
+
+        const CAT_LABELS = { lipcare: 'Lip Care', foundation: 'Foundation', eyemakeup: 'Eye Makeup', skincare: 'Skincare', haircare: 'Hair Care', suncare: 'Sun Care', nailcare: 'Nail Care', fragrance: 'Fragrance', parlour: 'Parlour Items' };
+
+        /* ══ STATE ══ */
+        let adminData = loadAdminData();
+        let tablePage = 1, tablePerPage = 10;
+        let deleteTargetId = null, editTargetId = null;
+
+        function loadAdminData() {
+            const raw = localStorage.getItem('chandnimart_admin');
+            if (raw) return JSON.parse(raw);
+            return {
+                credentials: { username: 'admin', password: 'chandni@2026' },
+                products: [...DEFAULT_PRODUCTS],
+                activity: [],
+                nextId: 56
+            };
+        }
+        function saveAdminData() {
+            localStorage.setItem('chandnimart_admin', JSON.stringify(adminData));
+            // Save products separately so index.html can read them
+            localStorage.setItem('chandnimart_products', JSON.stringify(adminData.products));
+            // Broadcast instant update to any open index.html tabs
+            try {
+                const ch = new BroadcastChannel('chandnimart_sync');
+                ch.postMessage({ type: 'products_updated', products: adminData.products });
+                ch.close();
+            } catch (e) { /* fallback: storage event handles cross-tab */ }
+        }
+
+        /* ══ AUTH ══ */
+        function doLogin() {
+            const u = document.getElementById('loginUser').value.trim();
+            const p = document.getElementById('loginPass').value;
+            const err = document.getElementById('loginErr');
+            if (u === adminData.credentials.username && p === adminData.credentials.password) {
+                err.style.display = 'none';
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('adminApp').classList.add('active');
+                document.getElementById('adminUserLabel').textContent = u;
+                document.getElementById('setUsername').value = u;
+                renderDashboard(); renderTable(); renderCatPanel();
+                updateBadge();
+            } else {
+                err.style.display = 'flex';
+                document.getElementById('loginPass').value = '';
+            }
+        }
+        function doLogout() {
+            document.getElementById('adminApp').classList.remove('active');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('loginErr').style.display = 'none';
+        }
+
+        /* ══ SIDEBAR ══ */
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('mob-open');
+        }
+        function showPanel(name, el) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            document.getElementById('panel-' + name).classList.add('active');
+            if (el) el.classList.add('active');
+            const titles = { dashboard: 'Dashboard', products: 'All Products', addProduct: 'Add New Product', categories: 'Categories', settings: 'Settings' };
+            document.getElementById('topbarTitle').textContent = titles[name] || name;
+            if (name === 'products') renderTable();
+            if (name === 'categories') renderCatPanel();
+            if (name === 'addProduct') renderAddForm();
+            if (name === 'dashboard') renderDashboard();
+            if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('mob-open');
+        }
+
+        /* ══ DASHBOARD ══ */
+        function renderDashboard() {
+            const prods = adminData.products;
+            const cats = Object.keys(CAT_LABELS);
+            const byBadge = b => prods.filter(p => p.badge === b).length;
+            document.getElementById('statsBar').innerHTML = `
+    <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-box-open"></i></div><div><div class="stat-num">${prods.length}</div><div class="stat-label">Total Products</div></div></div>
+    <div class="stat-card"><div class="stat-icon gold"><i class="fas fa-th-large"></i></div><div><div class="stat-num">${cats.length}</div><div class="stat-label">Categories</div></div></div>
+    <div class="stat-card"><div class="stat-icon green"><i class="fas fa-star"></i></div><div><div class="stat-num">${byBadge('new')}</div><div class="stat-label">New Products</div></div></div>
+    <div class="stat-card"><div class="stat-icon rose"><i class="fas fa-fire"></i></div><div><div class="stat-num">${byBadge('popular') + byBadge('trending')}</div><div class="stat-label">Popular/Trending</div></div></div>`;
+            document.getElementById('quickActions').innerHTML = `
+    <div class="qa-card" onclick="showPanel('addProduct',null)"><div class="qa-icon" style="background:linear-gradient(135deg,var(--brand),var(--brand-deep))"><i class="fas fa-plus" style="color:white"></i></div><h4>Add Product</h4><p>Add a new item</p></div>
+    <div class="qa-card" onclick="showPanel('products',null)"><div class="qa-icon" style="background:linear-gradient(135deg,var(--blue),#1d4ed8)"><i class="fas fa-list" style="color:white"></i></div><h4>View Products</h4><p>${prods.length} total items</p></div>
+    <div class="qa-card" onclick="showPanel('categories',null)"><div class="qa-icon" style="background:linear-gradient(135deg,var(--gold),#c49030)"><i class="fas fa-th-large" style="color:white"></i></div><h4>Categories</h4><p>${cats.length} categories</p></div>
+    <div class="qa-card" onclick="exportProducts()"><div class="qa-icon" style="background:linear-gradient(135deg,var(--green),#16a34a)"><i class="fas fa-download" style="color:white"></i></div><h4>Export</h4><p>Backup products</p></div>`;
+            const al = document.getElementById('activityList');
+            if (!adminData.activity.length) { al.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><h3>No activity yet</h3><p>Add or edit products to see activity here.</p></div>'; return; }
+            al.innerHTML = adminData.activity.slice(0, 10).map(a => `<div class="activity-item"><div class="activity-dot ${a.type}"></div><div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time}</div></div></div>`).join('');
+        }
+
+        /* ══ PRODUCT TABLE ══ */
+        function getFilteredProds() {
+            const q = (document.getElementById('tableSearch') || {}).value?.toLowerCase().trim() || '';
+            const cat = (document.getElementById('tableFilter') || {}).value || '';
+            return adminData.products.filter(p => {
+                const catOk = !cat || p.cat === cat;
+                const qOk = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || (p.desc || '').toLowerCase().includes(q);
+                return catOk && qOk;
+            });
+        }
+        function renderTable() {
+            const fp = getFilteredProds();
+            const totalPages = Math.ceil(fp.length / tablePerPage);
+            if (tablePage > totalPages && totalPages > 0) tablePage = totalPages;
+            const slice = fp.slice((tablePage - 1) * tablePerPage, tablePage * tablePerPage);
+            const tbody = document.getElementById('prodTableBody');
+            const empty = document.getElementById('tableEmpty');
+            if (!fp.length) { tbody.innerHTML = ''; empty.style.display = 'block'; document.getElementById('tablePagination').innerHTML = ''; return; }
+            empty.style.display = 'none';
+            tbody.innerHTML = slice.map((p, i) => `
+    <tr>
+      <td style="color:var(--muted);font-size:.78rem">${(tablePage - 1) * tablePerPage + i + 1}</td>
+      <td>
+        <div class="prod-name-cell">
+          <div class="prod-thumb" style="background-image:url('${p.img}')"></div>
+          <div><div class="name">${p.name}</div><div class="brand">${p.brand}</div></div>
+        </div>
+      </td>
+      <td><span class="cat-chip">${CAT_LABELS[p.cat] || p.cat}</span></td>
+      <td>
+        <div class="price-cell">₹${p.price.toLocaleString('en-IN')}</div>
+        ${p.oldPrice ? `<div class="old-price-cell">₹${p.oldPrice.toLocaleString('en-IN')}</div>` : ''}
+      </td>
+      <td><span class="badge-chip bc-${p.badge || 'none'}">${p.badge || '—'}</span></td>
+      <td>
+        <div class="tbl-actions">
+          <button class="tbl-btn edit" onclick="openEdit(${p.id})" title="Edit"><i class="fas fa-edit"></i></button>
+          <button class="tbl-btn del" onclick="openDelete(${p.id})" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+            renderTablePagination(fp.length, totalPages);
+        }
+        function renderTablePagination(total, totalPages) {
+            const pg = document.getElementById('tablePagination');
+            if (totalPages <= 1) { pg.innerHTML = `<span class="page-info">Showing ${total} product${total !== 1 ? 's' : ''}</span>`; return; }
+            let html = `<span class="page-info">Page ${tablePage} of ${totalPages} (${total} products)</span><div class="page-btns">`;
+            html += `<button class="pg-btn" onclick="tblPage(${tablePage - 1})" ${tablePage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+            for (let i = 1; i <= totalPages; i++) html += `<button class="pg-btn ${i === tablePage ? 'active' : ''}" onclick="tblPage(${i})">${i}</button>`;
+            html += `<button class="pg-btn" onclick="tblPage(${tablePage + 1})" ${tablePage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button></div>`;
+            pg.innerHTML = html;
+        }
+        function tblPage(p) { tablePage = p; renderTable(); }
+        function updateBadge() { document.getElementById('prodCountBadge').textContent = adminData.products.length; }
+
+        /* ══ ADD PRODUCT FORM ══ */
+        function renderAddForm() {
+            document.getElementById('addProductForm').innerHTML = buildProductForm(null, 'add');
+        }
+        function buildProductForm(prod, mode) {
+            const v = prod || { id: '', cat: '', brand: '', name: '', desc: '', price: '', oldPrice: '', img: '', badge: '' };
+            return `
+    <div class="form-section-title"><i class="fas fa-tag"></i>Basic Info</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Product Name *</label><input type="text" id="f_name" value="${esc(v.name)}" placeholder="e.g. Vitamin C Serum"></div>
+      <div class="form-group"><label>Brand *</label><input type="text" id="f_brand" value="${esc(v.brand)}" placeholder="e.g. Mamaearth"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Category *</label>
+        <select id="f_cat">
+          <option value="">— Select —</option>
+          ${Object.entries(CAT_LABELS).map(([k, lab]) => `<option value="${k}" ${v.cat === k ? 'selected' : ''}>${lab}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label>Badge</label>
+        <select id="f_badge">
+          <option value="" ${!v.badge ? 'selected' : ''}>None</option>
+          <option value="new" ${v.badge === 'new' ? 'selected' : ''}>🟢 New</option>
+          <option value="popular" ${v.badge === 'popular' ? 'selected' : ''}>⭐ Popular</option>
+          <option value="sale" ${v.badge === 'sale' ? 'selected' : ''}>🔴 Sale</option>
+          <option value="trending" ${v.badge === 'trending' ? 'selected' : ''}>🔥 Trending</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid full">
+      <div class="form-group"><label>Description *</label><textarea id="f_desc" placeholder="Short product description…">${esc(v.desc)}</textarea></div>
+    </div>
+
+    <div class="form-section-title" style="margin-top:1.2rem"><i class="fas fa-rupee-sign"></i>Pricing</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Selling Price (₹) *</label><input type="number" id="f_price" value="${v.price || ''}" placeholder="349" min="0"></div>
+      <div class="form-group"><label>Original Price (₹) <span style="font-weight:400;color:var(--muted)">(for strikethrough)</span></label><input type="number" id="f_oldPrice" value="${v.oldPrice || ''}" placeholder="449 (optional)" min="0"></div>
+    </div>
+
+    <div class="form-section-title" style="margin-top:1.2rem"><i class="fas fa-image"></i>Product Image</div>
+    <div class="form-grid full">
+      <div class="form-group">
+        <label>Image URL *</label>
+        <input type="url" id="f_img" value="${esc(v.img)}" placeholder="https://images.unsplash.com/photo-…?w=400" oninput="previewImg()">
+        <div class="hint">Paste any image URL (Unsplash, etc.) or direct image link.</div>
+        <div class="img-preview-row">
+          <div class="img-preview" id="imgPreview" style="background-image:url('${esc(v.img)}')"></div>
+          <span style="font-size:.78rem;color:var(--muted)">Image preview</span>
+        </div>
+      </div>
+    </div>
+
+    ${mode === 'add' ? `
+    <div style="margin-top:1.5rem;display:flex;gap:.8rem;flex-wrap:wrap">
+      <button class="btn-save" onclick="addProduct()"><i class="fas fa-plus-circle"></i> Add Product</button>
+      <button class="btn-cancel" onclick="clearAddForm()"><i class="fas fa-times"></i> Clear</button>
+    </div>`: ''}
+  `;
+        }
+        function esc(s) { return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+        function previewImg() {
+            const url = document.getElementById('f_img').value;
+            const prev = document.getElementById('imgPreview');
+            if (prev) prev.style.backgroundImage = `url('${url}')`;
+        }
+
+        function collectFormData() {
+            const name = document.getElementById('f_name').value.trim();
+            const brand = document.getElementById('f_brand').value.trim();
+            const cat = document.getElementById('f_cat').value;
+            const desc = document.getElementById('f_desc').value.trim();
+            const price = parseInt(document.getElementById('f_price').value) || 0;
+            const oldPrice = parseInt(document.getElementById('f_oldPrice').value) || 0;
+            const img = document.getElementById('f_img').value.trim();
+            const badge = document.getElementById('f_badge').value;
+            if (!name) { adminToast('Product name is required!', 'error'); return null; }
+            if (!brand) { adminToast('Brand is required!', 'error'); return null; }
+            if (!cat) { adminToast('Please select a category!', 'error'); return null; }
+            if (!desc) { adminToast('Description is required!', 'error'); return null; }
+            if (!price) { adminToast('Price is required!', 'error'); return null; }
+            if (!img) { adminToast('Image URL is required!', 'error'); return null; }
+            return { name, brand, cat, desc, price, oldPrice, img, badge };
+        }
+
+        function addProduct() {
+            const data = collectFormData(); if (!data) return;
+            const newProd = { id: adminData.nextId++, ...data };
+            adminData.products.push(newProd);
+            addActivity('add', `Added "${data.name}" (${CAT_LABELS[data.cat]})`);
+            saveAdminData(); updateBadge();
+            adminToast(`✅ "${data.name}" added successfully!`, 'success');
+            clearAddForm();
+            showPanel('products', document.querySelector('.sidebar-link:nth-child(2)'));
+        }
+        function clearAddForm() { renderAddForm(); }
+
+        /* ══ EDIT ══ */
+        function openEdit(id) {
+            const p = adminData.products.find(x => x.id === id); if (!p) return;
+            editTargetId = id;
+            document.getElementById('editModalBody').innerHTML = buildProductForm(p, 'edit');
+            document.getElementById('editModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('open');
+            document.body.style.overflow = '';
+            editTargetId = null;
+        }
+        function saveEdit() {
+            const data = collectFormData(); if (!data) return;
+            const idx = adminData.products.findIndex(x => x.id === editTargetId);
+            if (idx === -1) return;
+            adminData.products[idx] = { ...adminData.products[idx], ...data };
+            addActivity('edit', `Edited "${data.name}"`);
+            saveAdminData(); renderTable(); renderDashboard();
+            adminToast(`✏️ "${data.name}" updated!`, 'info');
+            closeEditModal();
+        }
+        document.getElementById('editModal').addEventListener('click', function (e) { if (e.target === this) closeEditModal(); });
+
+        /* ══ DELETE ══ */
+        function openDelete(id) {
+            deleteTargetId = id;
+            const p = adminData.products.find(x => x.id === id);
+            document.getElementById('confirmText').textContent = `Delete "${p?.name}"? This cannot be undone.`;
+            document.getElementById('confirmOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); document.body.style.overflow = ''; deleteTargetId = null; }
+        function executeDelete() {
+            const p = adminData.products.find(x => x.id === deleteTargetId);
+            if (!p) { closeConfirm(); return; }
+            adminData.products = adminData.products.filter(x => x.id !== deleteTargetId);
+            addActivity('del', `Deleted "${p.name}"`);
+            saveAdminData(); renderTable(); renderDashboard(); updateBadge();
+            adminToast(`🗑️ "${p.name}" deleted.`, 'error');
+            closeConfirm();
+        }
+
+        /* ══ CATEGORIES PANEL ══ */
+        function renderCatPanel() {
+            const prods = adminData.products;
+            const cats = Object.entries(CAT_LABELS);
+            document.getElementById('catStatsBar').innerHTML = cats.map(([k, lab]) => {
+                const count = prods.filter(p => p.cat === k).length;
+                return `<div class="stat-card"><div class="stat-icon orange"><i class="fas fa-tag"></i></div><div><div class="stat-num">${count}</div><div class="stat-label">${lab}</div></div></div>`;
+            }).join('');
+            document.getElementById('catOverviewBody').innerHTML = `
+    <table class="prod-table" style="font-size:.84rem">
+      <thead><tr><th>Category</th><th>Products</th><th>Avg Price</th><th>Min</th><th>Max</th><th>Action</th></tr></thead>
+      <tbody>${cats.map(([k, lab]) => {
+                const cp = prods.filter(p => p.cat === k);
+                const prices = cp.map(p => p.price);
+                const avg = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
+                const mn = prices.length ? Math.min(...prices) : 0;
+                const mx = prices.length ? Math.max(...prices) : 0;
+                return `<tr><td><strong>${lab}</strong></td><td>${cp.length}</td><td>₹${avg.toLocaleString('en-IN')}</td><td>₹${mn.toLocaleString('en-IN')}</td><td>₹${mx.toLocaleString('en-IN')}</td><td><button class="tbl-btn view" onclick="filterTableCat('${k}')" title="View"><i class="fas fa-eye"></i></button></td></tr>`;
+            }).join('')}</tbody>
+    </table>`;
+        }
+        function filterTableCat(cat) {
+            document.getElementById('tableFilter').value = cat;
+            tablePage = 1;
+            showPanel('products', null);
+        }
+
+        /* ══ SETTINGS ══ */
+        function saveCredentials() {
+            const u = document.getElementById('setUsername').value.trim();
+            const p = document.getElementById('setPassword').value.trim();
+            if (!u) { adminToast('Username cannot be empty!', 'error'); return; }
+            if (!p) { adminToast('Password cannot be empty!', 'error'); return; }
+            adminData.credentials = { username: u, password: p };
+            saveAdminData();
+            document.getElementById('adminUserLabel').textContent = u;
+            adminToast('✅ Credentials saved!', 'success');
+            document.getElementById('setPassword').value = '';
+        }
+        function exportProducts() {
+            const data = JSON.stringify(adminData.products, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'chandnimart-products.json'; a.click();
+            URL.revokeObjectURL(url);
+            adminToast('📥 Products exported!', 'info');
+        }
+        function resetToDefaults() {
+            if (!confirm('Reset ALL products to defaults? All your changes will be lost.')) return;
+            adminData.products = [...DEFAULT_PRODUCTS];
+            adminData.nextId = 56;
+            adminData.activity = [];
+            saveAdminData(); updateBadge(); renderDashboard(); renderTable(); renderCatPanel();
+            adminToast('🔄 Reset to default products!', 'info');
+        }
+
+        /* ══ ACTIVITY LOG ══ */
+        function addActivity(type, text) {
+            const now = new Date();
+            const time = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            adminData.activity.unshift({ type, text, time });
+            adminData.activity = adminData.activity.slice(0, 50);
+        }
+
+        /* ══ TOAST ══ */
+        function adminToast(msg, type = 'success') {
+            const t = document.getElementById('adminToast');
+            const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+            t.className = 'admin-toast show ' + type;
+            t.querySelector('i').className = 'fas ' + iconMap[type];
+            document.getElementById('adminToastMsg').textContent = msg;
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        /* ── Init ── */
+        document.getElementById('loginUser').focus();
+    </script>
+</body>
+
+</html>
