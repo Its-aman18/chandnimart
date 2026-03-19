@@ -46,7 +46,18 @@
             min-height: 100vh
         }
 
-        /* ── LOGIN ── */
+        @keyframes fbpulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .3
+            }
+        }
+
         .login-page {
             min-height: 100vh;
             background: linear-gradient(135deg, var(--dark), #2d1208);
@@ -153,24 +164,56 @@
             border-radius: 10px;
             font-size: .83rem;
             margin-bottom: 1rem;
-            display: none
+            display: none;
+            align-items: center;
+            gap: 7px
         }
 
         .login-hint {
             font-size: .75rem;
             color: var(--muted);
             margin-top: 1.2rem;
-            padding: 10px 14px;
+            padding: 12px 14px;
             background: var(--cream);
             border-radius: 10px;
-            line-height: 1.6
+            line-height: 1.7;
+            text-align: left
         }
 
         .login-hint strong {
             color: var(--brand)
         }
 
-        /* ── ADMIN LAYOUT ── */
+        .fb-status-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: .5rem;
+            font-size: .8rem;
+            font-weight: 600
+        }
+
+        .fb-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: inline-block
+        }
+
+        .fb-dot.connecting {
+            background: #f59e0b;
+            animation: fbpulse 1.2s ease-in-out infinite
+        }
+
+        .fb-dot.connected {
+            background: var(--green)
+        }
+
+        .fb-dot.error {
+            background: var(--red)
+        }
+
         .admin-app {
             display: none;
             min-height: 100vh
@@ -180,7 +223,6 @@
             display: flex
         }
 
-        /* Sidebar */
         .sidebar {
             width: var(--sidebar);
             background: linear-gradient(180deg, var(--dark), #2d1208);
@@ -314,7 +356,6 @@
             background: rgba(239, 68, 68, .3)
         }
 
-        /* Main area */
         .admin-main {
             margin-left: var(--sidebar);
             flex: 1;
@@ -351,7 +392,7 @@
         .topbar-right {
             display: flex;
             align-items: center;
-            gap: .8rem
+            gap: .7rem
         }
 
         .topbar-admin-badge {
@@ -367,8 +408,33 @@
             color: var(--brand)
         }
 
-        .topbar-admin-badge i {
-            font-size: .75rem
+        .fb-topbar-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: .75rem;
+            font-weight: 700;
+            border: 1px solid
+        }
+
+        .fb-topbar-chip.connected {
+            background: rgba(34, 197, 94, .08);
+            color: #16a34a;
+            border-color: rgba(34, 197, 94, .25)
+        }
+
+        .fb-topbar-chip.connecting {
+            background: rgba(245, 158, 11, .08);
+            color: #d97706;
+            border-color: rgba(245, 158, 11, .25)
+        }
+
+        .fb-topbar-chip.error {
+            background: rgba(239, 68, 68, .08);
+            color: var(--red);
+            border-color: rgba(239, 68, 68, .2)
         }
 
         .hamburger-mob {
@@ -388,13 +454,11 @@
             border-radius: 2px
         }
 
-        /* Content */
         .admin-content {
             flex: 1;
             padding: 1.8rem
         }
 
-        /* Panels */
         .panel {
             display: none
         }
@@ -403,7 +467,6 @@
             display: block
         }
 
-        /* Stats bar */
         .stats-bar {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -466,7 +529,6 @@
             margin-top: 2px
         }
 
-        /* Section card */
         .section-card {
             background: white;
             border-radius: 16px;
@@ -504,12 +566,10 @@
             padding: 1.5rem
         }
 
-        /* Search + filter row */
         .search-filter-row {
             display: flex;
             align-items: center;
             gap: .8rem;
-            margin-bottom: 1.2rem;
             flex-wrap: wrap
         }
 
@@ -556,11 +616,6 @@
             cursor: pointer
         }
 
-        .filter-sel:focus {
-            border-color: var(--brand)
-        }
-
-        /* Products table */
         .prod-table-wrap {
             overflow-x: auto
         }
@@ -729,7 +784,6 @@
             text-decoration: line-through
         }
 
-        /* Add/Edit Form Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -798,12 +852,7 @@
             font-size: 1rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: all .2s
-        }
-
-        .modal-close:hover {
-            background: rgba(255, 255, 255, .3)
+            justify-content: center
         }
 
         .modal-body {
@@ -833,10 +882,6 @@
 
         .form-grid.full {
             grid-template-columns: 1fr
-        }
-
-        .form-group {
-            margin-bottom: 0
         }
 
         .form-group label {
@@ -948,7 +993,6 @@
             color: var(--brand)
         }
 
-        /* Delete Confirm */
         .confirm-overlay {
             position: fixed;
             inset: 0;
@@ -1038,7 +1082,6 @@
             background: #dc2626
         }
 
-        /* Toast */
         .admin-toast {
             position: fixed;
             bottom: 24px;
@@ -1079,7 +1122,6 @@
             color: var(--gold)
         }
 
-        /* Empty state */
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -1104,7 +1146,6 @@
             font-size: .85rem
         }
 
-        /* Pagination */
         .admin-pagination {
             display: flex;
             align-items: center;
@@ -1151,7 +1192,6 @@
             cursor: not-allowed
         }
 
-        /* Action bar */
         .action-bar {
             display: flex;
             align-items: center;
@@ -1197,7 +1237,6 @@
             box-shadow: 0 8px 24px var(--shadow)
         }
 
-        /* Settings panel */
         .settings-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1224,25 +1263,6 @@
             line-height: 1.5
         }
 
-        .setting-badge {
-            display: inline-block;
-            margin-top: .7rem;
-            padding: 4px 12px;
-            background: rgba(34, 197, 94, .15);
-            color: var(--green);
-            border-radius: 50px;
-            font-size: .72rem;
-            font-weight: 700
-        }
-
-        .pw-change-form {
-            margin-top: 1rem
-        }
-
-        .pw-change-form .form-group {
-            margin-bottom: .8rem
-        }
-
         .btn-pw-save {
             padding: 9px 20px;
             background: var(--brand);
@@ -1260,7 +1280,6 @@
             background: var(--brand-deep)
         }
 
-        /* Dashboard quick actions */
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -1306,7 +1325,6 @@
             margin-top: 2px
         }
 
-        /* Recent activity */
         .activity-list {
             display: flex;
             flex-direction: column;
@@ -1357,7 +1375,98 @@
             margin-top: 2px
         }
 
-        /* Responsive */
+        /* Firebase setup panel */
+        .fb-setup-hero {
+            background: linear-gradient(135deg, #1c0f08, #2d1208);
+            border-radius: 18px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(212, 168, 67, .2)
+        }
+
+        .fb-setup-hero h2 {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--gold-light);
+            font-size: 1.6rem;
+            margin-bottom: .5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .fb-setup-hero p {
+            color: rgba(255, 255, 255, .6);
+            font-size: .86rem;
+            line-height: 1.75;
+            margin-bottom: 1.4rem
+        }
+
+        .cfg-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .8rem;
+            margin-bottom: 1.3rem
+        }
+
+        .cfg-field label {
+            display: block;
+            font-size: .7rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, .45);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 4px
+        }
+
+        .cfg-field input {
+            width: 100%;
+            padding: 10px 13px;
+            background: rgba(255, 255, 255, .07);
+            border: 1.5px solid rgba(255, 255, 255, .1);
+            border-radius: 9px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .83rem;
+            color: white;
+            outline: none;
+            transition: border-color .3s
+        }
+
+        .cfg-field input:focus {
+            border-color: var(--gold)
+        }
+
+        .cfg-field input::placeholder {
+            color: rgba(255, 255, 255, .25)
+        }
+
+        .btn-fb-connect {
+            padding: 13px 30px;
+            background: linear-gradient(135deg, var(--gold), #c49030);
+            color: var(--dark);
+            font-weight: 800;
+            font-size: .93rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            transition: all .3s;
+            box-shadow: 0 6px 24px rgba(212, 168, 67, .35)
+        }
+
+        .btn-fb-connect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(212, 168, 67, .5)
+        }
+
+        .fb-connect-msg {
+            margin-top: .9rem;
+            font-size: .83rem;
+            color: rgba(255, 255, 255, .6);
+            min-height: 20px
+        }
+
         @media(max-width:768px) {
             .sidebar {
                 transform: translateX(-100%)
@@ -1375,11 +1484,9 @@
                 display: block
             }
 
-            .settings-grid {
-                grid-template-columns: 1fr
-            }
-
-            .form-grid {
+            .settings-grid,
+            .form-grid,
+            .cfg-grid {
                 grid-template-columns: 1fr
             }
 
@@ -1406,34 +1513,29 @@
 
 <body>
 
-    <!-- ═══════ LOGIN PAGE ═══════ -->
+    <!-- LOGIN -->
     <div class="login-page" id="loginPage">
         <div class="login-card">
             <div class="login-logo"><i class="fas fa-shield-alt"></i></div>
             <h1>Admin Login</h1>
             <p>ChandniMart — Secure Admin Panel</p>
-            <div class="login-err" id="loginErr"><i class="fas fa-exclamation-circle"></i> Wrong username or password.
-                Try again.</div>
-            <div class="login-field">
-                <label>Username</label>
-                <input type="text" id="loginUser" placeholder="Enter admin username" autocomplete="username">
-            </div>
-            <div class="login-field">
-                <label>Password</label>
-                <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password"
-                    onkeydown="if(event.key==='Enter')doLogin()">
-            </div>
+            <div class="login-err" id="loginErr"><i class="fas fa-exclamation-circle"></i>&nbsp;Wrong username or
+                password.</div>
+            <div class="login-field"><label>Username</label><input type="text" id="loginUser"
+                    placeholder="Enter admin username" autocomplete="username"></div>
+            <div class="login-field"><label>Password</label><input type="password" id="loginPass"
+                    placeholder="Enter password" autocomplete="current-password"
+                    onkeydown="if(event.key==='Enter')doLogin()"></div>
             <button class="login-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Login to Admin
                 Panel</button>
             <div class="login-hint">
-            </div>
+                <div class="fb-status-row">
+                </div>
         </div>
     </div>
 
-    <!-- ═══════ ADMIN APP ═══════ -->
+    <!-- ADMIN APP -->
     <div class="admin-app" id="adminApp">
-
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-logo">
                 <div class="sidebar-logo-mark"><i class="fas fa-store"></i></div>
@@ -1444,16 +1546,16 @@
                 <div class="nav-group-label">Main</div>
                 <div class="sidebar-link active" onclick="showPanel('dashboard',this)"><i
                         class="fas fa-home"></i>Dashboard</div>
-                <div class="sidebar-link" onclick="showPanel('products',this)"><i class="fas fa-box-open"></i>Products
-                    <span class="badge" id="prodCountBadge">0</span></div>
-
+                <div class="sidebar-link" onclick="showPanel('products',this)"><i
+                        class="fas fa-box-open"></i>Products<span class="badge" id="prodCountBadge">0</span></div>
                 <div class="nav-group-label" style="margin-top:.5rem">Manage</div>
                 <div class="sidebar-link" onclick="showPanel('addProduct',this)"><i class="fas fa-plus-circle"></i>Add
                     New Product</div>
                 <div class="sidebar-link" onclick="showPanel('categories',this)"><i
                         class="fas fa-th-large"></i>Categories</div>
+                <div class="sidebar-link" onclick="showPanel('firebase',this)"><i class="fas fa-fire"
+                        style="color:#f0cc6e"></i>🔥 Firebase Setup</div>
                 <div class="sidebar-link" onclick="showPanel('settings',this)"><i class="fas fa-cog"></i>Settings</div>
-
                 <div class="nav-group-label" style="margin-top:.5rem">Store</div>
                 <div class="sidebar-link" onclick="window.open('index.html','_blank')"><i
                         class="fas fa-external-link-alt"></i>View Website</div>
@@ -1463,9 +1565,7 @@
             </div>
         </aside>
 
-        <!-- Main -->
         <div class="admin-main">
-            <!-- Topbar -->
             <div class="topbar">
                 <div class="topbar-left">
                     <button class="hamburger-mob"
@@ -1473,20 +1573,22 @@
                     <div class="topbar-title" id="topbarTitle">Dashboard</div>
                 </div>
                 <div class="topbar-right">
+                    <div class="fb-topbar-chip connecting" id="fbTopChip">
+                        <span class="fb-dot connecting" id="fbTopDot"></span>
+                        <span id="fbTopText">Firebase…</span>
+                    </div>
                     <div class="topbar-admin-badge"><i class="fas fa-user-shield"></i><span
                             id="adminUserLabel">admin</span></div>
                 </div>
             </div>
 
-            <!-- Content -->
             <div class="admin-content">
 
-                <!-- ── DASHBOARD ── -->
+                <!-- DASHBOARD -->
                 <div class="panel active" id="panel-dashboard">
                     <div class="action-bar">
-                        <h1><i class="fas fa-home"></i> Dashboard</h1>
-                        <button class="btn-add-product" onclick="showPanel('addProduct',null)"><i
-                                class="fas fa-plus"></i> Add Product</button>
+                        <h1><i class="fas fa-home"></i> Dashboard</h1><button class="btn-add-product"
+                            onclick="showPanel('addProduct',null)"><i class="fas fa-plus"></i> Add Product</button>
                     </div>
                     <div class="stats-bar" id="statsBar"></div>
                     <div class="quick-actions" id="quickActions"></div>
@@ -1505,21 +1607,18 @@
                     </div>
                 </div>
 
-                <!-- ── PRODUCTS LIST ── -->
+                <!-- PRODUCTS -->
                 <div class="panel" id="panel-products">
                     <div class="action-bar">
-                        <h1><i class="fas fa-box-open"></i> All Products</h1>
-                        <button class="btn-add-product" onclick="showPanel('addProduct',null)"><i
-                                class="fas fa-plus"></i> Add Product</button>
+                        <h1><i class="fas fa-box-open"></i> All Products</h1><button class="btn-add-product"
+                            onclick="showPanel('addProduct',null)"><i class="fas fa-plus"></i> Add Product</button>
                     </div>
                     <div class="section-card">
                         <div class="section-card-head">
                             <h2><i class="fas fa-list"></i> Product List</h2>
-                            <div class="search-filter-row" style="margin:0">
-                                <div class="admin-search">
-                                    <i class="fas fa-search"></i>
-                                    <input type="text" id="tableSearch" placeholder="Search products, brands…"
-                                        oninput="renderTable()">
+                            <div class="search-filter-row">
+                                <div class="admin-search"><i class="fas fa-search"></i><input type="text"
+                                        id="tableSearch" placeholder="Search products, brands…" oninput="renderTable()">
                                 </div>
                                 <select class="filter-sel" id="tableFilter" onchange="renderTable()">
                                     <option value="">All Categories</option>
@@ -1552,14 +1651,14 @@
                             <div id="tableEmpty" class="empty-state" style="display:none"><i
                                     class="fas fa-box-open"></i>
                                 <h3>No products found</h3>
-                                <p>Try a different search or category filter.</p>
+                                <p>Try a different search or filter.</p>
                             </div>
                         </div>
                         <div class="admin-pagination" id="tablePagination"></div>
                     </div>
                 </div>
 
-                <!-- ── ADD PRODUCT ── -->
+                <!-- ADD PRODUCT -->
                 <div class="panel" id="panel-addProduct">
                     <div class="action-bar">
                         <h1><i class="fas fa-plus-circle"></i> Add New Product</h1>
@@ -1569,14 +1668,12 @@
                             <h2><i class="fas fa-box"></i> Product Details</h2>
                         </div>
                         <div class="section-card-body">
-                            <div id="addProductForm">
-                                <!-- rendered by JS -->
-                            </div>
+                            <div id="addProductForm"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ── CATEGORIES ── -->
+                <!-- CATEGORIES -->
                 <div class="panel" id="panel-categories">
                     <div class="action-bar">
                         <h1><i class="fas fa-th-large"></i> Categories</h1>
@@ -1590,7 +1687,69 @@
                     </div>
                 </div>
 
-                <!-- ── SETTINGS ── */-->
+                <!-- 🔥 FIREBASE SETUP -->
+                <div class="panel" id="panel-firebase">
+                    <div class="action-bar">
+                        <h1><i class="fas fa-fire" style="color:var(--gold)"></i> Firebase Setup</h1>
+                    </div>
+                    <div class="fb-setup-hero">
+                        <h2><i class="fas fa-fire"></i> Connect Firebase Database</h2>
+                        <p>
+                            Paste your Firebase project config below — get it from <strong
+                                style="color:var(--gold-light)">console.firebase.google.com</strong> → Your Project → ⚙️
+                            Project Settings → Your Apps → Web App → SDK config.<br><br>
+                            Once connected, <strong style="color:var(--gold-light)">every product change (add, edit,
+                                delete) saves to the Firebase cloud instantly</strong> and your website (index.html)
+                            updates live anywhere in the world.
+                        </p>
+                        <div class="cfg-grid">
+                            <div class="cfg-field"><label>API Key</label><input type="text" id="cfg_apiKey"
+                                    placeholder="AIzaSy…"></div>
+                            <div class="cfg-field"><label>Auth Domain</label><input type="text" id="cfg_authDomain"
+                                    placeholder="project.firebaseapp.com"></div>
+                            <div class="cfg-field"><label>Project ID</label><input type="text" id="cfg_projectId"
+                                    placeholder="my-project-id"></div>
+                            <div class="cfg-field"><label>Storage Bucket</label><input type="text"
+                                    id="cfg_storageBucket" placeholder="project.appspot.com"></div>
+                            <div class="cfg-field"><label>Messaging Sender ID</label><input type="text"
+                                    id="cfg_messagingSenderId" placeholder="123456789012"></div>
+                            <div class="cfg-field"><label>App ID</label><input type="text" id="cfg_appId"
+                                    placeholder="1:123:web:abc123"></div>
+                        </div>
+                        <button class="btn-fb-connect" onclick="connectFirebase()"><i class="fas fa-plug"></i> Connect &
+                            Save Config</button>
+                        <div class="fb-connect-msg" id="fbConnectMsg"></div>
+                    </div>
+                    <div class="section-card">
+                        <div class="section-card-head">
+                            <h2><i class="fas fa-list-ol"></i> How to Set Up Firebase (5 minutes, free)</h2>
+                        </div>
+                        <div class="section-card-body">
+                            <ol style="font-size:.87rem;line-height:2.2;color:var(--text);padding-left:1.4rem">
+                                <li>Go to <strong>firebase.google.com</strong> → Sign in with Google → click <strong>Get
+                                        Started</strong></li>
+                                <li>Click <strong>Add Project</strong> → name it <strong>ChandniMart</strong> → Continue
+                                    → Create Project</li>
+                                <li>In the left sidebar → click <strong>Firestore Database</strong> → <strong>Create
+                                        Database</strong></li>
+                                <li>Choose <strong>Start in test mode</strong> → select region <strong>asia-south1
+                                        (Mumbai)</strong> → Enable</li>
+                                <li>Click <strong>⚙️ Project Settings</strong> → scroll to <em>Your apps</em> → click
+                                    <strong>&lt;/&gt;</strong> (Web)</li>
+                                <li>Register app as <strong>ChandniMart Web</strong> → copy the
+                                    <code>firebaseConfig</code> values</li>
+                                <li>Paste them in the fields above → click <strong>Connect & Save Config</strong> ✅</li>
+                            </ol>
+                            <div
+                                style="margin-top:1rem;padding:1rem;background:rgba(34,197,94,.06);border-radius:10px;border:1px solid rgba(34,197,94,.2);font-size:.83rem;color:#16a34a">
+                                <strong>✅ After connecting:</strong> Add/edit/delete any product in this admin panel —
+                                your live website updates within seconds, automatically, from anywhere in the world.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SETTINGS -->
                 <div class="panel" id="panel-settings">
                     <div class="action-bar">
                         <h1><i class="fas fa-cog"></i> Settings</h1>
@@ -1602,24 +1761,20 @@
                         <div class="section-card-body">
                             <div class="settings-grid">
                                 <div class="setting-item">
-                                    <h4>Current Username</h4>
-                                    <p>Your admin login username.</p>
-                                    <input type="text" id="setUsername"
+                                    <h4>Username</h4>
+                                    <p>Your admin login username.</p><input type="text" id="setUsername"
                                         style="width:100%;margin-top:.7rem;padding:9px 12px;border:2px solid rgba(232,96,44,.15);border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;outline:none;background:#fdf9f5"
                                         placeholder="Username">
                                 </div>
                                 <div class="setting-item">
                                     <h4>Change Password</h4>
-                                    <p>Enter your new password.</p>
-                                    <input type="password" id="setPassword"
+                                    <p>Enter your new password.</p><input type="password" id="setPassword"
                                         style="width:100%;margin-top:.7rem;padding:9px 12px;border:2px solid rgba(232,96,44,.15);border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;outline:none;background:#fdf9f5"
                                         placeholder="New password">
                                 </div>
                             </div>
-                            <div style="margin-top:1rem">
-                                <button class="btn-pw-save" onclick="saveCredentials()"><i class="fas fa-save"></i> Save
-                                    Credentials</button>
-                            </div>
+                            <div style="margin-top:1rem"><button class="btn-pw-save" onclick="saveCredentials()"><i
+                                        class="fas fa-save"></i> Save Credentials</button></div>
                         </div>
                     </div>
                     <div class="section-card">
@@ -1630,15 +1785,14 @@
                             <div class="settings-grid">
                                 <div class="setting-item">
                                     <h4>Export Products</h4>
-                                    <p>Download all products as a JSON file for backup.</p>
-                                    <button onclick="exportProducts()"
+                                    <p>Download all products as JSON backup.</p><button onclick="exportProducts()"
                                         style="margin-top:.8rem;padding:8px 18px;background:var(--blue);color:white;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer"><i
                                             class="fas fa-download"></i> Export JSON</button>
                                 </div>
                                 <div class="setting-item">
                                     <h4>Reset to Defaults</h4>
-                                    <p>Restore original 55 products. This cannot be undone.</p>
-                                    <button onclick="resetToDefaults()"
+                                    <p>Restore original 55 products. Cannot be undone.</p><button
+                                        onclick="resetToDefaults()"
                                         style="margin-top:.8rem;padding:8px 18px;background:var(--red);color:white;border:none;border-radius:50px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer"><i
                                             class="fas fa-undo"></i> Reset Data</button>
                                 </div>
@@ -1647,31 +1801,29 @@
                     </div>
                 </div>
 
-            </div><!-- /admin-content -->
-        </div><!-- /admin-main -->
-    </div><!-- /admin-app -->
-
-    <!-- Edit Modal -->
-    <div class="modal-overlay" id="editModal">
-        <div class="modal-box">
-            <div class="modal-head">
-                <h3 id="editModalTitle"><i class="fas fa-edit"></i> Edit Product</h3>
-                <button class="modal-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body" id="editModalBody"></div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
-                <button class="btn-save" onclick="saveEdit()"><i class="fas fa-save"></i> Save Changes</button>
             </div>
         </div>
     </div>
 
-    <!-- Delete Confirm -->
+    <!-- EDIT MODAL -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3><i class="fas fa-edit"></i> Edit Product</h3><button class="modal-close"
+                    onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="editModalBody"></div>
+            <div class="modal-footer"><button class="btn-cancel" onclick="closeEditModal()">Cancel</button><button
+                    class="btn-save" onclick="saveEdit()"><i class="fas fa-save"></i> Save Changes</button></div>
+        </div>
+    </div>
+
+    <!-- DELETE CONFIRM -->
     <div class="confirm-overlay" id="confirmOverlay">
         <div class="confirm-box">
             <div class="confirm-icon"><i class="fas fa-trash"></i></div>
             <h3>Delete Product?</h3>
-            <p id="confirmText">Are you sure you want to delete this product? This cannot be undone.</p>
+            <p id="confirmText">Are you sure? This cannot be undone.</p>
             <div class="confirm-actions">
                 <button class="btn-cancel" onclick="closeConfirm()" style="padding:10px 22px">Cancel</button>
                 <button class="btn-del-confirm" onclick="executeDelete()"><i class="fas fa-trash"></i> Delete</button>
@@ -1679,115 +1831,170 @@
         </div>
     </div>
 
-    <!-- Toast -->
     <div class="admin-toast" id="adminToast"><i class="fas fa-check-circle"></i><span id="adminToastMsg"></span></div>
 
-    <script>
-        /* ══════════════════════════════════════
-           DEFAULT PRODUCTS (same 55 as website)
-        ══════════════════════════════════════ */
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDvQ5xbS4Jdri2BaQoN_SxF1SA-E8a6Jrs",
-  authDomain: "cosmeera-a5c08.firebaseapp.com",
-  databaseURL: "https://cosmeera-a5c08-default-rtdb.firebaseio.com",
-  projectId: "cosmeera-a5c08",
-  storageBucket: "cosmeera-a5c08.firebasestorage.app",
-  messagingSenderId: "453135947088",
-  appId: "1:453135947088:web:6a5c696234e0376fbc0855",
-  measurementId: "G-PQ210N0ZCB"
-};
-        const DEFAULT_PRODUCTS = [
-            { id: 1, cat: 'lipcare', brand: 'Lakme', name: '9to5 Matte Lipstick', desc: 'Long-stay matte finish in 30 bold shades. Comfortable, non-drying formula.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: 'popular' },
-            { id: 2, cat: 'lipcare', brand: 'Maybelline', name: 'SuperStay Matte Ink', desc: 'Transfer-proof liquid lipstick. Lasts up to 16 hours without touch-ups.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'trending' },
-            { id: 3, cat: 'lipcare', brand: "L'Oréal", name: 'Infallible Lip Colour', desc: '2-step colour + balm system for full-day colour with moisturised lips.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'sale' },
-            { id: 4, cat: 'lipcare', brand: 'Nykaa', name: 'Matte to Last Lip Crayon', desc: 'Bullet crayon for precise, velvety matte application.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'new' },
-            { id: 5, cat: 'lipcare', brand: 'Revlon', name: 'Super Lustrous Lip Gloss', desc: 'High-shine glossy formula with aloe vera & vitamin E.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: '' },
+    <!-- ═══════════════════════════════════════════════
+     🔥 FIREBASE + ADMIN SCRIPT (type="module")
+════════════════════════════════════════════════ -->
+    <script type="module">
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import {
+            getFirestore, collection, doc, setDoc,
+            deleteDoc, onSnapshot, writeBatch, getDocs
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        /* ── DEFAULT 55 PRODUCTS ── */
+        const DP = [
+            { id: 1, cat: 'lipcare', brand: 'Lakme', name: '9to5 Matte Lipstick', desc: 'Long-stay matte finish in 30 bold shades.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: 'popular' },
+            { id: 2, cat: 'lipcare', brand: 'Maybelline', name: 'SuperStay Matte Ink', desc: 'Transfer-proof liquid lipstick. Lasts 16 hours.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'trending' },
+            { id: 3, cat: 'lipcare', brand: "L'Oréal", name: 'Infallible Lip Colour', desc: '2-step colour + balm for full-day colour.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'sale' },
+            { id: 4, cat: 'lipcare', brand: 'Nykaa', name: 'Matte to Last Lip Crayon', desc: 'Bullet crayon for precise velvety matte look.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'new' },
+            { id: 5, cat: 'lipcare', brand: 'Revlon', name: 'Super Lustrous Lip Gloss', desc: 'High-shine gloss with aloe vera & vitamin E.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: '' },
             { id: 6, cat: 'lipcare', brand: 'Lakme', name: 'Lip Love Lip Balm SPF 15', desc: 'Tinted moisturising lip balm with SPF protection.', price: 179, oldPrice: 229, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'popular' },
-            { id: 7, cat: 'foundation', brand: 'Maybelline', name: 'Fit Me Matte Foundation', desc: 'Controls shine, blurs pores. Natural finish in 40+ shades.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1513379733131-47fc74b45fc7?w=400', badge: 'popular' },
-            { id: 8, cat: 'foundation', brand: 'Lakme', name: 'Perfecting Liquid Foundation', desc: 'Lightweight, buildable coverage with vitamin E. SPF 20.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400', badge: '' },
-            { id: 9, cat: 'foundation', brand: "L'Oréal", name: 'True Match Super-Blendable', desc: 'Micro-fine blending formula that matches skin texture and tone.', price: 699, oldPrice: 899, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'sale' },
-            { id: 10, cat: 'foundation', brand: 'Nykaa', name: 'Skin Tint BB Cream SPF 20', desc: '5-in-1 tinted moisturiser — hydrates, covers, protects & primes.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'new' },
+            { id: 7, cat: 'foundation', brand: 'Maybelline', name: 'Fit Me Matte Foundation', desc: 'Controls shine, blurs pores. 40+ shades.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1513379733131-47fc74b45fc7?w=400', badge: 'popular' },
+            { id: 8, cat: 'foundation', brand: 'Lakme', name: 'Perfecting Liquid Foundation', desc: 'Lightweight buildable coverage. SPF 20.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400', badge: '' },
+            { id: 9, cat: 'foundation', brand: "L'Oréal", name: 'True Match Super-Blendable', desc: 'Micro-fine formula matches skin texture and tone.', price: 699, oldPrice: 899, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'sale' },
+            { id: 10, cat: 'foundation', brand: 'Nykaa', name: 'Skin Tint BB Cream SPF 20', desc: '5-in-1 tinted moisturiser — hydrates, covers & protects.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'new' },
             { id: 11, cat: 'foundation', brand: 'Lotus', name: 'Ecostay Insta-Matte BB Cream', desc: 'Herbal BB cream with long-lasting matte finish.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400', badge: '' },
-            { id: 12, cat: 'foundation', brand: 'Lakme', name: 'Compact Powder (Pressed)', desc: 'Smooth-finish compact that blurs imperfections & controls shine.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400', badge: 'popular' },
-            { id: 13, cat: 'eyemakeup', brand: 'Lakme', name: 'Eyeconic Kajal', desc: 'Intense black kajal with stay-proof formula. Smooth glide.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'popular' },
-            { id: 14, cat: 'eyemakeup', brand: 'Maybelline', name: 'Colossal Kajal 12H', desc: 'Bold, smudge-proof kajal. Lasts 12 hours. 99% black.', price: 219, oldPrice: 279, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'trending' },
-            { id: 15, cat: 'eyemakeup', brand: 'Nykaa', name: '24 Shade Eyeshadow Palette', desc: 'Pigmented matte + shimmer shades for day-to-night looks.', price: 799, oldPrice: 1099, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'new' },
+            { id: 12, cat: 'foundation', brand: 'Lakme', name: 'Compact Powder (Pressed)', desc: 'Smooth-finish compact for oil control all day.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400', badge: 'popular' },
+            { id: 13, cat: 'eyemakeup', brand: 'Lakme', name: 'Eyeconic Kajal', desc: 'Intense black kajal with stay-proof formula.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'popular' },
+            { id: 14, cat: 'eyemakeup', brand: 'Maybelline', name: 'Colossal Kajal 12H', desc: 'Bold smudge-proof kajal. Lasts 12 hours.', price: 219, oldPrice: 279, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'trending' },
+            { id: 15, cat: 'eyemakeup', brand: 'Nykaa', name: '24 Shade Eyeshadow Palette', desc: 'Pigmented matte + shimmer for day-to-night looks.', price: 799, oldPrice: 1099, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'new' },
             { id: 16, cat: 'eyemakeup', brand: "L'Oréal", name: 'Voluminous Lash Mascara', desc: 'Ultra-volumising mascara with wavy bristle brush.', price: 649, oldPrice: 849, img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400', badge: 'sale' },
-            { id: 17, cat: 'eyemakeup', brand: 'Lakme', name: 'Absolute Precision Eye Liner', desc: 'Micro-precision felt-tip liner for sharp cat-eye looks.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: '' },
+            { id: 17, cat: 'eyemakeup', brand: 'Lakme', name: 'Absolute Precision Eye Liner', desc: 'Micro-precision felt-tip liner for sharp cat-eye.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: '' },
             { id: 18, cat: 'eyemakeup', brand: 'Swiss Beauty', name: 'Blush & Highlighter Duo', desc: 'Coral blush with champagne highlight for natural glow.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400', badge: 'popular' },
-            { id: 19, cat: 'skincare', brand: 'Himalaya', name: 'Neem Purifying Face Wash', desc: 'Anti-bacterial neem formula for pimple-free, clear skin.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'popular' },
-            { id: 20, cat: 'skincare', brand: 'Mamaearth', name: 'Vitamin C Face Serum', desc: '10% Vitamin C + turmeric for brightening, glowing skin.', price: 499, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'trending' },
-            { id: 21, cat: 'skincare', brand: "Pond's", name: 'Super Light Gel Moisturiser', desc: 'Oil-free gel with hyaluronic acid for 72h deep hydration.', price: 279, oldPrice: 349, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'popular' },
-            { id: 22, cat: 'skincare', brand: 'Olay', name: 'Total Effects 7-in-1 Cream', desc: 'Fights 7 signs of ageing for visibly younger-looking skin.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'sale' },
-            { id: 23, cat: 'skincare', brand: 'WOW Skin', name: 'Niacinamide 10% Serum', desc: 'Pore-minimising, brightening serum that fades dark spots.', price: 549, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'new' },
-            { id: 24, cat: 'skincare', brand: 'Biotique', name: 'Bio Papaya Face Scrub', desc: 'Natural papaya scrub for deep exfoliation and radiance.', price: 179, oldPrice: 229, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400', badge: '' },
-            { id: 25, cat: 'skincare', brand: 'Everyuth', name: 'Walnut Apricot Scrub', desc: 'Classic scrub for deep pore cleansing and smooth skin.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=400', badge: 'popular' },
-            { id: 26, cat: 'skincare', brand: 'Lotus', name: 'Under Eye Brightening Cream', desc: 'Reduces dark circles and puffiness for brighter eyes.', price: 349, oldPrice: 449, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: '' },
+            { id: 19, cat: 'skincare', brand: 'Himalaya', name: 'Neem Purifying Face Wash', desc: 'Anti-bacterial neem formula for pimple-free skin.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'popular' },
+            { id: 20, cat: 'skincare', brand: 'Mamaearth', name: 'Vitamin C Face Serum', desc: '10% Vitamin C + turmeric for brightening skin.', price: 499, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'trending' },
+            { id: 21, cat: 'skincare', brand: "Pond's", name: 'Super Light Gel Moisturiser', desc: 'Oil-free gel with hyaluronic acid for 72h hydration.', price: 279, oldPrice: 349, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'popular' },
+            { id: 22, cat: 'skincare', brand: 'Olay', name: 'Total Effects 7-in-1 Cream', desc: 'Fights 7 signs of ageing for younger-looking skin.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'sale' },
+            { id: 23, cat: 'skincare', brand: 'WOW Skin', name: 'Niacinamide 10% Serum', desc: 'Pore-minimising serum that fades dark spots.', price: 549, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'new' },
+            { id: 24, cat: 'skincare', brand: 'Biotique', name: 'Bio Papaya Face Scrub', desc: 'Natural papaya scrub for deep exfoliation.', price: 179, oldPrice: 229, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400', badge: '' },
+            { id: 25, cat: 'skincare', brand: 'Everyuth', name: 'Walnut Apricot Scrub', desc: 'Classic scrub for deep pore cleansing.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=400', badge: 'popular' },
+            { id: 26, cat: 'skincare', brand: 'Lotus', name: 'Under Eye Brightening Cream', desc: 'Reduces dark circles & puffiness.', price: 349, oldPrice: 449, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: '' },
             { id: 27, cat: 'skincare', brand: 'Mamaearth', name: 'Night Repair Face Cream', desc: 'Retinol + bakuchiol night cream for skin repair.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'new' },
-            { id: 28, cat: 'haircare', brand: 'Parachute', name: 'Advansed Coconut Hair Oil', desc: 'Pure coconut oil enriched with vitamin E for strong hair.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: 'popular' },
-            { id: 29, cat: 'haircare', brand: 'Bajaj', name: 'Almond Drops Hair Oil', desc: 'Enriched with almond extracts for thick hair growth.', price: 249, oldPrice: 299, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: '' },
-            { id: 30, cat: 'haircare', brand: 'TRESemmé', name: 'Keratin Smooth Shampoo', desc: 'Salon-smooth keratin shampoo for frizz control and shine.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1515688594390-b649af70d282?w=400', badge: 'popular' },
-            { id: 31, cat: 'haircare', brand: 'Mamaearth', name: 'Onion Hair Fall Shampoo', desc: 'Red onion oil shampoo that controls hair fall.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'trending' },
-            { id: 32, cat: 'haircare', brand: 'Mamaearth', name: 'Banana & Honey Hair Mask', desc: 'Deep conditioning mask for soft, silky, manageable hair.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'new' },
-            { id: 33, cat: 'haircare', brand: 'WOW Skin', name: 'Anti-Frizz Hair Serum', desc: 'Instant smoothening serum that tames frizz and adds shine.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: 'sale' },
-            { id: 34, cat: 'haircare', brand: 'Dove', name: 'Intense Repair Conditioner', desc: 'Keratin repair formula that fixes breakage and nourishes.', price: 249, oldPrice: 319, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: '' },
+            { id: 28, cat: 'haircare', brand: 'Parachute', name: 'Advansed Coconut Hair Oil', desc: 'Pure coconut oil with vitamin E for strong hair.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: 'popular' },
+            { id: 29, cat: 'haircare', brand: 'Bajaj', name: 'Almond Drops Hair Oil', desc: 'Almond extracts for thick hair growth.', price: 249, oldPrice: 299, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: '' },
+            { id: 30, cat: 'haircare', brand: 'TRESemmé', name: 'Keratin Smooth Shampoo', desc: 'Salon-smooth keratin shampoo for frizz control.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1515688594390-b649af70d282?w=400', badge: 'popular' },
+            { id: 31, cat: 'haircare', brand: 'Mamaearth', name: 'Onion Hair Fall Shampoo', desc: 'Red onion shampoo that controls hair fall.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'trending' },
+            { id: 32, cat: 'haircare', brand: 'Mamaearth', name: 'Banana & Honey Hair Mask', desc: 'Deep conditioning mask for soft manageable hair.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'new' },
+            { id: 33, cat: 'haircare', brand: 'WOW Skin', name: 'Anti-Frizz Hair Serum', desc: 'Smoothening serum that tames frizz and adds shine.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: 'sale' },
+            { id: 34, cat: 'haircare', brand: 'Dove', name: 'Intense Repair Conditioner', desc: 'Keratin repair formula for breakage-prone hair.', price: 249, oldPrice: 319, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: '' },
             { id: 35, cat: 'suncare', brand: 'Lotus', name: 'Safe Sun UV Screen SPF 50', desc: 'Broad-spectrum PA+++ sunscreen, no white cast.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400', badge: 'popular' },
-            { id: 36, cat: 'suncare', brand: 'Lakme', name: 'Sun Expert Ultra Matte SPF 40', desc: 'Matte finish sunscreen ideal for oily skin.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400', badge: '' },
-            { id: 37, cat: 'suncare', brand: 'Mamaearth', name: 'Hydragel SPF 50 Sunscreen', desc: 'Water-gel sunscreen with aloe vera — cooling & hydrating.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400', badge: 'new' },
-            { id: 38, cat: 'suncare', brand: 'Biotique', name: 'Bio Sandalwood SPF 50+', desc: 'Ayurvedic sunscreen with sandalwood. Protects and brightens.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'sale' },
-            { id: 39, cat: 'nailcare', brand: 'Lakme', name: 'True Wear Nail Colour', desc: '70-shade nail colour range with chip-resistant formula.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'popular' },
-            { id: 40, cat: 'nailcare', brand: 'Revlon', name: 'ColorStay Gel Envy Polish', desc: '2-step gel-like shine nail colour. Up to 11 days wear.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'trending' },
-            { id: 41, cat: 'nailcare', brand: 'Nykaa', name: 'Matte Nail Paint Set (5pc)', desc: 'Set of 5 trending matte nail colours in earthy tones.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
-            { id: 42, cat: 'nailcare', brand: 'Generic', name: 'Nail Art Tools Kit', desc: 'Dotting tools, striping tape, brush set & stickers.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: '' },
+            { id: 36, cat: 'suncare', brand: 'Lakme', name: 'Sun Expert Ultra Matte SPF 40', desc: 'Matte sunscreen ideal for oily skin.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400', badge: '' },
+            { id: 37, cat: 'suncare', brand: 'Mamaearth', name: 'Hydragel SPF 50 Sunscreen', desc: 'Water-gel sunscreen with aloe — cooling & hydrating.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400', badge: 'new' },
+            { id: 38, cat: 'suncare', brand: 'Biotique', name: 'Bio Sandalwood SPF 50+', desc: 'Ayurvedic sunscreen with sandalwood.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'sale' },
+            { id: 39, cat: 'nailcare', brand: 'Lakme', name: 'True Wear Nail Colour', desc: '70-shade nail colour with chip-resistant formula.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'popular' },
+            { id: 40, cat: 'nailcare', brand: 'Revlon', name: 'ColorStay Gel Envy Polish', desc: '2-step gel-like shine. Up to 11 days wear.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'trending' },
+            { id: 41, cat: 'nailcare', brand: 'Nykaa', name: 'Matte Nail Paint Set (5pc)', desc: '5 trending matte nail colours in earthy tones.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
+            { id: 42, cat: 'nailcare', brand: 'Generic', name: 'Nail Art Tools Kit', desc: 'Dotting tools, striping tape, brushes & stickers.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: '' },
             { id: 43, cat: 'fragrance', brand: 'Fogg', name: 'Fogg Black Collection EDP', desc: 'Woody oriental fragrance with rich oud and musk.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'popular' },
             { id: 44, cat: 'fragrance', brand: 'Engage', name: 'Engage W1 Perfume Body Spray', desc: 'Floral fruity scent with rose and peach notes.', price: 249, oldPrice: 299, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: '' },
-            { id: 45, cat: 'fragrance', brand: 'Dove', name: 'Original Deodorant Spray', desc: '48h anti-perspirant protection with mild fragrance.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'popular' },
+            { id: 45, cat: 'fragrance', brand: 'Dove', name: 'Original Deodorant Spray', desc: '48h anti-perspirant with mild fragrance.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'popular' },
             { id: 46, cat: 'fragrance', brand: 'Yardley', name: 'English Lavender EDT', desc: 'Classic lavender fragrance — light, floral, everyday.', price: 349, oldPrice: 449, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: 'sale' },
-            { id: 47, cat: 'fragrance', brand: 'Wild Stone', name: 'Forest Spice Perfume', desc: 'Bold masculine scent with spicy and woody notes.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'new' },
-            { id: 48, cat: 'parlour', brand: 'Rica', name: 'Wax Beans Kit — Stripless', desc: 'Professional stripless hot wax beans for hair removal.', price: 799, oldPrice: 999, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'popular' },
-            { id: 49, cat: 'parlour', brand: 'VLCC', name: 'Diamond Bleach Kit', desc: 'Premium diamond bleach with activator for instant glow.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: '' },
-            { id: 50, cat: 'parlour', brand: 'O3+', name: 'Gold Facial Kit (6 Steps)', desc: 'Complete professional gold facial for deep glow.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'popular' },
-            { id: 51, cat: 'parlour', brand: 'Shahnaz Husain', name: 'Diamond Skin Radiance Kit', desc: 'Age-defying diamond kit with exfoliator, gel, mask & cream.', price: 899, oldPrice: 1199, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: 'sale' },
-            { id: 52, cat: 'parlour', brand: 'Fem', name: 'Natural Henna Mehendi Cones', desc: 'Ready-to-use natural henna cones — dark colour, easy design.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1598980704601-ceffa9d10bc6?w=400', badge: '' },
-            { id: 53, cat: 'parlour', brand: 'VLCC', name: 'Eyebrow Threading Kit', desc: 'Precision threading thread + shaping wax strips.', price: 299, oldPrice: 0, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
-            { id: 54, cat: 'parlour', brand: 'Lotus', name: 'Skin Whitening Detan Pack', desc: 'Instant detan face pack with kojic acid for fairness.', price: 249, oldPrice: 329, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'trending' },
+            { id: 47, cat: 'fragrance', brand: 'Wild Stone', name: 'Forest Spice Perfume', desc: 'Bold spicy and woody notes. Long throw.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'new' },
+            { id: 48, cat: 'parlour', brand: 'Rica', name: 'Wax Beans Kit — Stripless', desc: 'Professional stripless wax beans for hair removal.', price: 799, oldPrice: 999, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'popular' },
+            { id: 49, cat: 'parlour', brand: 'VLCC', name: 'Diamond Bleach Kit', desc: 'Diamond bleach with activator for instant glow.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: '' },
+            { id: 50, cat: 'parlour', brand: 'O3+', name: 'Gold Facial Kit (6 Steps)', desc: 'Professional gold facial for deep glow.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'popular' },
+            { id: 51, cat: 'parlour', brand: 'Shahnaz Husain', name: 'Diamond Skin Radiance Kit', desc: 'Age-defying diamond kit with mask & cream.', price: 899, oldPrice: 1199, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: 'sale' },
+            { id: 52, cat: 'parlour', brand: 'Fem', name: 'Natural Henna Mehendi Cones', desc: 'Ready-to-use henna cones — dark colour.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1598980704601-ceffa9d10bc6?w=400', badge: '' },
+            { id: 53, cat: 'parlour', brand: 'VLCC', name: 'Eyebrow Threading Kit', desc: 'Threading thread + shaping wax strips.', price: 299, oldPrice: 0, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
+            { id: 54, cat: 'parlour', brand: 'Lotus', name: 'Skin Whitening Detan Pack', desc: 'Instant detan pack with kojic acid.', price: 249, oldPrice: 329, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'trending' },
             { id: 55, cat: 'parlour', brand: 'Generic', name: 'Makeup Brush Set — 12 pcs', desc: 'Professional kabuki, contouring and blending brushes.', price: 999, oldPrice: 1499, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400', badge: 'sale' },
         ];
 
-        const CAT_LABELS = { lipcare: 'Lip Care', foundation: 'Foundation', eyemakeup: 'Eye Makeup', skincare: 'Skincare', haircare: 'Hair Care', suncare: 'Sun Care', nailcare: 'Nail Care', fragrance: 'Fragrance', parlour: 'Parlour Items' };
+        const CL = { lipcare: 'Lip Care', foundation: 'Foundation', eyemakeup: 'Eye Makeup', skincare: 'Skincare', haircare: 'Hair Care', suncare: 'Sun Care', nailcare: 'Nail Care', fragrance: 'Fragrance', parlour: 'Parlour Items' };
 
-        /* ══ STATE ══ */
-        let adminData = loadAdminData();
-        let tablePage = 1, tablePerPage = 10;
-        let deleteTargetId = null, editTargetId = null;
+        /* ── FIREBASE STATE ── */
+        let db = null, unsub = null;
+        const COLL = 'products';
 
-        function loadAdminData() {
-            const raw = localStorage.getItem('chandnimart_admin');
-            if (raw) return JSON.parse(raw);
-            return {
-                credentials: { username: 'admin', password: 'chandni@2026' },
-                products: [...DEFAULT_PRODUCTS],
-                activity: [],
-                nextId: 56
-            };
+        function setStatus(state, msg) {
+            const map = { connecting: { cls: 'connecting', t: msg || 'Connecting…' }, connected: { cls: 'connected', t: msg || '🔥 Firebase Connected' }, error: { cls: 'error', t: msg || 'Firebase Error' }, none: { cls: 'connecting', t: msg || 'Firebase not configured' } };
+            const s = map[state] || map.none;
+            ['fbLoginDot', 'fbTopDot'].forEach(id => { const e = document.getElementById(id); if (e) e.className = 'fb-dot ' + s.cls; });
+            const loginText = document.getElementById('fbLoginText'); if (loginText) loginText.textContent = s.t;
+            const chip = document.getElementById('fbTopChip'); const topText = document.getElementById('fbTopText');
+            if (chip) chip.className = 'fb-topbar-chip ' + s.cls;
+            if (topText) topText.textContent = s.t;
         }
-        function saveAdminData() {
-            localStorage.setItem('chandnimart_admin', JSON.stringify(adminData));
-            // Save products separately so index.html can read them
-            localStorage.setItem('chandnimart_products', JSON.stringify(adminData.products));
-            // Broadcast instant update to any open index.html tabs
+
+        function loadCfg() { try { const r = localStorage.getItem('chandnimart_fb_config'); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+
+        async function initFB(cfg) {
             try {
-                const ch = new BroadcastChannel('chandnimart_sync');
-                ch.postMessage({ type: 'products_updated', products: adminData.products });
-                ch.close();
-            } catch (e) { /* fallback: storage event handles cross-tab */ }
+                setStatus('connecting');
+                if (!getApps().length) initializeApp(cfg);
+                db = getFirestore();
+                await getDocs(collection(db, COLL)); /* ping */
+                localStorage.setItem('chandnimart_fb_config', JSON.stringify(cfg));
+                setStatus('connected');
+                return true;
+            } catch (e) { db = null; setStatus('error', 'Firebase Error — check config'); console.warn(e.message); return false; }
         }
 
-        /* ══ AUTH ══ */
-        function doLogin() {
-            const u = document.getElementById('loginUser').value.trim();
-            const p = document.getElementById('loginPass').value;
+        function startListener() {
+            if (!db) return;
+            if (unsub) unsub();
+            unsub = onSnapshot(collection(db, COLL), snap => {
+                if (snap.empty) return;
+                const rows = snap.docs.map(d => d.data());
+                adminData.products = rows;
+                adminData.nextId = Math.max(...rows.map(p => p.id), adminData.nextId - 1) + 1;
+                localStorage.setItem('chandnimart_products', JSON.stringify(rows));
+                broadcast(rows);
+                updateBadge();
+                const ap = document.querySelector('.panel.active')?.id;
+                if (ap === 'panel-products') renderTable();
+                if (ap === 'panel-dashboard') renderDashboard();
+                if (ap === 'panel-categories') renderCatPanel();
+            }, e => { setStatus('error', 'Listener error'); console.warn(e.message); });
+        }
+
+        function broadcast(products) {
+            localStorage.setItem('chandnimart_products', JSON.stringify(products));
+            try { const c = new BroadcastChannel('chandnimart_sync'); c.postMessage({ type: 'products_updated', products }); c.close(); } catch (e) { }
+        }
+
+        async function pushAll() {
+            if (!db) return;
+            try {
+                const b = writeBatch(db);
+                adminData.products.forEach(p => b.set(doc(db, COLL, String(p.id)), p));
+                await b.commit();
+                adminToast(`☁️ ${adminData.products.length} products synced to Firebase!`, 'info');
+            } catch (e) { adminToast('Firebase push error: ' + e.message, 'error'); }
+        }
+
+        async function fbSave(p) { if (!db) return; try { await setDoc(doc(db, COLL, String(p.id)), p); } catch (e) { console.warn(e); } }
+        async function fbDel(id) { if (!db) return; try { await deleteDoc(doc(db, COLL, String(id))); } catch (e) { console.warn(e); } }
+
+        /* connectFirebase called from Firebase Setup panel button */
+        window.connectFirebase = async function () {
+            const cfg = { apiKey: document.getElementById('cfg_apiKey').value.trim(), authDomain: document.getElementById('cfg_authDomain').value.trim(), projectId: document.getElementById('cfg_projectId').value.trim(), storageBucket: document.getElementById('cfg_storageBucket').value.trim(), messagingSenderId: document.getElementById('cfg_messagingSenderId').value.trim(), appId: document.getElementById('cfg_appId').value.trim() };
+            const msg = document.getElementById('fbConnectMsg');
+            if (!cfg.apiKey || !cfg.projectId) { msg.textContent = '❌ Please fill in at least API Key and Project ID.'; return; }
+            msg.textContent = '⏳ Connecting to Firebase…';
+            const ok = await initFB(cfg);
+            msg.textContent = ok ? '✅ Connected! All changes now save to Firebase cloud instantly.' : '❌ Connection failed. Please check your config and try again.';
+            msg.style.color = ok ? '#86efac' : '#fca5a5';
+            if (ok) { await pushAll(); startListener(); }
+        };
+
+        /* ── ADMIN STATE ── */
+        let adminData = loadAdmin(), tablePage = 1, tablePerPage = 10, delId = null, editId = null;
+        function loadAdmin() { const r = localStorage.getItem('chandnimart_admin'); if (r) return JSON.parse(r); return { credentials: { username: 'admin', password: 'chandni@2026' }, products: [...DP], activity: [], nextId: 56 }; }
+
+        function save(changed = null, delId2 = null) {
+            localStorage.setItem('chandnimart_admin', JSON.stringify(adminData));
+            broadcast(adminData.products);
+            if (delId2 !== null) fbDel(delId2);
+            else if (changed) fbSave(changed);
+            else pushAll();
+        }
+
+        /* ── AUTH ── */
+        window.doLogin = function () {
+            const u = document.getElementById('loginUser').value.trim(), p = document.getElementById('loginPass').value;
             const err = document.getElementById('loginErr');
             if (u === adminData.credentials.username && p === adminData.credentials.password) {
                 err.style.display = 'none';
@@ -1795,331 +2002,225 @@ const firebaseConfig = {
                 document.getElementById('adminApp').classList.add('active');
                 document.getElementById('adminUserLabel').textContent = u;
                 document.getElementById('setUsername').value = u;
-                renderDashboard(); renderTable(); renderCatPanel();
-                updateBadge();
-            } else {
-                err.style.display = 'flex';
-                document.getElementById('loginPass').value = '';
-            }
-        }
-        function doLogout() {
+                renderDashboard(); renderTable(); renderCatPanel(); updateBadge();
+                startListener();
+            } else { err.style.display = 'flex'; document.getElementById('loginPass').value = ''; }
+        };
+        window.doLogout = function () {
+            if (unsub) { unsub(); unsub = null; }
             document.getElementById('adminApp').classList.remove('active');
             document.getElementById('loginPage').style.display = 'flex';
             document.getElementById('loginPass').value = '';
             document.getElementById('loginErr').style.display = 'none';
-        }
+        };
 
-        /* ══ SIDEBAR ══ */
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('mob-open');
-        }
-        function showPanel(name, el) {
+        /* ── SIDEBAR ── */
+        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('mob-open');
+        window.showPanel = function (name, el) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('panel-' + name).classList.add('active');
             if (el) el.classList.add('active');
-            const titles = { dashboard: 'Dashboard', products: 'All Products', addProduct: 'Add New Product', categories: 'Categories', settings: 'Settings' };
+            const titles = { dashboard: 'Dashboard', products: 'All Products', addProduct: 'Add New Product', categories: 'Categories', firebase: '🔥 Firebase Setup', settings: 'Settings' };
             document.getElementById('topbarTitle').textContent = titles[name] || name;
             if (name === 'products') renderTable();
             if (name === 'categories') renderCatPanel();
             if (name === 'addProduct') renderAddForm();
             if (name === 'dashboard') renderDashboard();
+            if (name === 'firebase') { const c = loadCfg(); if (c) Object.entries(c).forEach(([k, v]) => { const e = document.getElementById('cfg_' + k); if (e) e.value = v || ''; }); }
             if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('mob-open');
-        }
+        };
 
-        /* ══ DASHBOARD ══ */
+        /* ── DASHBOARD ── */
         function renderDashboard() {
-            const prods = adminData.products;
-            const cats = Object.keys(CAT_LABELS);
-            const byBadge = b => prods.filter(p => p.badge === b).length;
+            const prods = adminData.products, bb = b => prods.filter(p => p.badge === b).length;
             document.getElementById('statsBar').innerHTML = `
     <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-box-open"></i></div><div><div class="stat-num">${prods.length}</div><div class="stat-label">Total Products</div></div></div>
-    <div class="stat-card"><div class="stat-icon gold"><i class="fas fa-th-large"></i></div><div><div class="stat-num">${cats.length}</div><div class="stat-label">Categories</div></div></div>
-    <div class="stat-card"><div class="stat-icon green"><i class="fas fa-star"></i></div><div><div class="stat-num">${byBadge('new')}</div><div class="stat-label">New Products</div></div></div>
-    <div class="stat-card"><div class="stat-icon rose"><i class="fas fa-fire"></i></div><div><div class="stat-num">${byBadge('popular') + byBadge('trending')}</div><div class="stat-label">Popular/Trending</div></div></div>`;
+    <div class="stat-card"><div class="stat-icon gold"><i class="fas fa-th-large"></i></div><div><div class="stat-num">${Object.keys(CL).length}</div><div class="stat-label">Categories</div></div></div>
+    <div class="stat-card"><div class="stat-icon green"><i class="fas fa-star"></i></div><div><div class="stat-num">${bb('new')}</div><div class="stat-label">New Products</div></div></div>
+    <div class="stat-card"><div class="stat-icon rose"><i class="fas fa-fire"></i></div><div><div class="stat-num">${bb('popular') + bb('trending')}</div><div class="stat-label">Popular / Trending</div></div></div>`;
             document.getElementById('quickActions').innerHTML = `
-    <div class="qa-card" onclick="showPanel('addProduct',null)"><div class="qa-icon" style="background:linear-gradient(135deg,var(--brand),var(--brand-deep))"><i class="fas fa-plus" style="color:white"></i></div><h4>Add Product</h4><p>Add a new item</p></div>
-    <div class="qa-card" onclick="showPanel('products',null)"><div class="qa-icon" style="background:linear-gradient(135deg,var(--blue),#1d4ed8)"><i class="fas fa-list" style="color:white"></i></div><h4>View Products</h4><p>${prods.length} total items</p></div>
-    <div class="qa-card" onclick="showPanel('categories',null)"><div class="qa-icon" style="background:linear-gradient(135deg,var(--gold),#c49030)"><i class="fas fa-th-large" style="color:white"></i></div><h4>Categories</h4><p>${cats.length} categories</p></div>
-    <div class="qa-card" onclick="exportProducts()"><div class="qa-icon" style="background:linear-gradient(135deg,var(--green),#16a34a)"><i class="fas fa-download" style="color:white"></i></div><h4>Export</h4><p>Backup products</p></div>`;
+    <div class="qa-card" onclick="showPanel('addProduct',null)"><div class="qa-icon" style="background:linear-gradient(135deg,var(--brand),var(--brand-deep))"><i class="fas fa-plus" style="color:white"></i></div><h4>Add Product</h4><p>Add new item</p></div>
+    <div class="qa-card" onclick="showPanel('products',null)"><div class="qa-icon" style="background:linear-gradient(135deg,var(--blue),#1d4ed8)"><i class="fas fa-list" style="color:white"></i></div><h4>View Products</h4><p>${prods.length} items</p></div>
+    <div class="qa-card" onclick="showPanel('firebase',null)"><div class="qa-icon" style="background:linear-gradient(135deg,var(--gold),#c49030)"><i class="fas fa-fire" style="color:white"></i></div><h4>Firebase</h4><p>${db ? 'Connected ✅' : 'Setup required'}</p></div>
+    <div class="qa-card" onclick="exportProducts()"><div class="qa-icon" style="background:linear-gradient(135deg,var(--green),#16a34a)"><i class="fas fa-download" style="color:white"></i></div><h4>Export</h4><p>Backup data</p></div>`;
             const al = document.getElementById('activityList');
             if (!adminData.activity.length) { al.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><h3>No activity yet</h3><p>Add or edit products to see activity here.</p></div>'; return; }
             al.innerHTML = adminData.activity.slice(0, 10).map(a => `<div class="activity-item"><div class="activity-dot ${a.type}"></div><div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time}</div></div></div>`).join('');
         }
 
-        /* ══ PRODUCT TABLE ══ */
-        function getFilteredProds() {
+        /* ── TABLE ── */
+        function gfp() {
             const q = (document.getElementById('tableSearch') || {}).value?.toLowerCase().trim() || '';
             const cat = (document.getElementById('tableFilter') || {}).value || '';
-            return adminData.products.filter(p => {
-                const catOk = !cat || p.cat === cat;
-                const qOk = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || (p.desc || '').toLowerCase().includes(q);
-                return catOk && qOk;
-            });
+            return adminData.products.filter(p => (!cat || p.cat === cat) && (!q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || (p.desc || '').toLowerCase().includes(q)));
         }
         function renderTable() {
-            const fp = getFilteredProds();
-            const totalPages = Math.ceil(fp.length / tablePerPage);
-            if (tablePage > totalPages && totalPages > 0) tablePage = totalPages;
-            const slice = fp.slice((tablePage - 1) * tablePerPage, tablePage * tablePerPage);
-            const tbody = document.getElementById('prodTableBody');
-            const empty = document.getElementById('tableEmpty');
-            if (!fp.length) { tbody.innerHTML = ''; empty.style.display = 'block'; document.getElementById('tablePagination').innerHTML = ''; return; }
-            empty.style.display = 'none';
-            tbody.innerHTML = slice.map((p, i) => `
-    <tr>
-      <td style="color:var(--muted);font-size:.78rem">${(tablePage - 1) * tablePerPage + i + 1}</td>
-      <td>
-        <div class="prod-name-cell">
-          <div class="prod-thumb" style="background-image:url('${p.img}')"></div>
-          <div><div class="name">${p.name}</div><div class="brand">${p.brand}</div></div>
-        </div>
-      </td>
-      <td><span class="cat-chip">${CAT_LABELS[p.cat] || p.cat}</span></td>
-      <td>
-        <div class="price-cell">₹${p.price.toLocaleString('en-IN')}</div>
-        ${p.oldPrice ? `<div class="old-price-cell">₹${p.oldPrice.toLocaleString('en-IN')}</div>` : ''}
-      </td>
-      <td><span class="badge-chip bc-${p.badge || 'none'}">${p.badge || '—'}</span></td>
-      <td>
-        <div class="tbl-actions">
-          <button class="tbl-btn edit" onclick="openEdit(${p.id})" title="Edit"><i class="fas fa-edit"></i></button>
-          <button class="tbl-btn del" onclick="openDelete(${p.id})" title="Delete"><i class="fas fa-trash"></i></button>
-        </div>
-      </td>
-    </tr>`).join('');
-            renderTablePagination(fp.length, totalPages);
+            const fp = gfp(), tp = Math.ceil(fp.length / tablePerPage);
+            if (tablePage > tp && tp > 0) tablePage = tp;
+            const sl = fp.slice((tablePage - 1) * tablePerPage, tablePage * tablePerPage);
+            const tb = document.getElementById('prodTableBody'), em = document.getElementById('tableEmpty');
+            if (!fp.length) { tb.innerHTML = ''; em.style.display = 'block'; document.getElementById('tablePagination').innerHTML = ''; return; }
+            em.style.display = 'none';
+            tb.innerHTML = sl.map((p, i) => `<tr>
+    <td style="color:var(--muted);font-size:.78rem">${(tablePage - 1) * tablePerPage + i + 1}</td>
+    <td><div class="prod-name-cell"><div class="prod-thumb" style="background-image:url('${p.img}')"></div><div><div class="name">${p.name}</div><div class="brand">${p.brand}</div></div></div></td>
+    <td><span class="cat-chip">${CL[p.cat] || p.cat}</span></td>
+    <td><div class="price-cell">₹${p.price.toLocaleString('en-IN')}</div>${p.oldPrice ? `<div class="old-price-cell">₹${p.oldPrice.toLocaleString('en-IN')}</div>` : ''}</td>
+    <td><span class="badge-chip bc-${p.badge || 'none'}">${p.badge || '—'}</span></td>
+    <td><div class="tbl-actions"><button class="tbl-btn edit" onclick="openEdit(${p.id})" title="Edit"><i class="fas fa-edit"></i></button><button class="tbl-btn del" onclick="openDelete(${p.id})" title="Delete"><i class="fas fa-trash"></i></button></div></td>
+  </tr>`).join('');
+            renderPag(fp.length, tp);
         }
-        function renderTablePagination(total, totalPages) {
+        function renderPag(total, tp) {
             const pg = document.getElementById('tablePagination');
-            if (totalPages <= 1) { pg.innerHTML = `<span class="page-info">Showing ${total} product${total !== 1 ? 's' : ''}</span>`; return; }
-            let html = `<span class="page-info">Page ${tablePage} of ${totalPages} (${total} products)</span><div class="page-btns">`;
-            html += `<button class="pg-btn" onclick="tblPage(${tablePage - 1})" ${tablePage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
-            for (let i = 1; i <= totalPages; i++) html += `<button class="pg-btn ${i === tablePage ? 'active' : ''}" onclick="tblPage(${i})">${i}</button>`;
-            html += `<button class="pg-btn" onclick="tblPage(${tablePage + 1})" ${tablePage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button></div>`;
-            pg.innerHTML = html;
+            if (tp <= 1) { pg.innerHTML = `<span class="page-info">Showing ${total} products</span>`; return; }
+            let h = `<span class="page-info">Page ${tablePage} of ${tp} (${total} products)</span><div class="page-btns">`;
+            h += `<button class="pg-btn" onclick="tblP(${tablePage - 1})" ${tablePage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+            for (let i = 1; i <= tp; i++)h += `<button class="pg-btn ${i === tablePage ? 'active' : ''}" onclick="tblP(${i})">${i}</button>`;
+            h += `<button class="pg-btn" onclick="tblP(${tablePage + 1})" ${tablePage === tp ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button></div>`;
+            pg.innerHTML = h;
         }
-        function tblPage(p) { tablePage = p; renderTable(); }
+        window.tblP = p => { tablePage = p; renderTable(); };
         function updateBadge() { document.getElementById('prodCountBadge').textContent = adminData.products.length; }
 
-        /* ══ ADD PRODUCT FORM ══ */
-        function renderAddForm() {
-            document.getElementById('addProductForm').innerHTML = buildProductForm(null, 'add');
-        }
-        function buildProductForm(prod, mode) {
+        /* ── FORM ── */
+        function renderAddForm() { document.getElementById('addProductForm').innerHTML = buildForm(null, 'add'); }
+        function buildForm(prod, mode) {
             const v = prod || { id: '', cat: '', brand: '', name: '', desc: '', price: '', oldPrice: '', img: '', badge: '' };
-            return `
-    <div class="form-section-title"><i class="fas fa-tag"></i>Basic Info</div>
-    <div class="form-grid">
-      <div class="form-group"><label>Product Name *</label><input type="text" id="f_name" value="${esc(v.name)}" placeholder="e.g. Vitamin C Serum"></div>
-      <div class="form-group"><label>Brand *</label><input type="text" id="f_brand" value="${esc(v.brand)}" placeholder="e.g. Mamaearth"></div>
-    </div>
-    <div class="form-grid">
-      <div class="form-group"><label>Category *</label>
-        <select id="f_cat">
-          <option value="">— Select —</option>
-          ${Object.entries(CAT_LABELS).map(([k, lab]) => `<option value="${k}" ${v.cat === k ? 'selected' : ''}>${lab}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group"><label>Badge</label>
-        <select id="f_badge">
-          <option value="" ${!v.badge ? 'selected' : ''}>None</option>
-          <option value="new" ${v.badge === 'new' ? 'selected' : ''}>🟢 New</option>
-          <option value="popular" ${v.badge === 'popular' ? 'selected' : ''}>⭐ Popular</option>
-          <option value="sale" ${v.badge === 'sale' ? 'selected' : ''}>🔴 Sale</option>
-          <option value="trending" ${v.badge === 'trending' ? 'selected' : ''}>🔥 Trending</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-grid full">
-      <div class="form-group"><label>Description *</label><textarea id="f_desc" placeholder="Short product description…">${esc(v.desc)}</textarea></div>
-    </div>
-
-    <div class="form-section-title" style="margin-top:1.2rem"><i class="fas fa-rupee-sign"></i>Pricing</div>
-    <div class="form-grid">
-      <div class="form-group"><label>Selling Price (₹) *</label><input type="number" id="f_price" value="${v.price || ''}" placeholder="349" min="0"></div>
-      <div class="form-group"><label>Original Price (₹) <span style="font-weight:400;color:var(--muted)">(for strikethrough)</span></label><input type="number" id="f_oldPrice" value="${v.oldPrice || ''}" placeholder="449 (optional)" min="0"></div>
-    </div>
-
-    <div class="form-section-title" style="margin-top:1.2rem"><i class="fas fa-image"></i>Product Image</div>
-    <div class="form-grid full">
-      <div class="form-group">
-        <label>Image URL *</label>
-        <input type="url" id="f_img" value="${esc(v.img)}" placeholder="https://images.unsplash.com/photo-…?w=400" oninput="previewImg()">
-        <div class="hint">Paste any image URL (Unsplash, etc.) or direct image link.</div>
-        <div class="img-preview-row">
-          <div class="img-preview" id="imgPreview" style="background-image:url('${esc(v.img)}')"></div>
-          <span style="font-size:.78rem;color:var(--muted)">Image preview</span>
-        </div>
-      </div>
-    </div>
-
-    ${mode === 'add' ? `
-    <div style="margin-top:1.5rem;display:flex;gap:.8rem;flex-wrap:wrap">
-      <button class="btn-save" onclick="addProduct()"><i class="fas fa-plus-circle"></i> Add Product</button>
-      <button class="btn-cancel" onclick="clearAddForm()"><i class="fas fa-times"></i> Clear</button>
-    </div>`: ''}
-  `;
+            return `<div class="form-section-title"><i class="fas fa-tag"></i>Basic Info</div>
+  <div class="form-grid">
+    <div class="form-group"><label>Product Name *</label><input type="text" id="f_name" value="${esc(v.name)}" placeholder="e.g. Vitamin C Serum"></div>
+    <div class="form-group"><label>Brand *</label><input type="text" id="f_brand" value="${esc(v.brand)}" placeholder="e.g. Mamaearth"></div>
+  </div>
+  <div class="form-grid">
+    <div class="form-group"><label>Category *</label><select id="f_cat"><option value="">— Select —</option>${Object.entries(CL).map(([k, l]) => `<option value="${k}" ${v.cat === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Badge</label><select id="f_badge"><option value="" ${!v.badge ? 'selected' : ''}>None</option><option value="new" ${v.badge === 'new' ? 'selected' : ''}>🟢 New</option><option value="popular" ${v.badge === 'popular' ? 'selected' : ''}>⭐ Popular</option><option value="sale" ${v.badge === 'sale' ? 'selected' : ''}>🔴 Sale</option><option value="trending" ${v.badge === 'trending' ? 'selected' : ''}>🔥 Trending</option></select></div>
+  </div>
+  <div class="form-grid full"><div class="form-group"><label>Description *</label><textarea id="f_desc" placeholder="Short product description…">${esc(v.desc)}</textarea></div></div>
+  <div class="form-section-title" style="margin-top:1.2rem"><i class="fas fa-rupee-sign"></i>Pricing</div>
+  <div class="form-grid">
+    <div class="form-group"><label>Selling Price (₹) *</label><input type="number" id="f_price" value="${v.price || ''}" placeholder="349" min="0"></div>
+    <div class="form-group"><label>Original Price (₹) <span style="font-weight:400;color:var(--muted)">(for strikethrough)</span></label><input type="number" id="f_oldPrice" value="${v.oldPrice || ''}" placeholder="449 (optional)" min="0"></div>
+  </div>
+  <div class="form-section-title" style="margin-top:1.2rem"><i class="fas fa-image"></i>Product Image</div>
+  <div class="form-grid full"><div class="form-group">
+    <label>Image URL *</label>
+    <input type="url" id="f_img" value="${esc(v.img)}" placeholder="https://images.unsplash.com/photo-…?w=400" oninput="previewImg()">
+    <div class="hint">Paste any image URL from Unsplash or a direct image link.</div>
+    <div class="img-preview-row"><div class="img-preview" id="imgPreview" style="background-image:url('${esc(v.img)}')"></div><span style="font-size:.78rem;color:var(--muted)">Image preview</span></div>
+  </div></div>
+  ${mode === 'add' ? `<div style="margin-top:1.5rem;display:flex;gap:.8rem;flex-wrap:wrap"><button class="btn-save" onclick="addProduct()"><i class="fas fa-plus-circle"></i> Add Product</button><button class="btn-cancel" onclick="clearAddForm()"><i class="fas fa-times"></i> Clear</button></div>` : ''}`;
         }
         function esc(s) { return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
-        function previewImg() {
-            const url = document.getElementById('f_img').value;
-            const prev = document.getElementById('imgPreview');
-            if (prev) prev.style.backgroundImage = `url('${url}')`;
-        }
-
-        function collectFormData() {
-            const name = document.getElementById('f_name').value.trim();
-            const brand = document.getElementById('f_brand').value.trim();
-            const cat = document.getElementById('f_cat').value;
-            const desc = document.getElementById('f_desc').value.trim();
-            const price = parseInt(document.getElementById('f_price').value) || 0;
-            const oldPrice = parseInt(document.getElementById('f_oldPrice').value) || 0;
-            const img = document.getElementById('f_img').value.trim();
-            const badge = document.getElementById('f_badge').value;
-            if (!name) { adminToast('Product name is required!', 'error'); return null; }
-            if (!brand) { adminToast('Brand is required!', 'error'); return null; }
-            if (!cat) { adminToast('Please select a category!', 'error'); return null; }
-            if (!desc) { adminToast('Description is required!', 'error'); return null; }
-            if (!price) { adminToast('Price is required!', 'error'); return null; }
-            if (!img) { adminToast('Image URL is required!', 'error'); return null; }
+        window.previewImg = () => { const u = document.getElementById('f_img').value, p = document.getElementById('imgPreview'); if (p) p.style.backgroundImage = `url('${u}')`; };
+        function collectForm() {
+            const name = document.getElementById('f_name').value.trim(), brand = document.getElementById('f_brand').value.trim(), cat = document.getElementById('f_cat').value, desc = document.getElementById('f_desc').value.trim(), price = parseInt(document.getElementById('f_price').value) || 0, oldPrice = parseInt(document.getElementById('f_oldPrice').value) || 0, img = document.getElementById('f_img').value.trim(), badge = document.getElementById('f_badge').value;
+            if (!name) { adminToast('Product name required!', 'error'); return null; }
+            if (!brand) { adminToast('Brand required!', 'error'); return null; }
+            if (!cat) { adminToast('Select a category!', 'error'); return null; }
+            if (!desc) { adminToast('Description required!', 'error'); return null; }
+            if (!price) { adminToast('Price required!', 'error'); return null; }
+            if (!img) { adminToast('Image URL required!', 'error'); return null; }
             return { name, brand, cat, desc, price, oldPrice, img, badge };
         }
+        window.addProduct = function () {
+            const d = collectForm(); if (!d) return;
+            const np = { id: adminData.nextId++, ...d };
+            adminData.products.push(np);
+            addAct('add', `Added "${d.name}" (${CL[d.cat]})`);
+            save(np); updateBadge();
+            adminToast(`✅ "${d.name}" added!${db ? ' Saved to Firebase.' : ''}`, 'success');
+            clearAddForm(); showPanel('products', null);
+        };
+        window.clearAddForm = renderAddForm;
 
-        function addProduct() {
-            const data = collectFormData(); if (!data) return;
-            const newProd = { id: adminData.nextId++, ...data };
-            adminData.products.push(newProd);
-            addActivity('add', `Added "${data.name}" (${CAT_LABELS[data.cat]})`);
-            saveAdminData(); updateBadge();
-            adminToast(`✅ "${data.name}" added successfully!`, 'success');
-            clearAddForm();
-            showPanel('products', document.querySelector('.sidebar-link:nth-child(2)'));
-        }
-        function clearAddForm() { renderAddForm(); }
-
-        /* ══ EDIT ══ */
-        function openEdit(id) {
+        /* ── EDIT ── */
+        window.openEdit = function (id) {
             const p = adminData.products.find(x => x.id === id); if (!p) return;
-            editTargetId = id;
-            document.getElementById('editModalBody').innerHTML = buildProductForm(p, 'edit');
-            document.getElementById('editModal').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('open');
-            document.body.style.overflow = '';
-            editTargetId = null;
-        }
-        function saveEdit() {
-            const data = collectFormData(); if (!data) return;
-            const idx = adminData.products.findIndex(x => x.id === editTargetId);
-            if (idx === -1) return;
-            adminData.products[idx] = { ...adminData.products[idx], ...data };
-            addActivity('edit', `Edited "${data.name}"`);
-            saveAdminData(); renderTable(); renderDashboard();
-            adminToast(`✏️ "${data.name}" updated!`, 'info');
+            editId = id; document.getElementById('editModalBody').innerHTML = buildForm(p, 'edit');
+            document.getElementById('editModal').classList.add('open'); document.body.style.overflow = 'hidden';
+        };
+        window.closeEditModal = function () { document.getElementById('editModal').classList.remove('open'); document.body.style.overflow = ''; editId = null; };
+        window.saveEdit = function () {
+            const d = collectForm(); if (!d) return;
+            const i = adminData.products.findIndex(x => x.id === editId); if (i === -1) return;
+            adminData.products[i] = { ...adminData.products[i], ...d };
+            addAct('edit', `Edited "${d.name}"`);
+            save(adminData.products[i]); renderTable(); renderDashboard();
+            adminToast(`✏️ "${d.name}" updated!${db ? ' Saved to Firebase.' : ''}`, 'info');
             closeEditModal();
-        }
+        };
         document.getElementById('editModal').addEventListener('click', function (e) { if (e.target === this) closeEditModal(); });
 
-        /* ══ DELETE ══ */
-        function openDelete(id) {
-            deleteTargetId = id;
-            const p = adminData.products.find(x => x.id === id);
+        /* ── DELETE ── */
+        window.openDelete = function (id) {
+            delId = id; const p = adminData.products.find(x => x.id === id);
             document.getElementById('confirmText').textContent = `Delete "${p?.name}"? This cannot be undone.`;
-            document.getElementById('confirmOverlay').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); document.body.style.overflow = ''; deleteTargetId = null; }
-        function executeDelete() {
-            const p = adminData.products.find(x => x.id === deleteTargetId);
-            if (!p) { closeConfirm(); return; }
-            adminData.products = adminData.products.filter(x => x.id !== deleteTargetId);
-            addActivity('del', `Deleted "${p.name}"`);
-            saveAdminData(); renderTable(); renderDashboard(); updateBadge();
-            adminToast(`🗑️ "${p.name}" deleted.`, 'error');
+            document.getElementById('confirmOverlay').classList.add('open'); document.body.style.overflow = 'hidden';
+        };
+        window.closeConfirm = function () { document.getElementById('confirmOverlay').classList.remove('open'); document.body.style.overflow = ''; delId = null; };
+        window.executeDelete = function () {
+            const p = adminData.products.find(x => x.id === delId); if (!p) { closeConfirm(); return; }
+            const did = delId; adminData.products = adminData.products.filter(x => x.id !== did);
+            addAct('del', `Deleted "${p.name}"`);
+            save(null, did); renderTable(); renderDashboard(); updateBadge();
+            adminToast(`🗑️ "${p.name}" deleted.${db ? ' Removed from Firebase.' : ''}`, 'error');
             closeConfirm();
-        }
+        };
 
-        /* ══ CATEGORIES PANEL ══ */
+        /* ── CATEGORIES ── */
         function renderCatPanel() {
-            const prods = adminData.products;
-            const cats = Object.entries(CAT_LABELS);
-            document.getElementById('catStatsBar').innerHTML = cats.map(([k, lab]) => {
-                const count = prods.filter(p => p.cat === k).length;
-                return `<div class="stat-card"><div class="stat-icon orange"><i class="fas fa-tag"></i></div><div><div class="stat-num">${count}</div><div class="stat-label">${lab}</div></div></div>`;
-            }).join('');
-            document.getElementById('catOverviewBody').innerHTML = `
-    <table class="prod-table" style="font-size:.84rem">
-      <thead><tr><th>Category</th><th>Products</th><th>Avg Price</th><th>Min</th><th>Max</th><th>Action</th></tr></thead>
-      <tbody>${cats.map(([k, lab]) => {
-                const cp = prods.filter(p => p.cat === k);
-                const prices = cp.map(p => p.price);
+            const prods = adminData.products, cats = Object.entries(CL);
+            document.getElementById('catStatsBar').innerHTML = cats.map(([k, lab]) => `<div class="stat-card"><div class="stat-icon orange"><i class="fas fa-tag"></i></div><div><div class="stat-num">${prods.filter(p => p.cat === k).length}</div><div class="stat-label">${lab}</div></div></div>`).join('');
+            document.getElementById('catOverviewBody').innerHTML = `<table class="prod-table" style="font-size:.84rem"><thead><tr><th>Category</th><th>Products</th><th>Avg Price</th><th>Min</th><th>Max</th><th>Action</th></tr></thead><tbody>${cats.map(([k, lab]) => {
+                const cp = prods.filter(p => p.cat === k), prices = cp.map(p => p.price);
                 const avg = prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0;
-                const mn = prices.length ? Math.min(...prices) : 0;
-                const mx = prices.length ? Math.max(...prices) : 0;
-                return `<tr><td><strong>${lab}</strong></td><td>${cp.length}</td><td>₹${avg.toLocaleString('en-IN')}</td><td>₹${mn.toLocaleString('en-IN')}</td><td>₹${mx.toLocaleString('en-IN')}</td><td><button class="tbl-btn view" onclick="filterTableCat('${k}')" title="View"><i class="fas fa-eye"></i></button></td></tr>`;
-            }).join('')}</tbody>
-    </table>`;
+                return `<tr><td><strong>${lab}</strong></td><td>${cp.length}</td><td>₹${avg.toLocaleString('en-IN')}</td><td>₹${prices.length ? Math.min(...prices) : 0}</td><td>₹${prices.length ? Math.max(...prices) : 0}</td><td><button class="tbl-btn view" onclick="fcat('${k}')"><i class="fas fa-eye"></i></button></td></tr>`;
+            }).join('')}</tbody></table>`;
         }
-        function filterTableCat(cat) {
-            document.getElementById('tableFilter').value = cat;
-            tablePage = 1;
-            showPanel('products', null);
-        }
+        window.fcat = function (cat) { document.getElementById('tableFilter').value = cat; tablePage = 1; showPanel('products', null); };
 
-        /* ══ SETTINGS ══ */
-        function saveCredentials() {
-            const u = document.getElementById('setUsername').value.trim();
-            const p = document.getElementById('setPassword').value.trim();
-            if (!u) { adminToast('Username cannot be empty!', 'error'); return; }
-            if (!p) { adminToast('Password cannot be empty!', 'error'); return; }
-            adminData.credentials = { username: u, password: p };
-            saveAdminData();
-            document.getElementById('adminUserLabel').textContent = u;
-            adminToast('✅ Credentials saved!', 'success');
-            document.getElementById('setPassword').value = '';
-        }
-        function exportProducts() {
-            const data = JSON.stringify(adminData.products, null, 2);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = 'chandnimart-products.json'; a.click();
-            URL.revokeObjectURL(url);
+        /* ── SETTINGS ── */
+        window.saveCredentials = function () {
+            const u = document.getElementById('setUsername').value.trim(), p = document.getElementById('setPassword').value.trim();
+            if (!u) { adminToast('Username cannot be empty!', 'error'); return; } if (!p) { adminToast('Password cannot be empty!', 'error'); return; }
+            adminData.credentials = { username: u, password: p }; save(); document.getElementById('adminUserLabel').textContent = u;
+            adminToast('✅ Credentials saved!', 'success'); document.getElementById('setPassword').value = '';
+        };
+        window.exportProducts = function () {
+            const blob = new Blob([JSON.stringify(adminData.products, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chandnimart-products.json'; a.click();
             adminToast('📥 Products exported!', 'info');
-        }
-        function resetToDefaults() {
-            if (!confirm('Reset ALL products to defaults? All your changes will be lost.')) return;
-            adminData.products = [...DEFAULT_PRODUCTS];
-            adminData.nextId = 56;
-            adminData.activity = [];
-            saveAdminData(); updateBadge(); renderDashboard(); renderTable(); renderCatPanel();
-            adminToast('🔄 Reset to default products!', 'info');
-        }
+        };
+        window.resetToDefaults = function () {
+            if (!confirm('Reset ALL products to defaults? All changes will be lost.')) return;
+            adminData.products = [...DP]; adminData.nextId = 56; adminData.activity = [];
+            save(); updateBadge(); renderDashboard(); renderTable(); renderCatPanel();
+            adminToast('🔄 Reset to defaults! Syncing to Firebase…', 'info');
+        };
 
-        /* ══ ACTIVITY LOG ══ */
-        function addActivity(type, text) {
-            const now = new Date();
-            const time = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-            adminData.activity.unshift({ type, text, time });
-            adminData.activity = adminData.activity.slice(0, 50);
+        /* ── ACTIVITY + TOAST ── */
+        function addAct(type, text) {
+            const now = new Date(); const t = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            adminData.activity.unshift({ type, text, time: t }); adminData.activity = adminData.activity.slice(0, 50);
         }
-
-        /* ══ TOAST ══ */
         function adminToast(msg, type = 'success') {
             const t = document.getElementById('adminToast');
-            const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
-            t.className = 'admin-toast show ' + type;
-            t.querySelector('i').className = 'fas ' + iconMap[type];
-            document.getElementById('adminToastMsg').textContent = msg;
-            setTimeout(() => t.classList.remove('show'), 3500);
+            t.className = 'admin-toast show ' + type; t.querySelector('i').className = 'fas ' + { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' }[type];
+            document.getElementById('adminToastMsg').textContent = msg; setTimeout(() => t.classList.remove('show'), 3500);
         }
+        window.adminToast = adminToast;
 
-        /* ── Init ── */
+        /* ── INIT — auto-load saved Firebase config ── */
+        const savedCfg = loadCfg();
+        if (savedCfg && savedCfg.apiKey) {
+            initFB(savedCfg).then(ok => { if (ok) startListener(); });
+        } else {
+            setStatus('none', 'Firebase not set up — click Firebase Setup');
+        }
         document.getElementById('loginUser').focus();
     </script>
-    
 </body>
 
 </html>
