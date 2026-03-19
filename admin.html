@@ -1,0 +1,3212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChandniMart Admin Panel</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import {
+            getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc,
+            doc, serverTimestamp, query, orderBy, onSnapshot
+        } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        /* ════════════════════════════════════════════
+           🔥 FIREBASE CONFIG — same as your main site
+           Replace with your actual Firebase project config
+        ════════════════════════════════════════════ */
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        /* ── Expose Firebase helpers globally ── */
+        window._db = db;
+        window._fbHelpers = {
+            collection, getDocs, addDoc, updateDoc, deleteDoc,
+            doc, serverTimestamp, query, orderBy, onSnapshot
+        };
+
+        /* ── Real-time orders listener ── */
+        window._startOrdersListener = function (callback) {
+            const { collection, query, orderBy, onSnapshot } = window._fbHelpers;
+            const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+            return onSnapshot(q, (snap) => {
+                const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                callback(orders);
+            }, (err) => {
+                console.warn('Orders listener error:', err.message);
+                callback([]);
+            });
+        };
+
+        /* ── Products collection helpers ── */
+        window._getFirebaseProducts = async function () {
+            const { collection, getDocs } = window._fbHelpers;
+            try {
+                const snap = await getDocs(collection(db, 'products'));
+                return snap.docs.map(d => ({ fbId: d.id, ...d.data() }));
+            } catch (e) { return []; }
+        };
+
+        window._saveProductToFirebase = async function (product) {
+            const { collection, addDoc, serverTimestamp } = window._fbHelpers;
+            const docRef = await addDoc(collection(db, 'products'), {
+                ...product, createdAt: serverTimestamp()
+            });
+            return docRef.id;
+        };
+
+        window._updateProductInFirebase = async function (fbId, data) {
+            const { doc, updateDoc } = window._fbHelpers;
+            await updateDoc(doc(db, 'products', fbId), data);
+        };
+
+        window._deleteProductFromFirebase = async function (fbId) {
+            const { doc, deleteDoc } = window._fbHelpers;
+            await deleteDoc(doc(db, 'products', fbId));
+        };
+
+        window._updateOrderStatus = async function (orderId, status) {
+            const { doc, updateDoc } = window._fbHelpers;
+            await updateDoc(doc(db, 'orders', orderId), { status });
+        };
+
+        window._fbReady = true;
+        document.dispatchEvent(new Event('firebase-ready'));
+    </script>
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        :root {
+            --bg: #0d0a07;
+            --surface: #161008;
+            --card: #1e1408;
+            --border: #2e1e0a;
+            --saffron: #e8602c;
+            --saffron-deep: #b5451b;
+            --gold: #d4a843;
+            --gold-light: #f0cc6e;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --purple: #8b5cf6;
+            --text: #fdf6ee;
+            --muted: rgba(253, 246, 238, .5);
+            --muted2: rgba(253, 246, 238, .25);
+            --shadow: rgba(232, 96, 44, 0.15)
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden
+        }
+
+        /* ── LAYOUT ── */
+        .admin-wrap {
+            display: flex;
+            min-height: 100vh
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 240px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 100;
+            transition: transform .3s
+        }
+
+        .sidebar-logo {
+            padding: 1.4rem 1.3rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .sidebar-logo .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--saffron), var(--gold));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0
+        }
+
+        .sidebar-logo .logo-icon i {
+            color: white;
+            font-size: 1rem
+        }
+
+        .sidebar-logo .logo-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gold-light)
+        }
+
+        .sidebar-logo .logo-tag {
+            font-size: .55rem;
+            letter-spacing: 2px;
+            color: var(--saffron);
+            text-transform: uppercase;
+            display: block;
+            margin-top: -3px
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: .8rem 0;
+            overflow-y: auto
+        }
+
+        .nav-section-label {
+            font-size: .62rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--muted2);
+            padding: .6rem 1.3rem .3rem;
+            font-weight: 600
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: .7rem 1.3rem;
+            cursor: pointer;
+            transition: all .2s;
+            border-left: 3px solid transparent;
+            font-size: .86rem;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none
+        }
+
+        .nav-item:hover {
+            background: rgba(232, 96, 44, .08);
+            color: var(--text)
+        }
+
+        .nav-item.active {
+            background: rgba(232, 96, 44, .12);
+            border-left-color: var(--saffron);
+            color: var(--saffron)
+        }
+
+        .nav-item i {
+            width: 18px;
+            text-align: center;
+            font-size: .9rem
+        }
+
+        .nav-item .nav-badge {
+            margin-left: auto;
+            background: var(--saffron);
+            color: white;
+            font-size: .6rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 50px;
+            min-width: 20px;
+            text-align: center
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.3rem;
+            border-top: 1px solid var(--border)
+        }
+
+        .sidebar-store-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: .78rem;
+            text-decoration: none;
+            transition: color .2s
+        }
+
+        .sidebar-store-link:hover {
+            color: var(--gold-light)
+        }
+
+        /* ── MAIN ── */
+        .main {
+            margin-left: 240px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh
+        }
+
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: .85rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: .8rem
+        }
+
+        .topbar-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text)
+        }
+
+        .topbar-subtitle {
+            font-size: .75rem;
+            color: var(--muted)
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: .8rem
+        }
+
+        .topbar-btn {
+            padding: 7px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: .78rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .topbar-btn:hover {
+            border-color: var(--saffron);
+            color: var(--saffron)
+        }
+
+        .topbar-btn.primary {
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-deep));
+            border-color: transparent;
+            color: white
+        }
+
+        .topbar-btn.primary:hover {
+            opacity: .9
+        }
+
+        .page-content {
+            padding: 1.8rem 2rem;
+            flex: 1
+        }
+
+        /* ── FIREBASE SETUP BANNER ── */
+        .firebase-banner {
+            background: linear-gradient(135deg, rgba(59, 130, 246, .15), rgba(139, 92, 246, .1));
+            border: 1px solid rgba(59, 130, 246, .3);
+            border-radius: 14px;
+            padding: 1.1rem 1.4rem;
+            margin-bottom: 1.6rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem
+        }
+
+        .firebase-banner i {
+            color: var(--blue);
+            font-size: 1.2rem;
+            margin-top: 2px;
+            flex-shrink: 0
+        }
+
+        .firebase-banner h4 {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: .2rem
+        }
+
+        .firebase-banner p {
+            font-size: .76rem;
+            color: var(--muted);
+            line-height: 1.5
+        }
+
+        .firebase-banner a {
+            color: var(--blue);
+            font-weight: 700
+        }
+
+        .firebase-banner.success {
+            background: rgba(34, 197, 94, .1);
+            border-color: rgba(34, 197, 94, .3)
+        }
+
+        .firebase-banner.success i {
+            color: var(--green)
+        }
+
+        /* ── STAT CARDS ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.8rem
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.3rem;
+            position: relative;
+            overflow: hidden;
+            transition: border-color .3s
+        }
+
+        .stat-card:hover {
+            border-color: var(--saffron)
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px
+        }
+
+        .stat-card.c1::before {
+            background: linear-gradient(90deg, var(--saffron), var(--gold))
+        }
+
+        .stat-card.c2::before {
+            background: linear-gradient(90deg, var(--green), #16a34a)
+        }
+
+        .stat-card.c3::before {
+            background: linear-gradient(90deg, var(--blue), #1d4ed8)
+        }
+
+        .stat-card.c4::before {
+            background: linear-gradient(90deg, var(--purple), #7c3aed)
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: .9rem
+        }
+
+        .stat-card.c1 .stat-icon {
+            background: rgba(232, 96, 44, .15)
+        }
+
+        .stat-card.c1 .stat-icon i {
+            color: var(--saffron)
+        }
+
+        .stat-card.c2 .stat-icon {
+            background: rgba(34, 197, 94, .15)
+        }
+
+        .stat-card.c2 .stat-icon i {
+            color: var(--green)
+        }
+
+        .stat-card.c3 .stat-icon {
+            background: rgba(59, 130, 246, .15)
+        }
+
+        .stat-card.c3 .stat-icon i {
+            color: var(--blue)
+        }
+
+        .stat-card.c4 .stat-icon {
+            background: rgba(139, 92, 246, .15)
+        }
+
+        .stat-card.c4 .stat-icon i {
+            color: var(--purple)
+        }
+
+        .stat-icon i {
+            font-size: 1.1rem
+        }
+
+        .stat-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1
+        }
+
+        .stat-label {
+            font-size: .75rem;
+            color: var(--muted);
+            margin-top: .3rem
+        }
+
+        .stat-change {
+            font-size: .7rem;
+            margin-top: .4rem;
+            display: flex;
+            align-items: center;
+            gap: 4px
+        }
+
+        .stat-change.up {
+            color: var(--green)
+        }
+
+        .stat-change.neutral {
+            color: var(--muted)
+        }
+
+        /* ── SECTION HEADER ── */
+        .section-hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.1rem
+        }
+
+        .section-hd h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .section-hd h2 i {
+            color: var(--saffron);
+            font-size: .9rem
+        }
+
+        .section-hd-actions {
+            display: flex;
+            gap: .6rem
+        }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden
+        }
+
+        .table-search {
+            padding: .9rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: .7rem;
+            align-items: center
+        }
+
+        .table-search input {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 12px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: .83rem;
+            outline: none;
+            transition: border-color .2s
+        }
+
+        .table-search input:focus {
+            border-color: var(--saffron)
+        }
+
+        .table-search input::placeholder {
+            color: var(--muted2)
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .data-table th {
+            padding: .7rem 1.1rem;
+            text-align: left;
+            font-size: .68rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            background: rgba(255, 255, 255, .02)
+        }
+
+        .data-table td {
+            padding: .85rem 1.1rem;
+            font-size: .82rem;
+            border-bottom: 1px solid rgba(46, 30, 10, .6);
+            color: var(--text);
+            vertical-align: middle
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none
+        }
+
+        .data-table tr:hover td {
+            background: rgba(232, 96, 44, .04)
+        }
+
+        .prod-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 9px;
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+            border: 1px solid var(--border)
+        }
+
+        .prod-name-cell {
+            display: flex;
+            align-items: center;
+            gap: .8rem
+        }
+
+        .prod-name-text {
+            font-weight: 600;
+            font-size: .84rem;
+            color: var(--text)
+        }
+
+        .prod-brand-text {
+            font-size: .7rem;
+            color: var(--muted);
+            font-style: italic
+        }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: .5px;
+            text-transform: uppercase
+        }
+
+        .badge-paid {
+            background: rgba(34, 197, 94, .15);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, .3)
+        }
+
+        .badge-cod {
+            background: rgba(212, 168, 67, .15);
+            color: var(--gold);
+            border: 1px solid rgba(212, 168, 67, .3)
+        }
+
+        .badge-qr {
+            background: rgba(59, 130, 246, .15);
+            color: var(--blue);
+            border: 1px solid rgba(59, 130, 246, .3)
+        }
+
+        .badge-cat {
+            background: rgba(232, 96, 44, .12);
+            color: var(--saffron);
+            border: 1px solid rgba(232, 96, 44, .25)
+        }
+
+        .badge-delivered {
+            background: rgba(34, 197, 94, .15);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, .3)
+        }
+
+        .badge-pending {
+            background: rgba(212, 168, 67, .15);
+            color: var(--gold);
+            border: 1px solid rgba(212, 168, 67, .3)
+        }
+
+        .badge-cancelled {
+            background: rgba(239, 68, 68, .15);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, .3)
+        }
+
+        .action-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: .78rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+            font-family: 'Outfit', sans-serif
+        }
+
+        .action-btn:hover {
+            border-color: var(--saffron);
+            color: var(--saffron);
+            background: rgba(232, 96, 44, .08)
+        }
+
+        .action-btn.del:hover {
+            border-color: var(--red);
+            color: var(--red);
+            background: rgba(239, 68, 68, .08)
+        }
+
+        .table-empty {
+            text-align: center;
+            padding: 3rem;
+            color: var(--muted)
+        }
+
+        .table-empty i {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: .8rem;
+            opacity: .3
+        }
+
+        /* ── PAGINATION ── */
+        .table-footer {
+            padding: .8rem 1.2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: .75rem;
+            color: var(--muted)
+        }
+
+        .page-btns {
+            display: flex;
+            gap: .4rem
+        }
+
+        .pg-btn {
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: .75rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all .2s
+        }
+
+        .pg-btn:hover,
+        .pg-btn.active {
+            border-color: var(--saffron);
+            color: var(--saffron)
+        }
+
+        .pg-btn:disabled {
+            opacity: .3;
+            cursor: not-allowed
+        }
+
+        /* ── STATUS SELECTOR ── */
+        .status-sel {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: .72rem;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            cursor: pointer
+        }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 3, 1, .85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all .3s
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible
+        }
+
+        .modal {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 92vh;
+            overflow-y: auto;
+            transform: scale(.92) translateY(20px);
+            transition: transform .3s cubic-bezier(.175, .885, .32, 1.275);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .5)
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1) translateY(0)
+        }
+
+        .modal-head {
+            padding: 1.3rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, rgba(232, 96, 44, .1), rgba(212, 168, 67, .05))
+        }
+
+        .modal-head h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .modal-head h3 i {
+            color: var(--saffron)
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: .9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+            border-color: var(--text)
+        }
+
+        .modal-body {
+            padding: 1.5rem
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem
+        }
+
+        .form-grid.full {
+            grid-template-columns: 1fr
+        }
+
+        .field {
+            margin-bottom: 0
+        }
+
+        .field label {
+            display: block;
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--muted);
+            margin-bottom: .4rem;
+            letter-spacing: .5px;
+            text-transform: uppercase
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 9px 12px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: .86rem;
+            outline: none;
+            transition: border-color .2s
+        }
+
+        .field input:focus,
+        .field select,
+        .field textarea:focus {
+            border-color: var(--saffron);
+            box-shadow: 0 0 0 3px rgba(232, 96, 44, .08)
+        }
+
+        .field input::placeholder,
+        .field textarea::placeholder {
+            color: var(--muted2)
+        }
+
+        .field textarea {
+            min-height: 80px;
+            resize: vertical
+        }
+
+        .field select {
+            -webkit-appearance: none;
+            cursor: pointer
+        }
+
+        .field select option {
+            background: var(--surface)
+        }
+
+        .img-preview {
+            width: 100%;
+            height: 130px;
+            border-radius: 10px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: .4rem;
+            position: relative;
+            overflow: hidden;
+            transition: all .3s
+        }
+
+        .img-preview.has-img {
+            border-style: solid
+        }
+
+        .img-preview i {
+            color: var(--muted2);
+            font-size: 2rem
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: .7rem;
+            justify-content: flex-end
+        }
+
+        .btn {
+            padding: 9px 18px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: .84rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .btn:hover {
+            border-color: var(--saffron);
+            color: var(--saffron)
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-deep));
+            border-color: transparent;
+            color: white
+        }
+
+        .btn.primary:hover {
+            opacity: .9;
+            transform: translateY(-1px)
+        }
+
+        .btn.danger {
+            background: rgba(239, 68, 68, .15);
+            border-color: rgba(239, 68, 68, .3);
+            color: var(--red)
+        }
+
+        .btn.danger:hover {
+            background: rgba(239, 68, 68, .25)
+        }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: .83rem;
+            font-weight: 500;
+            z-index: 9999;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all .35s;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, .4);
+            max-width: 340px
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1
+        }
+
+        .toast i {
+            font-size: .9rem;
+            flex-shrink: 0
+        }
+
+        .toast.success i {
+            color: var(--green)
+        }
+
+        .toast.error i {
+            color: var(--red)
+        }
+
+        .toast.info i {
+            color: var(--blue)
+        }
+
+        /* ── CHARTS ── */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 1.2rem;
+            margin-bottom: 1.8rem
+        }
+
+        .chart-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.3rem
+        }
+
+        .chart-title {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .chart-title i {
+            color: var(--saffron);
+            font-size: .8rem
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 120px
+        }
+
+        .bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px
+        }
+
+        .bar-fill {
+            width: 100%;
+            background: linear-gradient(to top, var(--saffron-deep), var(--saffron));
+            border-radius: 4px 4px 0 0;
+            transition: height .6s cubic-bezier(.34, 1.56, .64, 1);
+            min-height: 4px
+        }
+
+        .bar-label {
+            font-size: .6rem;
+            color: var(--muted);
+            text-align: center
+        }
+
+        .bar-val {
+            font-size: .6rem;
+            color: var(--gold);
+            font-weight: 700
+        }
+
+        .donut-wrap {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem
+        }
+
+        .donut-svg {
+            flex-shrink: 0
+        }
+
+        .donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem
+        }
+
+        .donut-item {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .75rem
+        }
+
+        .donut-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0
+        }
+
+        /* ── RECENT ORDERS MINI ── */
+        .order-mini {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: .7rem 0;
+            border-bottom: 1px solid rgba(46, 30, 10, .5)
+        }
+
+        .order-mini:last-child {
+            border-bottom: none
+        }
+
+        .order-mini-id {
+            font-size: .72rem;
+            font-family: monospace;
+            color: var(--saffron)
+        }
+
+        .order-mini-name {
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .order-mini-amt {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--gold-light)
+        }
+
+        /* ── TABS ── */
+        .tab-row {
+            display: flex;
+            gap: .4rem;
+            margin-bottom: 1.2rem;
+            background: var(--surface);
+            border-radius: 10px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            width: fit-content
+        }
+
+        .tab-btn {
+            padding: 6px 16px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .tab-btn.active {
+            background: var(--saffron);
+            color: white
+        }
+
+        /* ── LOADING SPINNER ── */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--saffron);
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            display: inline-block
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        .loading-row {
+            text-align: center;
+            padding: 2.5rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .7rem
+        }
+
+        /* ── PAGE VIEWS ── */
+        .page-view {
+            display: none
+        }
+
+        .page-view.active {
+            display: block
+        }
+
+        /* ── MOBILE ── */
+        .mob-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.1rem;
+            cursor: pointer
+        }
+
+        @media(max-width:900px) {
+            .sidebar {
+                transform: translateX(-100%)
+            }
+
+            .sidebar.open {
+                transform: translateX(0)
+            }
+
+            .main {
+                margin-left: 0
+            }
+
+            .mob-menu-btn {
+                display: block
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .charts-row {
+                grid-template-columns: 1fr
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr
+            }
+
+            .page-content {
+                padding: 1.2rem
+            }
+        }
+
+        @media(max-width:500px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .stat-num {
+                font-size: 1.5rem
+            }
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar {
+            width: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--surface)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--saffron)
+        }
+
+        /* ── LOGIN SCREEN ── */
+        .login-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 60%, rgba(232, 96, 44, .12) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(212, 168, 67, .08) 0%, transparent 50%), var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 1rem
+        }
+
+        .login-screen.hide {
+            display: none
+        }
+
+        .login-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2.4rem 2.2rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, .5);
+            position: relative;
+            overflow: hidden
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--saffron), var(--gold), var(--saffron))
+        }
+
+        .login-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            justify-content: center
+        }
+
+        .login-logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--saffron), var(--gold));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(232, 96, 44, .35)
+        }
+
+        .login-logo-icon i {
+            color: white;
+            font-size: 1.3rem
+        }
+
+        .login-logo-text .name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gold-light)
+        }
+
+        .login-logo-text .tag {
+            font-size: .6rem;
+            letter-spacing: 2.5px;
+            color: var(--saffron);
+            text-transform: uppercase
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 1.8rem
+        }
+
+        .login-title h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: .3rem
+        }
+
+        .login-title p {
+            font-size: .78rem;
+            color: var(--muted)
+        }
+
+        .login-field {
+            margin-bottom: 1rem
+        }
+
+        .login-field label {
+            display: block;
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--muted);
+            margin-bottom: .4rem;
+            letter-spacing: .5px;
+            text-transform: uppercase
+        }
+
+        .login-field-wrap {
+            position: relative
+        }
+
+        .login-field input {
+            width: 100%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 11px;
+            padding: 12px 42px 12px 14px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: .9rem;
+            outline: none;
+            transition: all .25s
+        }
+
+        .login-field input:focus {
+            border-color: var(--saffron);
+            box-shadow: 0 0 0 3px rgba(232, 96, 44, .1);
+            background: var(--bg)
+        }
+
+        .login-field input::placeholder {
+            color: var(--muted2)
+        }
+
+        .login-field-icon {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: .85rem;
+            cursor: pointer;
+            transition: color .2s;
+            user-select: none
+        }
+
+        .login-field-icon:hover {
+            color: var(--saffron)
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-deep));
+            color: white;
+            border: none;
+            border-radius: 11px;
+            font-family: 'Outfit', sans-serif;
+            font-size: .95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .3s;
+            margin-top: .4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: .3px
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(232, 96, 44, .4)
+        }
+
+        .login-btn:active {
+            transform: scale(.98)
+        }
+
+        .login-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none
+        }
+
+        .login-error {
+            background: rgba(239, 68, 68, .1);
+            border: 1px solid rgba(239, 68, 68, .25);
+            border-radius: 9px;
+            padding: .7rem .9rem;
+            font-size: .8rem;
+            color: var(--red);
+            margin-bottom: .9rem;
+            display: none;
+            align-items: center;
+            gap: 7px
+        }
+
+        .login-error.show {
+            display: flex
+        }
+
+        .login-hint {
+            text-align: center;
+            font-size: .72rem;
+            color: var(--muted2);
+            margin-top: 1.1rem;
+            line-height: 1.6
+        }
+
+        .login-hint strong {
+            color: var(--muted)
+        }
+
+        /* ── CHANGE PASSWORD SECTION ── */
+        .pwd-section {
+            margin-top: 1.8rem;
+            padding-top: 1.4rem;
+            border-top: 1px solid var(--border)
+        }
+
+        .pwd-field {
+            position: relative;
+            margin-bottom: .8rem
+        }
+
+        .pwd-field input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 9px 40px 9px 12px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: .86rem;
+            outline: none;
+            transition: border-color .2s
+        }
+
+        .pwd-field input:focus {
+            border-color: var(--saffron);
+            box-shadow: 0 0 0 3px rgba(232, 96, 44, .08)
+        }
+
+        .pwd-eye {
+            position: absolute;
+            right: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: .82rem;
+            cursor: pointer;
+            transition: color .2s
+        }
+
+        .pwd-eye:hover {
+            color: var(--saffron)
+        }
+
+        .pwd-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: .3rem;
+            transition: all .3s;
+            background: var(--border)
+        }
+
+        .pwd-strength.weak {
+            background: var(--red);
+            width: 33%
+        }
+
+        .pwd-strength.medium {
+            background: var(--gold);
+            width: 66%
+        }
+
+        .pwd-strength.strong {
+            background: var(--green);
+            width: 100%
+        }
+
+        .pwd-strength-label {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: .2rem
+        }
+
+        /* ── MISC ── */
+        .order-detail-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .9rem 1rem;
+            margin-bottom: .8rem
+        }
+
+        .order-detail-box h5 {
+            font-size: .7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--saffron);
+            margin-bottom: .5rem;
+            font-weight: 700
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: .81rem;
+            padding: .25rem 0;
+            border-bottom: 1px solid rgba(46, 30, 10, .4)
+        }
+
+        .detail-row:last-child {
+            border-bottom: none
+        }
+
+        .detail-row span:first-child {
+            color: var(--muted)
+        }
+
+        .detail-row span:last-child {
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .item-row-order {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: .8rem;
+            padding: .4rem 0;
+            border-bottom: 1px solid rgba(46, 30, 10, .4)
+        }
+
+        .item-row-order:last-child {
+            border-bottom: none
+        }
+
+        .grand-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: .95rem;
+            font-weight: 700;
+            margin-top: .6rem;
+            padding-top: .6rem;
+            border-top: 1.5px solid var(--border)
+        }
+
+        .grand-row span:last-child {
+            color: var(--gold-light)
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <!-- ══════════════ LOGIN SCREEN ══════════════ -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="login-logo-icon"><i class="fas fa-store"></i></div>
+                <div class="login-logo-text">
+                    <div class="name">ChandniMart</div>
+                    <div class="tag">Admin Panel</div>
+                </div>
+            </div>
+            <div class="login-title">
+                <h2>Welcome Back 👋</h2>
+                <p>Sign in to manage your store</p>
+            </div>
+            <div class="login-error" id="loginError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="loginErrorMsg">Incorrect username or password</span>
+            </div>
+            <div class="login-field">
+                <label>Username</label>
+                <div class="login-field-wrap">
+                    <input type="text" id="loginUser" placeholder="Enter your username" autocomplete="username"
+                        onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+                    <i class="fas fa-user login-field-icon"></i>
+                </div>
+            </div>
+            <div class="login-field">
+                <label>Password</label>
+                <div class="login-field-wrap">
+                    <input type="password" id="loginPass" placeholder="Enter your password"
+                        autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+                    <i class="fas fa-eye login-field-icon" id="loginPassEye" onclick="toggleLoginPass()"></i>
+                </div>
+            </div>
+            <button class="login-btn" id="loginBtn" onclick="doLogin()">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+            <div class="login-hint">
+                Default credentials: <strong>admin</strong> / <strong>chandni@2024</strong><br>
+                Change your password after first login in ⚙️ Settings
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+    <div class="admin-wrap">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon"><i class="fas fa-store"></i></div>
+                <div>
+                    <div class="logo-name">ChandniMart</div>
+                    <span class="logo-tag">Admin Panel</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <a class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </a>
+                <a class="nav-item" onclick="showPage('orders')" id="nav-orders">
+                    <i class="fas fa-shopping-bag"></i> Orders
+                    <span class="nav-badge" id="pendingBadge">0</span>
+                </a>
+                <div class="nav-section-label">Catalogue</div>
+                <a class="nav-item" onclick="showPage('products')" id="nav-products">
+                    <i class="fas fa-box-open"></i> Products
+                </a>
+                <a class="nav-item" onclick="showPage('addproduct')" id="nav-addproduct">
+                    <i class="fas fa-plus-circle"></i> Add Product
+                </a>
+                <div class="nav-section-label">Settings</div>
+                <a class="nav-item" onclick="showPage('settings')" id="nav-settings">
+                    <i class="fas fa-cog"></i> Firebase Config
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div
+                    style="display:flex;align-items:center;gap:8px;margin-bottom:.7rem;padding:.5rem .6rem;background:rgba(232,96,44,.08);border-radius:8px;border:1px solid rgba(232,96,44,.15)">
+                    <div
+                        style="width:28px;height:28px;background:linear-gradient(135deg,var(--saffron),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i class="fas fa-user" style="color:white;font-size:.65rem"></i>
+                    </div>
+                    <div style="min-width:0">
+                        <div id="sidebarUsername"
+                            style="font-size:.75rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                            admin</div>
+                        <div style="font-size:.6rem;color:var(--saffron)">Logged in</div>
+                    </div>
+                    <button onclick="doLogout()" title="Logout"
+                        style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;transition:color .2s;flex-shrink:0"
+                        onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+                <a href="index.html" class="sidebar-store-link" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> View Store
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+            <!-- TOPBAR -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="mob-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+                        <div class="topbar-subtitle" id="topbarSub">ChandniMart Admin — Ghughali</div>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="topbar-btn" onclick="refreshAll()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <button class="topbar-btn primary" onclick="showPage('addproduct')"><i class="fas fa-plus"></i> Add
+                        Product</button>
+                    <button class="topbar-btn" onclick="doLogout()" title="Logout"
+                        style="border-color:rgba(239,68,68,.3);color:var(--red)"><i
+                            class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+
+            <div class="page-content">
+
+                <!-- ══════════════ DASHBOARD PAGE ══════════════ -->
+                <div class="page-view active" id="page-dashboard">
+
+                    <div class="firebase-banner" id="fbBanner">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <h4>Firebase Setup Required</h4>
+                            <p>Go to <a onclick="showPage('settings')" style="cursor:pointer">Firebase Config</a> and
+                                paste your project details to connect live orders and products. Until then, local data
+                                is shown.</p>
+                        </div>
+                    </div>
+
+                    <!-- STATS -->
+                    <div class="stats-grid">
+                        <div class="stat-card c1">
+                            <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+                            <div class="stat-num" id="statOrders">0</div>
+                            <div class="stat-label">Total Orders</div>
+                            <div class="stat-change neutral"><i class="fas fa-circle" style="font-size:.4rem"></i> All
+                                time</div>
+                        </div>
+                        <div class="stat-card c2">
+                            <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                            <div class="stat-num" id="statRevenue">₹0</div>
+                            <div class="stat-label">Total Revenue</div>
+                            <div class="stat-change up"><i class="fas fa-arrow-up"></i> Including delivery</div>
+                        </div>
+                        <div class="stat-card c3">
+                            <div class="stat-icon"><i class="fas fa-box-open"></i></div>
+                            <div class="stat-num" id="statProducts">55</div>
+                            <div class="stat-label">Total Products</div>
+                            <div class="stat-change neutral"><i class="fas fa-circle" style="font-size:.4rem"></i> In
+                                catalogue</div>
+                        </div>
+                        <div class="stat-card c4">
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                            <div class="stat-num" id="statPending">0</div>
+                            <div class="stat-label">Pending Orders</div>
+                            <div class="stat-change neutral"><i class="fas fa-circle" style="font-size:.4rem"></i> Needs
+                                action</div>
+                        </div>
+                    </div>
+
+                    <!-- CHARTS ROW -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-title"><i class="fas fa-chart-bar"></i> Orders by Day (Last 7 Days)</div>
+                            <div class="bar-chart" id="barChart">
+                                <!-- generated by JS -->
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-title"><i class="fas fa-chart-pie"></i> Payment Methods</div>
+                            <div class="donut-wrap">
+                                <svg class="donut-svg" width="100" height="100" viewBox="0 0 100 100" id="donutSvg">
+                                    <circle cx="50" cy="50" r="35" fill="none" stroke="#2e1e0a" stroke-width="18" />
+                                    <circle cx="50" cy="50" r="35" fill="none" stroke="#e8602c" stroke-width="18"
+                                        stroke-dasharray="0 220" stroke-dashoffset="55" id="donutUpi"
+                                        style="transition:stroke-dasharray 1s" />
+                                    <circle cx="50" cy="50" r="35" fill="none" stroke="#22c55e" stroke-width="18"
+                                        stroke-dasharray="0 220" stroke-dashoffset="55" id="donutCod"
+                                        style="transition:stroke-dasharray 1s 0.2s" />
+                                    <circle cx="50" cy="50" r="35" fill="none" stroke="#3b82f6" stroke-width="18"
+                                        stroke-dasharray="0 220" stroke-dashoffset="55" id="donutQr"
+                                        style="transition:stroke-dasharray 1s 0.4s" />
+                                </svg>
+                                <div class="donut-legend">
+                                    <div class="donut-item">
+                                        <div class="donut-dot" style="background:var(--saffron)"></div>
+                                        <span>UPI/Razorpay <strong id="pctUpi">0%</strong></span>
+                                    </div>
+                                    <div class="donut-item">
+                                        <div class="donut-dot" style="background:var(--green)"></div><span>Cash on
+                                            Delivery <strong id="pctCod">0%</strong></span>
+                                    </div>
+                                    <div class="donut-item">
+                                        <div class="donut-dot" style="background:var(--blue)"></div><span>QR Code
+                                            <strong id="pctQr">0%</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RECENT ORDERS -->
+                    <div class="section-hd">
+                        <h2><i class="fas fa-clock"></i> Recent Orders</h2>
+                        <button class="topbar-btn" onclick="showPage('orders')">View All <i
+                                class="fas fa-arrow-right"></i></button>
+                    </div>
+                    <div class="table-wrap">
+                        <div id="recentOrdersList" class="loading-row">
+                            <div class="spinner"></div> Loading orders from Firebase…
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══════════════ ORDERS PAGE ══════════════ -->
+                <div class="page-view" id="page-orders">
+                    <div class="tab-row">
+                        <button class="tab-btn active" onclick="filterOrders('all',this)">All</button>
+                        <button class="tab-btn" onclick="filterOrders('pending_cod',this)">COD Pending</button>
+                        <button class="tab-btn" onclick="filterOrders('pending_qr_confirm',this)">QR Pending</button>
+                        <button class="tab-btn" onclick="filterOrders('paid',this)">Paid</button>
+                        <button class="tab-btn" onclick="filterOrders('delivered',this)">Delivered</button>
+                    </div>
+                    <div class="table-wrap">
+                        <div class="table-search">
+                            <i class="fas fa-search" style="color:var(--muted);font-size:.82rem"></i>
+                            <input type="text" id="orderSearch" placeholder="Search by order ID, customer name, phone…"
+                                oninput="renderOrdersTable()">
+                        </div>
+                        <div style="overflow-x:auto">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
+                                        <th>Time</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTableBody">
+                                    <tr>
+                                        <td colspan="8" class="loading-row">
+                                            <div class="spinner"></div> Loading…
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer">
+                            <span id="ordersCount">0 orders</span>
+                            <div class="page-btns" id="ordersPagination"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══════════════ PRODUCTS PAGE ══════════════ -->
+                <div class="page-view" id="page-products">
+                    <div class="section-hd" style="margin-bottom:1rem">
+                        <h2><i class="fas fa-box-open"></i> All Products</h2>
+                        <div class="section-hd-actions">
+                            <button class="topbar-btn" onclick="syncProductsToFirebase()"><i
+                                    class="fas fa-cloud-upload-alt"></i> Sync to Firebase</button>
+                            <button class="topbar-btn primary" onclick="showPage('addproduct')"><i
+                                    class="fas fa-plus"></i> Add Product</button>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <div class="table-search">
+                            <i class="fas fa-search" style="color:var(--muted);font-size:.82rem"></i>
+                            <input type="text" id="prodSearch" placeholder="Search products by name, brand, category…"
+                                oninput="renderProductsTable()">
+                            <select id="prodCatFilter" onchange="renderProductsTable()"
+                                style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-family:'Outfit',sans-serif;font-size:.78rem;outline:none">
+                                <option value="">All Categories</option>
+                                <option value="lipcare">Lip Care</option>
+                                <option value="foundation">Foundation</option>
+                                <option value="eyemakeup">Eye Makeup</option>
+                                <option value="skincare">Skincare</option>
+                                <option value="haircare">Hair Care</option>
+                                <option value="suncare">Sun Care</option>
+                                <option value="nailcare">Nail Care</option>
+                                <option value="fragrance">Fragrance</option>
+                                <option value="parlour">Parlour Items</option>
+                            </select>
+                        </div>
+                        <div style="overflow-x:auto">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Old Price</th>
+                                        <th>Badge</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTableBody">
+                                    <tr>
+                                        <td colspan="6" class="loading-row">
+                                            <div class="spinner"></div> Loading…
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-footer">
+                            <span id="productsCount">0 products</span>
+                            <div class="page-btns" id="productsPagination"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══════════════ ADD PRODUCT PAGE ══════════════ -->
+                <div class="page-view" id="page-addproduct">
+                    <div class="table-wrap" style="padding:1.8rem;max-width:680px">
+                        <div style="margin-bottom:1.3rem">
+                            <h2
+                                style="font-size:1.05rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px">
+                                <i class="fas fa-plus-circle" style="color:var(--saffron)"></i>
+                                <span id="addProdTitle">Add New Product</span>
+                            </h2>
+                            <p style="font-size:.75rem;color:var(--muted);margin-top:.3rem">Fill in the product details.
+                                It will be saved to Firebase and synced to your store.</p>
+                        </div>
+
+                        <!-- Image preview -->
+                        <div class="field" style="margin-bottom:1rem">
+                            <label>Product Image URL</label>
+                            <input type="url" id="fpImg" placeholder="https://images.unsplash.com/…?w=400"
+                                oninput="previewImg()">
+                            <div class="img-preview" id="imgPreview">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="field">
+                                <label>Product Name *</label>
+                                <input type="text" id="fpName" placeholder="e.g. Lakme 9to5 Matte Lipstick">
+                            </div>
+                            <div class="field">
+                                <label>Brand *</label>
+                                <input type="text" id="fpBrand" placeholder="e.g. Lakme">
+                            </div>
+                        </div>
+
+                        <div class="form-grid" style="margin-top:1rem">
+                            <div class="field">
+                                <label>Category *</label>
+                                <select id="fpCat">
+                                    <option value="">— Select Category —</option>
+                                    <option value="lipcare">Lip Care</option>
+                                    <option value="foundation">Foundation</option>
+                                    <option value="eyemakeup">Eye Makeup</option>
+                                    <option value="skincare">Skincare</option>
+                                    <option value="haircare">Hair Care</option>
+                                    <option value="suncare">Sun Care</option>
+                                    <option value="nailcare">Nail Care</option>
+                                    <option value="fragrance">Fragrance</option>
+                                    <option value="parlour">Parlour Items</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Badge</label>
+                                <select id="fpBadge">
+                                    <option value="">No Badge</option>
+                                    <option value="new">New</option>
+                                    <option value="popular">Popular</option>
+                                    <option value="trending">Trending 🔥</option>
+                                    <option value="sale">Sale</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-grid" style="margin-top:1rem">
+                            <div class="field">
+                                <label>Price (₹) *</label>
+                                <input type="number" id="fpPrice" placeholder="399" min="0">
+                            </div>
+                            <div class="field">
+                                <label>Old Price (₹)</label>
+                                <input type="number" id="fpOldPrice" placeholder="499 (optional)" min="0">
+                            </div>
+                        </div>
+
+                        <div class="field" style="margin-top:1rem">
+                            <label>Description *</label>
+                            <textarea id="fpDesc" placeholder="Write a short product description…"></textarea>
+                        </div>
+
+                        <div style="display:flex;gap:.8rem;margin-top:1.4rem;flex-wrap:wrap">
+                            <button class="btn primary" onclick="saveProduct()" id="saveProdBtn"
+                                style="flex:1;justify-content:center;min-width:140px">
+                                <i class="fas fa-cloud-upload-alt"></i> <span id="saveProdBtnText">Save to
+                                    Firebase</span>
+                            </button>
+                            <button class="btn" onclick="clearProductForm()"
+                                style="flex:1;justify-content:center;min-width:120px">
+                                <i class="fas fa-times"></i> Clear Form
+                            </button>
+                        </div>
+
+                        <div id="saveResult" style="margin-top:1rem;display:none"></div>
+                    </div>
+                </div>
+
+                <!-- ══════════════ SETTINGS PAGE ══════════════ -->
+                <div class="page-view" id="page-settings">
+                    <div class="table-wrap" style="padding:1.8rem;max-width:600px">
+                        <h2
+                            style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:.3rem;display:flex;align-items:center;gap:8px">
+                            <i class="fas fa-fire" style="color:#f97316"></i> Firebase Configuration
+                        </h2>
+                        <p style="font-size:.75rem;color:var(--muted);margin-bottom:1.4rem">Paste your Firebase project
+                            config below. Get it from <a href="https://console.firebase.google.com" target="_blank"
+                                style="color:var(--blue)">console.firebase.google.com</a> → Project Settings → Your Apps
+                            → Web App.</p>
+
+                        <div class="firebase-banner" style="margin-bottom:1.2rem">
+                            <i class="fas fa-lightbulb"></i>
+                            <div>
+                                <h4>How to get your Firebase config</h4>
+                                <p>1. Go to <a href="https://console.firebase.google.com" target="_blank">Firebase
+                                        Console</a> → Create/select project<br>
+                                    2. Click ⚙️ Project Settings → "Your apps" → Add Web App<br>
+                                    3. Copy the <code
+                                        style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px">firebaseConfig</code>
+                                    object and paste below<br>
+                                    4. Also enable <strong>Firestore Database</strong> in test mode</p>
+                            </div>
+                        </div>
+
+                        <div class="field" style="margin-bottom:1rem">
+                            <label>API Key</label>
+                            <input type="text" id="cfgApiKey" placeholder="AIzaSy…">
+                        </div>
+                        <div class="form-grid" style="margin-bottom:1rem">
+                            <div class="field">
+                                <label>Auth Domain</label>
+                                <input type="text" id="cfgAuthDomain" placeholder="yourproject.firebaseapp.com">
+                            </div>
+                            <div class="field">
+                                <label>Project ID *</label>
+                                <input type="text" id="cfgProjectId" placeholder="yourproject-id">
+                            </div>
+                        </div>
+                        <div class="form-grid" style="margin-bottom:1rem">
+                            <div class="field">
+                                <label>Storage Bucket</label>
+                                <input type="text" id="cfgBucket" placeholder="yourproject.appspot.com">
+                            </div>
+                            <div class="field">
+                                <label>Messaging Sender ID</label>
+                                <input type="text" id="cfgSenderId" placeholder="123456789">
+                            </div>
+                        </div>
+                        <div class="field" style="margin-bottom:1.2rem">
+                            <label>App ID</label>
+                            <input type="text" id="cfgAppId" placeholder="1:123456:web:abc123">
+                        </div>
+
+                        <div
+                            style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem 1rem;margin-bottom:1.2rem">
+                            <p
+                                style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem;font-weight:700;text-transform:uppercase;letter-spacing:1px">
+                                Or paste entire firebaseConfig object:</p>
+                            <textarea id="cfgPaste"
+                                placeholder='Paste full firebaseConfig = { apiKey: "...", ... } here'
+                                style="width:100%;background:transparent;border:none;color:var(--text);font-family:monospace;font-size:.78rem;outline:none;min-height:80px;resize:vertical"
+                                oninput="parseConfigPaste()"></textarea>
+                        </div>
+
+                        <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+                            <button class="btn primary" onclick="saveConfig()" style="flex:1;justify-content:center">
+                                <i class="fas fa-save"></i> Save Config to HTML
+                            </button>
+                            <button class="btn" onclick="testFirebase()" style="flex:1;justify-content:center">
+                                <i class="fas fa-plug"></i> Test Connection
+                            </button>
+                        </div>
+
+                        <div id="configResult" style="margin-top:1rem"></div>
+
+                        <div style="margin-top:1.8rem;padding-top:1.4rem;border-top:1px solid var(--border)">
+                            <h3
+                                style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.8rem;display:flex;align-items:center;gap:6px">
+                                <i class="fas fa-key" style="color:var(--gold)"></i> Store Settings
+                            </h3>
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label>UPI ID</label>
+                                    <input type="text" id="storeUpiId" placeholder="yourname@upi"
+                                        value="chandnimart@upi">
+                                </div>
+                                <div class="field">
+                                    <label>Razorpay Key</label>
+                                    <input type="text" id="storeRzpKey" placeholder="rzp_live_…">
+                                </div>
+                            </div>
+                            <div class="form-grid" style="margin-top:.8rem">
+                                <div class="field">
+                                    <label>Phone</label>
+                                    <input type="text" id="storePhone" placeholder="8953946893" value="8953946893">
+                                </div>
+                                <div class="field">
+                                    <label>Delivery Charge (₹)</label>
+                                    <input type="number" id="storeDelivery" placeholder="40" value="40">
+                                </div>
+                            </div>
+                            <button class="btn primary" style="margin-top:1rem" onclick="saveStoreSettings()">
+                                <i class="fas fa-save"></i> Save Store Settings
+                            </button>
+                        </div>
+
+                        <!-- ── CHANGE PASSWORD ── -->
+                        <div class="pwd-section">
+                            <h3
+                                style="font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.8rem;display:flex;align-items:center;gap:6px">
+                                <i class="fas fa-lock" style="color:var(--saffron)"></i> Change Password
+                            </h3>
+                            <div class="field" style="margin-bottom:.8rem">
+                                <label>Current Password</label>
+                                <div class="pwd-field">
+                                    <input type="password" id="pwdCurrent" placeholder="Enter current password">
+                                    <i class="fas fa-eye pwd-eye" onclick="togglePwd('pwdCurrent',this)"></i>
+                                </div>
+                            </div>
+                            <div class="field" style="margin-bottom:.8rem">
+                                <label>New Username</label>
+                                <div class="pwd-field">
+                                    <input type="text" id="pwdNewUser"
+                                        placeholder="New username (leave blank to keep current)">
+                                </div>
+                            </div>
+                            <div class="field" style="margin-bottom:.4rem">
+                                <label>New Password</label>
+                                <div class="pwd-field">
+                                    <input type="password" id="pwdNew" placeholder="Enter new password (min 6 chars)"
+                                        oninput="checkPwdStrength()">
+                                    <i class="fas fa-eye pwd-eye" onclick="togglePwd('pwdNew',this)"></i>
+                                </div>
+                                <div class="pwd-strength" id="pwdStrengthBar"></div>
+                                <div class="pwd-strength-label" id="pwdStrengthLabel"></div>
+                            </div>
+                            <div class="field" style="margin-bottom:1rem">
+                                <label>Confirm New Password</label>
+                                <div class="pwd-field">
+                                    <input type="password" id="pwdConfirm" placeholder="Repeat new password">
+                                    <i class="fas fa-eye pwd-eye" onclick="togglePwd('pwdConfirm',this)"></i>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+                                <button class="btn primary" onclick="changePassword()"
+                                    style="flex:1;justify-content:center">
+                                    <i class="fas fa-key"></i> Update Credentials
+                                </button>
+                                <button class="btn" onclick="doLogout()"
+                                    style="flex:1;justify-content:center;border-color:rgba(239,68,68,.3);color:var(--red)">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </div>
+                            <div id="pwdResult" style="margin-top:.8rem"></div>
+                        </div>
+
+                        <!-- CHANGE PASSWORD -->
+                        <div class="pwd-section">
+                            <h3><i class="fas fa-key"></i> Change Admin Password</h3>
+                            <p style="font-size:.74rem;color:var(--muted);margin-bottom:.9rem">Keep your admin panel
+                                secure with a strong password.</p>
+
+                            <div class="pwd-field">
+                                <input type="password" id="pwdCurrent" placeholder="Current password">
+                                <button class="pwd-eye" onclick="toggleEye('pwdCurrent',this)"><i
+                                        class="fas fa-eye"></i></button>
+                            </div>
+
+                            <div class="pwd-field">
+                                <input type="password" id="pwdNew" placeholder="New password (min. 6 characters)"
+                                    oninput="checkPwdStrength()">
+                                <button class="pwd-eye" onclick="toggleEye('pwdNew',this)"><i
+                                        class="fas fa-eye"></i></button>
+                                <div class="pwd-strength" id="pwdStrengthBar"></div>
+                                <div class="pwd-hint" id="pwdStrengthHint"></div>
+                            </div>
+
+                            <div class="pwd-field">
+                                <input type="password" id="pwdConfirm" placeholder="Confirm new password">
+                                <button class="pwd-eye" onclick="toggleEye('pwdConfirm',this)"><i
+                                        class="fas fa-eye"></i></button>
+                            </div>
+
+                            <div id="pwdError"
+                                style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 12px;font-size:.78rem;color:var(--red);margin-bottom:.7rem;display:none">
+                            </div>
+                            <div id="pwdSuccess"
+                                style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:8px 12px;font-size:.78rem;color:var(--green);margin-bottom:.7rem;display:none">
+                            </div>
+
+                            <button class="btn primary" style="width:100%;justify-content:center"
+                                onclick="changePassword()">
+                                <i class="fas fa-lock"></i> Update Password
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div><!-- end page-content -->
+        </main>
+    </div>
+
+    <!-- ORDER DETAIL MODAL -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal">
+            <div class="modal-head">
+                <h3><i class="fas fa-shopping-bag"></i> Order Details</h3>
+                <button class="modal-close" onclick="closeModal('orderModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="orderModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn danger" onclick="closeModal('orderModal')"><i class="fas fa-times"></i>
+                    Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT PRODUCT MODAL -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-head">
+                <h3><i class="fas fa-edit"></i> Edit Product</h3>
+                <button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="editModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('editModal')">Cancel</button>
+                <button class="btn primary" onclick="saveEditProduct()"><i class="fas fa-save"></i> Save
+                    Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE CONFIRM MODAL -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal" style="max-width:400px">
+            <div class="modal-head">
+                <h3><i class="fas fa-trash" style="color:var(--red)"></i> Delete Product</h3>
+                <button class="modal-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--muted);font-size:.88rem;line-height:1.6">Are you sure you want to delete <strong
+                        id="deleteProdName" style="color:var(--text)"></strong>? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('deleteModal')">Cancel</button>
+                <button class="btn danger" onclick="confirmDeleteProduct()"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ════════════════════════════════════════════════════
+           ADMIN PANEL — Full JS Logic
+        ════════════════════════════════════════════════════ */
+
+        const CAT_LABELS = {
+            lipcare: 'Lip Care', foundation: 'Foundation', eyemakeup: 'Eye Makeup',
+            skincare: 'Skincare', haircare: 'Hair Care', suncare: 'Sun Care',
+            nailcare: 'Nail Care', fragrance: 'Fragrance', parlour: 'Parlour Items'
+        };
+
+        /* ── Default products (from main site) ── */
+        const DEFAULT_PRODUCTS = [
+            { id: 1, cat: 'lipcare', brand: 'Lakme', name: '9to5 Matte Lipstick', desc: 'Long-stay matte finish in 30 bold shades.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: 'popular' },
+            { id: 2, cat: 'lipcare', brand: 'Maybelline', name: 'SuperStay Matte Ink', desc: 'Transfer-proof liquid lipstick. Lasts 16 hours.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'trending' },
+            { id: 3, cat: 'lipcare', brand: "L'Oréal", name: 'Infallible Lip Colour', desc: '2-step colour + balm system for full-day colour.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'sale' },
+            { id: 4, cat: 'lipcare', brand: 'Nykaa', name: 'Matte to Last Lip Crayon', desc: 'Bullet crayon for precise, velvety matte application.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'new' },
+            { id: 5, cat: 'lipcare', brand: 'Revlon', name: 'Super Lustrous Lip Gloss', desc: 'High-shine glossy formula with aloe vera & vitamin E.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: '' },
+            { id: 6, cat: 'lipcare', brand: 'Lakme', name: 'Lip Love Lip Balm SPF 15', desc: 'Tinted moisturising lip balm with SPF protection.', price: 179, oldPrice: 229, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'popular' },
+            { id: 7, cat: 'foundation', brand: 'Maybelline', name: 'Fit Me Matte Foundation', desc: 'Controls shine, blurs pores. Natural finish in 40+ shades.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1513379733131-47fc74b45fc7?w=400', badge: 'popular' },
+            { id: 8, cat: 'foundation', brand: 'Lakme', name: 'Perfecting Liquid Foundation', desc: 'Lightweight, buildable coverage with vitamin E. SPF 20.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400', badge: '' },
+            { id: 9, cat: 'foundation', brand: "L'Oréal", name: 'True Match Super-Blendable', desc: 'Micro-fine blending formula for all skin tones.', price: 699, oldPrice: 899, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'sale' },
+            { id: 10, cat: 'foundation', brand: 'Nykaa', name: 'Skin Tint BB Cream SPF 20', desc: '5-in-1 tinted moisturiser.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'new' },
+            { id: 11, cat: 'foundation', brand: 'Lotus', name: 'Ecostay Insta-Matte BB Cream', desc: 'Herbal BB cream with long-lasting matte finish.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400', badge: '' },
+            { id: 12, cat: 'foundation', name: 'Compact Powder (Pressed)', brand: 'Lakme', desc: 'Smooth-finish compact that blurs imperfections.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400', badge: 'popular' },
+            { id: 13, cat: 'eyemakeup', brand: 'Lakme', name: 'Eyeconic Kajal', desc: 'Intense black kajal with stay-proof formula.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'popular' },
+            { id: 14, cat: 'eyemakeup', brand: 'Maybelline', name: 'Colossal Kajal 12H', desc: 'Bold, smudge-proof kajal. Lasts 12 hours.', price: 219, oldPrice: 279, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'trending' },
+            { id: 15, cat: 'eyemakeup', brand: 'Nykaa', name: '24 Shade Eyeshadow Palette', desc: 'Pigmented matte + shimmer shades.', price: 799, oldPrice: 1099, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'new' },
+            { id: 16, cat: 'eyemakeup', brand: "L'Oréal", name: 'Voluminous Lash Paradise Mascara', desc: 'Ultra-volumising mascara for dramatic lashes.', price: 649, oldPrice: 849, img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400', badge: 'sale' },
+            { id: 17, cat: 'eyemakeup', brand: 'Lakme', name: 'Absolute Precision Eye Liner', desc: 'Micro-precision felt-tip liner for sharp cat-eye looks.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: '' },
+            { id: 18, cat: 'eyemakeup', brand: 'Swiss Beauty', name: 'Blush & Highlighter Duo', desc: 'Coral blush with champagne highlight.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400', badge: 'popular' },
+            { id: 19, cat: 'skincare', brand: 'Himalaya', name: 'Neem Purifying Face Wash', desc: 'Anti-bacterial neem formula for pimple-free skin.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'popular' },
+            { id: 20, cat: 'skincare', brand: 'Mamaearth', name: 'Vitamin C Face Serum', desc: '10% Vitamin C + turmeric for brightening.', price: 499, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'trending' },
+            { id: 21, cat: 'skincare', brand: "Pond's", name: 'Super Light Gel Moisturiser', desc: 'Oil-free gel with hyaluronic acid for 72h hydration.', price: 279, oldPrice: 349, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'popular' },
+            { id: 22, cat: 'skincare', brand: 'Olay', name: 'Total Effects 7-in-1 Cream', desc: 'Fights 7 signs of ageing.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'sale' },
+            { id: 23, cat: 'skincare', brand: 'WOW Skin', name: 'Niacinamide 10% Serum', desc: 'Pore-minimising serum that fades dark spots.', price: 549, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'new' },
+            { id: 24, cat: 'skincare', brand: 'Biotique', name: 'Bio Papaya Face Scrub', desc: 'Natural papaya scrub for radiant skin.', price: 179, oldPrice: 229, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400', badge: '' },
+            { id: 25, cat: 'skincare', brand: 'Everyuth', name: 'Walnut Apricot Scrub', desc: 'Classic scrub for deep pore cleansing.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=400', badge: 'popular' },
+            { id: 26, cat: 'skincare', brand: 'Lotus', name: 'Under Eye Brightening Cream', desc: 'Reduces dark circles & puffiness.', price: 349, oldPrice: 449, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: '' },
+            { id: 27, cat: 'skincare', brand: 'Mamaearth', name: 'Night Repair Face Cream', desc: 'Retinol + bakuchiol night cream.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'new' },
+            { id: 28, cat: 'haircare', brand: 'Parachute', name: 'Advansed Coconut Hair Oil', desc: 'Pure coconut oil with vitamin E.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: 'popular' },
+            { id: 29, cat: 'haircare', brand: 'Bajaj', name: 'Almond Drops Hair Oil', desc: 'Enriched with almond extracts.', price: 249, oldPrice: 299, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: '' },
+            { id: 30, cat: 'haircare', brand: 'TRESemmé', name: 'Keratin Smooth Shampoo', desc: 'Salon-smooth keratin shampoo.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1515688594390-b649af70d282?w=400', badge: 'popular' },
+            { id: 31, cat: 'haircare', brand: 'Mamaearth', name: 'Onion Hair Fall Shampoo', desc: 'Red onion oil controls hair fall.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'trending' },
+            { id: 32, cat: 'haircare', brand: 'Mamaearth', name: 'Banana & Honey Hair Mask', desc: 'Deep conditioning mask for silky hair.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'new' },
+            { id: 33, cat: 'haircare', brand: 'WOW Skin', name: 'Anti-Frizz Hair Serum', desc: 'Instant smoothening serum.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: 'sale' },
+            { id: 34, cat: 'haircare', brand: 'Dove', name: 'Intense Repair Conditioner', desc: 'Keratin repair formula.', price: 249, oldPrice: 319, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: '' },
+            { id: 35, cat: 'suncare', brand: 'Lotus', name: 'Safe Sun UV Screen SPF 50', desc: 'Broad-spectrum PA+++ sunscreen.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400', badge: 'popular' },
+            { id: 36, cat: 'suncare', brand: 'Lakme', name: 'Sun Expert Ultra Matte SPF 40', desc: 'Matte finish sunscreen.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400', badge: '' },
+            { id: 37, cat: 'suncare', brand: 'Mamaearth', name: 'Hydragel SPF 50 Sunscreen', desc: 'Water-gel sunscreen with aloe vera.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400', badge: 'new' },
+            { id: 38, cat: 'suncare', brand: 'Biotique', name: 'Bio Sandalwood SPF 50+', desc: 'Ayurvedic sunscreen with sandalwood.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'sale' },
+            { id: 39, cat: 'nailcare', brand: 'Lakme', name: 'True Wear Nail Colour', desc: '70-shade nail colour range.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'popular' },
+            { id: 40, cat: 'nailcare', brand: 'Revlon', name: 'ColorStay Gel Envy Polish', desc: '2-step gel-like shine nail colour.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'trending' },
+            { id: 41, cat: 'nailcare', brand: 'Nykaa', name: 'Matte Nail Paint Set (5pc)', desc: '5 trending matte nail colours.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
+            { id: 42, cat: 'nailcare', brand: 'Generic', name: 'Nail Art Tools Kit', desc: 'Complete kit with dotting tools & brush set.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: '' },
+            { id: 43, cat: 'fragrance', brand: 'Fogg', name: 'Fogg Black Collection EDP', desc: 'Woody oriental fragrance with rich oud.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'popular' },
+            { id: 44, cat: 'fragrance', brand: 'Engage', name: 'Engage W1 Perfume Body Spray', desc: 'Floral fruity scent.', price: 249, oldPrice: 299, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: '' },
+            { id: 45, cat: 'fragrance', brand: 'Dove', name: 'Original Deodorant Spray', desc: '48h anti-perspirant protection.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'popular' },
+            { id: 46, cat: 'fragrance', brand: 'Yardley', name: 'English Lavender EDT', desc: 'Classic lavender fragrance.', price: 349, oldPrice: 449, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: 'sale' },
+            { id: 47, cat: 'fragrance', brand: 'Wild Stone', name: 'Forest Spice Perfume', desc: 'Bold masculine scent with spicy notes.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'new' },
+            { id: 48, cat: 'parlour', brand: 'Rica', name: 'Wax Beans Kit — Stripless', desc: 'Professional stripless hot wax beans.', price: 799, oldPrice: 999, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'popular' },
+            { id: 49, cat: 'parlour', brand: 'VLCC', name: 'Diamond Bleach Kit', desc: 'Premium diamond bleach with activator.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: '' },
+            { id: 50, cat: 'parlour', brand: 'O3+', name: 'Gold Facial Kit (6 Steps)', desc: 'Complete professional gold facial.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'popular' },
+            { id: 51, cat: 'parlour', brand: 'Shahnaz Husain', name: 'Diamond Skin Radiance Kit', desc: 'Age-defying diamond kit.', price: 899, oldPrice: 1199, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: 'sale' },
+            { id: 52, cat: 'parlour', brand: 'Fem', name: 'Natural Henna Mehendi Cones', desc: 'Ready-to-use natural henna cones.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1598980704601-ceffa9d10bc6?w=400', badge: '' },
+            { id: 53, cat: 'parlour', brand: 'VLCC', name: 'Eyebrow Threading Kit', desc: 'Precision threading thread + wax strips.', price: 299, oldPrice: 0, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
+            { id: 54, cat: 'parlour', brand: 'Lotus', name: 'Skin Whitening Detan Pack', desc: 'Instant detan face pack with kojic acid.', price: 249, oldPrice: 329, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'trending' },
+            { id: 55, cat: 'parlour', brand: 'Generic', name: 'Makeup Brush Set — 12 pcs', desc: 'Professional kabuki & blending brushes.', price: 999, oldPrice: 1499, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400', badge: 'sale' },
+        ];
+
+        /* ── State ── */
+        let allOrders = [];
+        let allProducts = [...DEFAULT_PRODUCTS];
+        let ordersFilter = 'all';
+        let ordersPage = 1, productsPage = 1;
+        const PER = 15;
+        let editingProductId = null;
+        let deletingProductId = null;
+        let deletingProductFbId = null;
+        let fbReady = false;
+
+        /* ── Load products from localStorage first ── */
+        function loadLocalProducts() {
+            try {
+                const raw = localStorage.getItem('chandnimart_products');
+                if (raw) {
+                    const p = JSON.parse(raw);
+                    if (Array.isArray(p) && p.length > 0) { allProducts = p; return; }
+                }
+            } catch (e) { }
+            allProducts = [...DEFAULT_PRODUCTS];
+        }
+        loadLocalProducts();
+
+        /* ── Save products locally + broadcast to main site ── */
+        function persistProducts() {
+            localStorage.setItem('chandnimart_products', JSON.stringify(allProducts));
+            localStorage.setItem('chandnimart_admin', '1');
+            try {
+                const bc = new BroadcastChannel('chandnimart_sync');
+                bc.postMessage({ type: 'products_updated', products: allProducts });
+                bc.close();
+            } catch (e) { }
+        }
+
+        /* ── Navigation ── */
+        function showPage(page) {
+            document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-' + page).classList.add('active');
+            const navEl = document.getElementById('nav-' + page);
+            if (navEl) navEl.classList.add('active');
+            const titles = {
+                dashboard: 'Dashboard', orders: 'Orders', products: 'Products',
+                addproduct: editingProductId ? 'Edit Product' : 'Add Product', settings: 'Firebase Config'
+            };
+            document.getElementById('topbarTitle').textContent = titles[page] || page;
+            if (page === 'products') renderProductsTable();
+            if (page === 'orders') renderOrdersTable();
+            if (page === 'dashboard') updateDashboard();
+            if (page === 'addproduct' && !editingProductId) clearProductForm();
+        }
+
+        /* ── Firebase ready event ── */
+        document.addEventListener('firebase-ready', () => {
+            fbReady = true;
+            document.getElementById('fbBanner').className = 'firebase-banner success';
+            document.getElementById('fbBanner').innerHTML = `
+    <i class="fas fa-check-circle"></i>
+    <div><h4>Firebase Connected!</h4><p>Real-time orders and product sync active. All orders will appear automatically.</p></div>`;
+            startOrdersListener();
+        });
+
+        function startOrdersListener() {
+            if (!window._startOrdersListener) return;
+            window._startOrdersListener((orders) => {
+                allOrders = orders;
+                updateDashboard();
+                renderOrdersTable();
+                renderRecentOrders();
+                updatePendingBadge();
+            });
+        }
+
+        /* ── Dashboard update ── */
+        function updateDashboard() {
+            const total = allOrders.length;
+            const revenue = allOrders.reduce((s, o) => s + (o.grandTotal || o.total || 0), 0);
+            const pending = allOrders.filter(o => o.status === 'pending_cod' || o.status === 'pending_qr_confirm').length;
+
+            document.getElementById('statOrders').textContent = total;
+            document.getElementById('statRevenue').textContent = '₹' + revenue.toLocaleString('en-IN');
+            document.getElementById('statProducts').textContent = allProducts.length;
+            document.getElementById('statPending').textContent = pending;
+
+            updateBarChart();
+            updateDonut();
+            renderRecentOrders();
+        }
+
+        function updatePendingBadge() {
+            const pending = allOrders.filter(o => o.status === 'pending_cod' || o.status === 'pending_qr_confirm').length;
+            document.getElementById('pendingBadge').textContent = pending;
+        }
+
+        /* ── Bar Chart ── */
+        function updateBarChart() {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const counts = new Array(7).fill(0);
+            const now = new Date();
+            allOrders.forEach(o => {
+                if (!o.createdAt) return;
+                const ts = o.createdAt.toDate ? o.createdAt.toDate() : new Date(o.createdAt);
+                const diff = Math.floor((now - ts) / 86400000);
+                if (diff < 7) counts[6 - diff]++;
+            });
+            const max = Math.max(...counts, 1);
+            const labels = Array.from({ length: 7 }, (_, i) => {
+                const d = new Date(now); d.setDate(d.getDate() - (6 - i));
+                return days[d.getDay()];
+            });
+            document.getElementById('barChart').innerHTML = counts.map((c, i) => `
+    <div class="bar-col">
+      <div class="bar-val">${c || ''}</div>
+      <div class="bar-fill" style="height:${Math.max(c / max * 100, c > 0 ? 8 : 4)}%"></div>
+      <div class="bar-label">${labels[i]}</div>
+    </div>`).join('');
+        }
+
+        /* ── Donut Chart ── */
+        function updateDonut() {
+            const total = allOrders.length || 1;
+            const upi = allOrders.filter(o => o.method && o.method.toLowerCase().includes('upi') || o.method === 'Razorpay UPI').length;
+            const cod = allOrders.filter(o => o.method === 'Cash on Delivery').length;
+            const qr = allOrders.filter(o => o.method === 'UPI QR Code').length;
+            const circ = 2 * Math.PI * 35;
+            const upiPct = upi / total, codPct = cod / total, qrPct = qr / total;
+            document.getElementById('donutUpi').setAttribute('stroke-dasharray', `${upiPct * circ} ${circ}`);
+            document.getElementById('donutCod').setAttribute('stroke-dasharray', `${codPct * circ} ${circ}`);
+            document.getElementById('donutCod').setAttribute('stroke-dashoffset', `${circ / 4 - upiPct * circ + circ / 4}`);
+            document.getElementById('donutQr').setAttribute('stroke-dasharray', `${qrPct * circ} ${circ}`);
+            document.getElementById('donutQr').setAttribute('stroke-dashoffset', `${circ / 4 - (upiPct + codPct) * circ + circ / 4}`);
+            document.getElementById('pctUpi').textContent = Math.round(upiPct * 100) + '%';
+            document.getElementById('pctCod').textContent = Math.round(codPct * 100) + '%';
+            document.getElementById('pctQr').textContent = Math.round(qrPct * 100) + '%';
+        }
+
+        /* ── Recent Orders (dashboard mini list) ── */
+        function renderRecentOrders() {
+            const el = document.getElementById('recentOrdersList');
+            if (!allOrders.length) {
+                el.innerHTML = '<div class="table-empty"><i class="fas fa-inbox"></i><p>No orders yet. Orders placed on the store will appear here.</p></div>';
+                return;
+            }
+            const recent = allOrders.slice(0, 8);
+            el.style.padding = '0 .5rem';
+            el.innerHTML = `<div style="overflow-x:auto"><table class="data-table">
+    <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
+    <tbody>${recent.map(o => `
+      <tr style="cursor:pointer" onclick="openOrderDetail('${o.id}')">
+        <td><span style="font-family:monospace;color:var(--saffron);font-size:.77rem">${o.orderId || o.id.slice(0, 8)}</span></td>
+        <td><div style="font-weight:600;font-size:.82rem">${o.customer?.name || '—'}</div><div style="font-size:.7rem;color:var(--muted)">${o.customer?.phone || ''}</div></td>
+        <td style="color:var(--muted);font-size:.78rem">${(o.items || []).length} item(s)</td>
+        <td style="font-weight:700;color:var(--gold-light)">₹${(o.grandTotal || o.total || 0).toLocaleString('en-IN')}</td>
+        <td>${methodBadge(o.method)}</td>
+        <td>${statusBadge(o.status)}</td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+        }
+
+        function methodBadge(m) {
+            if (!m) return '<span class="badge badge-cod">—</span>';
+            if (m.includes('Razorpay') || m.includes('UPI') && !m.includes('QR')) return '<span class="badge badge-paid">UPI</span>';
+            if (m === 'Cash on Delivery') return '<span class="badge badge-cod">COD</span>';
+            if (m === 'UPI QR Code') return '<span class="badge badge-qr">QR</span>';
+            return `<span class="badge badge-cat">${m}</span>`;
+        }
+        function statusBadge(s) {
+            const map = {
+                paid: '<span class="badge badge-paid">Paid</span>',
+                pending_cod: '<span class="badge badge-pending">COD Pending</span>',
+                pending_qr_confirm: '<span class="badge badge-qr">QR Pending</span>',
+                delivered: '<span class="badge badge-delivered">Delivered</span>',
+                cancelled: '<span class="badge badge-cancelled">Cancelled</span>',
+            };
+            return map[s] || `<span class="badge badge-pending">${s || 'Pending'}</span>`;
+        }
+
+        /* ── Orders Table ── */
+        function filterOrders(f, el) {
+            ordersFilter = f;
+            ordersPage = 1;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if (el) el.classList.add('active');
+            renderOrdersTable();
+        }
+        function renderOrdersTable() {
+            const q = (document.getElementById('orderSearch')?.value || '').toLowerCase();
+            let data = allOrders.filter(o => {
+                const matchFilter = ordersFilter === 'all' || o.status === ordersFilter;
+                const matchQ = !q || (o.orderId || '').toLowerCase().includes(q) ||
+                    (o.customer?.name || '').toLowerCase().includes(q) ||
+                    (o.customer?.phone || '').toLowerCase().includes(q);
+                return matchFilter && matchQ;
+            });
+            document.getElementById('ordersCount').textContent = `${data.length} order${data.length !== 1 ? 's' : ''}`;
+            const start = (ordersPage - 1) * PER, page = data.slice(start, start + PER);
+            const tbody = document.getElementById('ordersTableBody');
+            if (!page.length) { tbody.innerHTML = `<tr><td colspan="8" class="table-empty"><i class="fas fa-inbox"></i><p>No orders found</p></td></tr>`; renderPagination('ordersPagination', data.length, ordersPage, (p) => { ordersPage = p; renderOrdersTable(); }); return; }
+            tbody.innerHTML = page.map(o => {
+                const ts = o.createdAt?.toDate ? o.createdAt.toDate() : (o.createdAt ? new Date(o.createdAt) : null);
+                const timeStr = ts ? ts.toLocaleString('en-IN', { hour12: true, hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) : '—';
+                return `<tr style="cursor:pointer">
+      <td onclick="openOrderDetail('${o.id}')"><span style="font-family:monospace;color:var(--saffron);font-size:.77rem">${o.orderId || o.id?.slice(0, 8) || '—'}</span></td>
+      <td onclick="openOrderDetail('${o.id}')"><div style="font-weight:600">${o.customer?.name || '—'}</div><div style="font-size:.7rem;color:var(--muted)">${o.customer?.phone || ''}</div></td>
+      <td onclick="openOrderDetail('${o.id}')" style="color:var(--muted);font-size:.78rem">${(o.items || []).length} item(s)</td>
+      <td onclick="openOrderDetail('${o.id}')" style="font-weight:700;color:var(--gold-light)">₹${(o.grandTotal || o.total || 0).toLocaleString('en-IN')}</td>
+      <td onclick="openOrderDetail('${o.id}')">${methodBadge(o.method)}</td>
+      <td>
+        <select class="status-sel" onchange="updateStatus('${o.id}',this.value)">
+          <option value="pending_cod" ${o.status === 'pending_cod' ? 'selected' : ''}>COD Pending</option>
+          <option value="pending_qr_confirm" ${o.status === 'pending_qr_confirm' ? 'selected' : ''}>QR Pending</option>
+          <option value="paid" ${o.status === 'paid' ? 'selected' : ''}>Paid</option>
+          <option value="delivered" ${o.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+          <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+        </select>
+      </td>
+      <td style="font-size:.75rem;color:var(--muted)">${timeStr}</td>
+      <td><button class="action-btn" onclick="openOrderDetail('${o.id}')"><i class="fas fa-eye"></i></button></td>
+    </tr>`;
+            }).join('');
+            renderPagination('ordersPagination', data.length, ordersPage, (p) => { ordersPage = p; renderOrdersTable(); });
+        }
+
+        async function updateStatus(fbDocId, status) {
+            if (!window._updateOrderStatus) { showToast('Firebase not connected', 'error'); return; }
+            try {
+                await window._updateOrderStatus(fbDocId, status);
+                showToast('Order status updated!', 'success');
+            } catch (e) { showToast('Update failed: ' + e.message, 'error'); }
+        }
+
+        /* ── Order Detail Modal ── */
+        function openOrderDetail(fbDocId) {
+            const o = allOrders.find(x => x.id === fbDocId);
+            if (!o) return;
+            const ts = o.createdAt?.toDate ? o.createdAt.toDate() : (o.createdAt ? new Date(o.createdAt) : null);
+            document.getElementById('orderModalBody').innerHTML = `
+    <div class="order-detail-box">
+      <h5>Customer Details</h5>
+      <div class="detail-row"><span>Name</span><span>${o.customer?.name || '—'}</span></div>
+      <div class="detail-row"><span>Phone</span><span>${o.customer?.phone || '—'}</span></div>
+      <div class="detail-row"><span>Email</span><span>${o.customer?.email || '—'}</span></div>
+      <div class="detail-row"><span>Delivery Address</span><span style="text-align:right;max-width:200px">${o.customer?.address || '—'}</span></div>
+    </div>
+    <div class="order-detail-box">
+      <h5>Order Info</h5>
+      <div class="detail-row"><span>Order ID</span><span style="font-family:monospace;color:var(--saffron)">${o.orderId || o.id}</span></div>
+      <div class="detail-row"><span>Payment Method</span><span>${o.method || '—'}</span></div>
+      <div class="detail-row"><span>Status</span><span>${statusBadge(o.status)}</span></div>
+      ${o.txnId && o.txnId !== 'COD' && o.txnId !== 'QR-SCAN' ? `<div class="detail-row"><span>Transaction ID</span><span style="font-family:monospace;font-size:.75rem">${o.txnId}</span></div>` : ''}
+      <div class="detail-row"><span>Time</span><span>${ts ? ts.toLocaleString('en-IN', { hour12: true }) : '—'}</span></div>
+    </div>
+    <div class="order-detail-box">
+      <h5>Items Ordered</h5>
+      ${(o.items || []).map(i => `
+        <div class="item-row-order">
+          <span>${i.name || i.name} <span style="color:var(--muted)">×${i.qty}</span></span>
+          <span style="color:var(--gold-light);font-weight:700">₹${(i.subtotal || i.price * i.qty || 0).toLocaleString('en-IN')}</span>
+        </div>`).join('')}
+      <div class="detail-row" style="margin-top:.5rem"><span>Items Subtotal</span><span>₹${(o.subtotal || o.total || 0).toLocaleString('en-IN')}</span></div>
+      <div class="detail-row"><span>Delivery</span><span style="color:${o.freeDelivery ? 'var(--green)' : 'var(--text)'}">${o.freeDelivery ? 'FREE 🎁' : '₹40'}</span></div>
+      <div class="grand-row"><span>Grand Total</span><span>₹${(o.grandTotal || o.total || 0).toLocaleString('en-IN')}</span></div>
+    </div>`;
+            document.getElementById('orderModal').classList.add('open');
+        }
+
+        /* ── Products Table ── */
+        function renderProductsTable() {
+            const q = (document.getElementById('prodSearch')?.value || '').toLowerCase();
+            const cat = document.getElementById('prodCatFilter')?.value || '';
+            let data = allProducts.filter(p => {
+                const matchCat = !cat || p.cat === cat;
+                const matchQ = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
+                return matchCat && matchQ;
+            });
+            document.getElementById('productsCount').textContent = `${data.length} product${data.length !== 1 ? 's' : ''}`;
+            const start = (productsPage - 1) * PER, page = data.slice(start, start + PER);
+            const tbody = document.getElementById('productsTableBody');
+            if (!page.length) { tbody.innerHTML = `<tr><td colspan="6" class="table-empty"><i class="fas fa-box-open"></i><p>No products found</p></td></tr>`; renderPagination('productsPagination', data.length, productsPage, (p) => { productsPage = p; renderProductsTable(); }); return; }
+            tbody.innerHTML = page.map(p => `
+    <tr>
+      <td>
+        <div class="prod-name-cell">
+          <div class="prod-thumb" style="background-image:url('${p.img}')"></div>
+          <div>
+            <div class="prod-name-text">${p.name}</div>
+            <div class="prod-brand-text">${p.brand || ''}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="badge badge-cat">${CAT_LABELS[p.cat] || p.cat || '—'}</span></td>
+      <td style="font-weight:700;color:var(--gold-light)">₹${(p.price || 0).toLocaleString('en-IN')}</td>
+      <td style="color:var(--muted);text-decoration:line-through">${p.oldPrice ? '₹' + p.oldPrice.toLocaleString('en-IN') : '—'}</td>
+      <td>${p.badge ? `<span class="badge badge-cat">${p.badge}</span>` : '—'}</td>
+      <td>
+        <button class="action-btn" onclick="openEditProduct(${p.id})" title="Edit"><i class="fas fa-edit"></i></button>
+        <button class="action-btn del" onclick="openDeleteProduct(${p.id},'${p.name.replace(/'/g, "\\'")}',${p.fbId ? `'${p.fbId}'` : 'null'})" title="Delete" style="margin-left:4px"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+            renderPagination('productsPagination', data.length, productsPage, (p) => { productsPage = p; renderProductsTable(); });
+        }
+
+        /* ── Pagination ── */
+        function renderPagination(id, total, current, onPage) {
+            const totalPages = Math.ceil(total / PER);
+            const el = document.getElementById(id);
+            if (totalPages <= 1) { el.innerHTML = ''; return; }
+            let html = `<button class="pg-btn" ${current === 1 ? 'disabled' : ''} onclick="(${onPage.toString()})(${current - 1})">‹</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= current - 1 && i <= current + 1)) {
+                    html += `<button class="pg-btn ${i === current ? 'active' : ''}" onclick="(${onPage.toString()})(${i})">${i}</button>`;
+                } else if (i === current - 2 || i === current + 2) {
+                    html += `<span style="color:var(--muted);padding:0 3px">…</span>`;
+                }
+            }
+            html += `<button class="pg-btn" ${current === totalPages ? 'disabled' : ''} onclick="(${onPage.toString()})(${current + 1})">›</button>`;
+            el.innerHTML = html;
+        }
+
+        /* ── Edit Product ── */
+        function openEditProduct(pid) {
+            const p = allProducts.find(x => x.id === pid);
+            if (!p) return;
+            editingProductId = pid;
+            document.getElementById('editModalBody').innerHTML = `
+    <div class="form-grid" style="margin-bottom:.9rem">
+      <div class="field"><label>Product Name *</label><input type="text" id="eName" value="${p.name.replace(/"/g, '&quot;')}"></div>
+      <div class="field"><label>Brand *</label><input type="text" id="eBrand" value="${(p.brand || '').replace(/"/g, '&quot;')}"></div>
+    </div>
+    <div class="form-grid" style="margin-bottom:.9rem">
+      <div class="field"><label>Category *</label>
+        <select id="eCat">
+          ${Object.entries(CAT_LABELS).map(([v, l]) => `<option value="${v}" ${p.cat === v ? 'selected' : ''}>${l}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Badge</label>
+        <select id="eBadge">
+          <option value="" ${!p.badge ? 'selected' : ''}>No Badge</option>
+          <option value="new" ${p.badge === 'new' ? 'selected' : ''}>New</option>
+          <option value="popular" ${p.badge === 'popular' ? 'selected' : ''}>Popular</option>
+          <option value="trending" ${p.badge === 'trending' ? 'selected' : ''}>Trending</option>
+          <option value="sale" ${p.badge === 'sale' ? 'selected' : ''}>Sale</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid" style="margin-bottom:.9rem">
+      <div class="field"><label>Price (₹) *</label><input type="number" id="ePrice" value="${p.price || 0}"></div>
+      <div class="field"><label>Old Price (₹)</label><input type="number" id="eOldPrice" value="${p.oldPrice || ''}"></div>
+    </div>
+    <div class="field" style="margin-bottom:.9rem">
+      <label>Image URL</label>
+      <input type="url" id="eImg" value="${p.img || ''}" oninput="document.getElementById('eImgPrev').style.backgroundImage='url('+this.value+')'">
+      <div id="eImgPrev" style="height:90px;margin-top:.4rem;border-radius:9px;background:var(--surface);border:1px solid var(--border);background-size:cover;background-position:center;background-image:url('${p.img || ''}')"></div>
+    </div>
+    <div class="field">
+      <label>Description *</label>
+      <textarea id="eDesc">${p.desc || ''}</textarea>
+    </div>`;
+            document.getElementById('editModal').classList.add('open');
+        }
+
+        async function saveEditProduct() {
+            const name = document.getElementById('eName').value.trim();
+            const brand = document.getElementById('eBrand').value.trim();
+            const cat = document.getElementById('eCat').value;
+            const badge = document.getElementById('eBadge').value;
+            const price = parseFloat(document.getElementById('ePrice').value) || 0;
+            const oldPrice = parseFloat(document.getElementById('eOldPrice').value) || 0;
+            const img = document.getElementById('eImg').value.trim();
+            const desc = document.getElementById('eDesc').value.trim();
+            if (!name || !price || !cat) { showToast('Please fill required fields', 'error'); return; }
+            const idx = allProducts.findIndex(p => p.id === editingProductId);
+            if (idx === -1) return;
+            const updated = { ...allProducts[idx], name, brand, cat, badge, price, oldPrice, img, desc };
+            allProducts[idx] = updated;
+            persistProducts();
+            /* Update in Firebase if available */
+            if (updated.fbId && window._updateProductInFirebase) {
+                try { await window._updateProductInFirebase(updated.fbId, { name, brand, cat, badge, price, oldPrice, img, desc }); } catch (e) { }
+            }
+            closeModal('editModal');
+            editingProductId = null;
+            renderProductsTable();
+            document.getElementById('statProducts').textContent = allProducts.length;
+            showToast('Product updated successfully!', 'success');
+        }
+
+        /* ── Delete Product ── */
+        function openDeleteProduct(pid, name, fbId) {
+            deletingProductId = pid;
+            deletingProductFbId = fbId;
+            document.getElementById('deleteProdName').textContent = name;
+            document.getElementById('deleteModal').classList.add('open');
+        }
+        async function confirmDeleteProduct() {
+            allProducts = allProducts.filter(p => p.id !== deletingProductId);
+            persistProducts();
+            if (deletingProductFbId && window._deleteProductFromFirebase) {
+                try { await window._deleteProductFromFirebase(deletingProductFbId); } catch (e) { }
+            }
+            closeModal('deleteModal');
+            renderProductsTable();
+            document.getElementById('statProducts').textContent = allProducts.length;
+            showToast('Product deleted!', 'success');
+        }
+
+        /* ── Add Product Form ── */
+        function previewImg() {
+            const url = document.getElementById('fpImg').value.trim();
+            const el = document.getElementById('imgPreview');
+            if (url) { el.style.backgroundImage = `url(${url})`; el.innerHTML = ''; el.classList.add('has-img'); }
+            else { el.style.backgroundImage = ''; el.innerHTML = '<i class="fas fa-image"></i>'; el.classList.remove('has-img'); }
+        }
+
+        function clearProductForm() {
+            ['fpName', 'fpBrand', 'fpImg', 'fpPrice', 'fpOldPrice', 'fpDesc'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            document.getElementById('fpCat').value = '';
+            document.getElementById('fpBadge').value = '';
+            document.getElementById('imgPreview').style.backgroundImage = '';
+            document.getElementById('imgPreview').innerHTML = '<i class="fas fa-image"></i>';
+            document.getElementById('imgPreview').classList.remove('has-img');
+            document.getElementById('saveResult').style.display = 'none';
+            document.getElementById('addProdTitle').textContent = 'Add New Product';
+            document.getElementById('saveProdBtnText').textContent = 'Save to Firebase';
+            editingProductId = null;
+        }
+
+        async function saveProduct() {
+            const name = document.getElementById('fpName').value.trim();
+            const brand = document.getElementById('fpBrand').value.trim();
+            const cat = document.getElementById('fpCat').value;
+            const badge = document.getElementById('fpBadge').value;
+            const price = parseFloat(document.getElementById('fpPrice').value) || 0;
+            const oldPrice = parseFloat(document.getElementById('fpOldPrice').value) || 0;
+            const img = document.getElementById('fpImg').value.trim() || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400';
+            const desc = document.getElementById('fpDesc').value.trim();
+
+            if (!name) { showToast('Please enter a product name', 'error'); return; }
+            if (!cat) { showToast('Please select a category', 'error'); return; }
+            if (!price) { showToast('Please enter a valid price', 'error'); return; }
+            if (!desc) { showToast('Please enter a description', 'error'); return; }
+
+            const btn = document.getElementById('saveProdBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Saving…';
+
+            const newId = Math.max(...allProducts.map(p => p.id || 0), 0) + 1;
+            const newProduct = { id: newId, cat, brand, name, desc, price, oldPrice, img, badge };
+
+            let fbId = null;
+            if (window._saveProductToFirebase) {
+                try { fbId = await window._saveProductToFirebase(newProduct); if (fbId) newProduct.fbId = fbId; } catch (e) { }
+            }
+
+            allProducts.push(newProduct);
+            persistProducts();
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> <span id="saveProdBtnText">Save to Firebase</span>';
+
+            const resEl = document.getElementById('saveResult');
+            resEl.style.display = 'block';
+            resEl.innerHTML = `<div class="firebase-banner success">
+    <i class="fas fa-check-circle"></i>
+    <div>
+      <h4>Product Added Successfully!</h4>
+      <p><strong>${name}</strong> has been added to your store catalogue (ID: ${newId}${fbId ? ', Firebase: ✅' : ', Firebase: connect to sync'}).</p>
+      <p style="margin-top:.3rem">The store will update automatically. <a onclick="showPage('products')" style="cursor:pointer;color:var(--blue)">View all products →</a></p>
+    </div>
+  </div>`;
+
+            showToast(`${name} added to catalogue!`, 'success');
+            clearProductForm();
+        }
+
+        /* ── Sync products to Firebase ── */
+        async function syncProductsToFirebase() {
+            if (!window._saveProductToFirebase) { showToast('Firebase not connected. Add config in Settings.', 'error'); return; }
+            showToast('Syncing products to Firebase…', 'info');
+            let count = 0;
+            for (const p of allProducts) {
+                if (!p.fbId) {
+                    try {
+                        const fbId = await window._saveProductToFirebase(p);
+                        if (fbId) { p.fbId = fbId; count++; }
+                    } catch (e) { }
+                }
+            }
+            persistProducts();
+            showToast(`${count} products synced to Firebase!`, 'success');
+        }
+
+        /* ── Settings ── */
+        function parseConfigPaste() {
+            const raw = document.getElementById('cfgPaste').value;
+            try {
+                const match = raw.match(/apiKey:\s*["']([^"']+)["']/); if (match) document.getElementById('cfgApiKey').value = match[1];
+                const m2 = raw.match(/authDomain:\s*["']([^"']+)["']/); if (m2) document.getElementById('cfgAuthDomain').value = m2[1];
+                const m3 = raw.match(/projectId:\s*["']([^"']+)["']/); if (m3) document.getElementById('cfgProjectId').value = m3[1];
+                const m4 = raw.match(/storageBucket:\s*["']([^"']+)["']/); if (m4) document.getElementById('cfgBucket').value = m4[1];
+                const m5 = raw.match(/messagingSenderId:\s*["']([^"']+)["']/); if (m5) document.getElementById('cfgSenderId').value = m5[1];
+                const m6 = raw.match(/appId:\s*["']([^"']+)["']/); if (m6) document.getElementById('cfgAppId').value = m6[1];
+                showToast('Config parsed! Review fields and save.', 'success');
+            } catch (e) { showToast('Could not parse config', 'error'); }
+        }
+
+        function saveConfig() {
+            const cfg = {
+                apiKey: document.getElementById('cfgApiKey').value.trim(),
+                projectId: document.getElementById('cfgProjectId').value.trim(),
+                authDomain: document.getElementById('cfgAuthDomain').value.trim(),
+                storageBucket: document.getElementById('cfgBucket').value.trim(),
+                messagingSenderId: document.getElementById('cfgSenderId').value.trim(),
+                appId: document.getElementById('cfgAppId').value.trim(),
+            };
+            localStorage.setItem('chandnimart_firebase_config', JSON.stringify(cfg));
+            const el = document.getElementById('configResult');
+            el.innerHTML = `<div class="firebase-banner success" style="margin-top:.8rem">
+    <i class="fas fa-check-circle"></i>
+    <div>
+      <h4>Config saved locally!</h4>
+      <p>To make this permanent, open <strong>admin.html</strong> and <strong>index.html</strong> in a text editor and replace the <code>firebaseConfig</code> values with:<br><br>
+      <code style="font-size:.72rem;background:rgba(0,0,0,.3);padding:4px 8px;border-radius:5px;display:block;margin-top:.3rem;word-break:break-all">apiKey: "${cfg.apiKey}", projectId: "${cfg.projectId}"…</code></p>
+    </div>
+  </div>`;
+            showToast('Firebase config saved!', 'success');
+        }
+
+        async function testFirebase() {
+            if (!window._fbReady) { showToast('Firebase module not initialized. Check your config in the HTML file.', 'error'); return; }
+            showToast('Firebase connected and working! ✅', 'success');
+        }
+
+        function saveStoreSettings() {
+            const settings = {
+                upiId: document.getElementById('storeUpiId').value.trim(),
+                rzpKey: document.getElementById('storeRzpKey').value.trim(),
+                phone: document.getElementById('storePhone').value.trim(),
+                deliveryCharge: parseInt(document.getElementById('storeDelivery').value) || 40,
+            };
+            localStorage.setItem('chandnimart_settings', JSON.stringify(settings));
+            showToast('Store settings saved!', 'success');
+        }
+
+        /* ── Modal helpers ── */
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+            if (id === 'editModal') editingProductId = null;
+        }
+        document.querySelectorAll('.modal-overlay').forEach(o => {
+            o.addEventListener('click', function (e) { if (e.target === this) closeModal(this.id); });
+        });
+
+        /* ── Image preview ── */
+        function previewImg() {
+            const url = document.getElementById('fpImg').value.trim();
+            const el = document.getElementById('imgPreview');
+            if (url) {
+                el.style.backgroundImage = `url(${url})`;
+                el.innerHTML = '';
+                el.classList.add('has-img');
+            } else {
+                el.style.backgroundImage = '';
+                el.innerHTML = '<i class="fas fa-image"></i>';
+                el.classList.remove('has-img');
+            }
+        }
+
+        /* ── Toast ── */
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+            t.className = `toast ${type}`;
+            t.innerHTML = `<i class="fas ${icons[type] || icons.success}"></i><span>${msg}</span>`;
+            t.classList.add('show');
+            clearTimeout(t._t);
+            t._t = setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        /* ════════════════════════════════════════════════════
+           AUTH — Login / Logout / Change Password
+        ════════════════════════════════════════════════════ */
+
+        /* ════════════════════════════════════════════════════
+           AUTH SYSTEM — Username + Password Login
+           Default: admin / chandni@2024
+        ════════════════════════════════════════════════════ */
+
+        const CREDS_KEY = 'chandnimart_creds';
+        const SESSION_KEY = 'chandnimart_session';
+
+        function getCreds() {
+            try {
+                const raw = localStorage.getItem(CREDS_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch (e) { }
+            return { username: 'admin', password: btoa('chandni@2024') };
+        }
+
+        function isLoggedIn() {
+            try {
+                const s = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+                if (!s) return false;
+                if (Date.now() - s.ts > 8 * 3600 * 1000) { sessionStorage.removeItem(SESSION_KEY); return false; }
+                return s.valid === true;
+            } catch (e) { return false; }
+        }
+
+        function setSession(username) {
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ valid: true, ts: Date.now(), user: username }));
+        }
+
+        function getSessionUser() {
+            try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}').user || 'admin'; } catch (e) { return 'admin'; }
+        }
+
+        function toggleLoginPass() {
+            const inp = document.getElementById('loginPass');
+            const icon = document.getElementById('loginPassEye');
+            if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fas fa-eye-slash login-field-icon'; }
+            else { inp.type = 'password'; icon.className = 'fas fa-eye login-field-icon'; }
+        }
+
+        function doLogin() {
+            const user = (document.getElementById('loginUser')?.value || '').trim();
+            const pass = document.getElementById('loginPass')?.value || '';
+            const errEl = document.getElementById('loginError');
+            const errMsg = document.getElementById('loginErrorMsg');
+            const btn = document.getElementById('loginBtn');
+
+            if (!user || !pass) {
+                errMsg.textContent = 'Please enter your username and password.';
+                errEl.classList.add('show'); return;
+            }
+
+            if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,.3);border-top-color:white;width:16px;height:16px"></div> Signing in…'; }
+
+            setTimeout(() => {
+                const creds = getCreds();
+                if (user === creds.username && btoa(pass) === creds.password) {
+                    setSession(user);
+                    errEl.classList.remove('show');
+                    const ls = document.getElementById('loginScreen');
+                    ls.style.transition = 'opacity .4s';
+                    ls.style.opacity = '0';
+                    setTimeout(() => { ls.classList.add('hide'); ls.style.opacity = ''; }, 380);
+                    document.getElementById('sidebarUsername').textContent = user;
+                    showToast(`Welcome back, ${user}! 🎉`, 'success');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In'; }
+                    document.getElementById('loginPass').value = '';
+                } else {
+                    errMsg.textContent = 'Incorrect username or password. Please try again.';
+                    errEl.classList.add('show');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In'; }
+                    document.getElementById('loginPass').value = '';
+                    document.getElementById('loginPass').focus();
+                    /* Shake */
+                    const card = document.querySelector('.login-card');
+                    if (card) {
+                        [0, 80, 160, 240, 320].forEach((t, i) => {
+                            setTimeout(() => { card.style.transform = i < 4 ? `translateX(${i % 2 ? '8px' : '-6px'})` : 'translateX(0)'; }, t);
+                        });
+                    }
+                }
+            }, 550);
+        }
+
+        function doLogout() {
+            sessionStorage.removeItem(SESSION_KEY);
+            const ls = document.getElementById('loginScreen');
+            ls.classList.remove('hide');
+            ls.style.opacity = '0';
+            requestAnimationFrame(() => { ls.style.transition = 'opacity .35s'; ls.style.opacity = '1'; });
+            if (document.getElementById('loginPass')) document.getElementById('loginPass').value = '';
+            errEl2 = document.getElementById('loginError');
+            if (errEl2) errEl2.classList.remove('show');
+            showToast('Logged out successfully', 'info');
+        }
+
+        /* ── Password visibility toggle ── */
+        function togglePwd(id, icon) {
+            const inp = document.getElementById(id);
+            if (!inp) return;
+            if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fas fa-eye-slash pwd-eye'; }
+            else { inp.type = 'password'; icon.className = 'fas fa-eye pwd-eye'; }
+        }
+
+        /* ── Password strength ── */
+        function checkPwdStrength() {
+            const val = document.getElementById('pwdNew')?.value || '';
+            const bar = document.getElementById('pwdStrengthBar');
+            const lbl = document.getElementById('pwdStrengthLabel');
+            if (!bar) return;
+            if (!val) { bar.className = 'pwd-strength'; if (lbl) lbl.textContent = ''; return; }
+            const score = (val.length >= 8 ? 1 : 0) + (/[A-Z]/.test(val) ? 1 : 0) + (/[0-9]/.test(val) ? 1 : 0) + (/[^A-Za-z0-9]/.test(val) ? 1 : 0);
+            if (score <= 1) { bar.className = 'pwd-strength weak'; if (lbl) { lbl.style.color = 'var(--red)'; lbl.textContent = '❌ Weak — use 8+ chars with numbers & symbols'; } }
+            else if (score <= 3) { bar.className = 'pwd-strength medium'; if (lbl) { lbl.style.color = 'var(--gold)'; lbl.textContent = '⚠️ Medium strength'; } }
+            else { bar.className = 'pwd-strength strong'; if (lbl) { lbl.style.color = 'var(--green)'; lbl.textContent = '✅ Strong password'; } }
+        }
+
+        /* ── Change credentials ── */
+        function changePassword() {
+            const current = document.getElementById('pwdCurrent')?.value || '';
+            const newUser = (document.getElementById('pwdNewUser')?.value || '').trim();
+            const newPass = document.getElementById('pwdNew')?.value || '';
+            const confirm = document.getElementById('pwdConfirm')?.value || '';
+            const resultEl = document.getElementById('pwdResult');
+
+            const showResult = (msg, ok) => {
+                if (!resultEl) return;
+                const col = ok ? 'var(--green)' : 'var(--red)';
+                const bg = ok ? 'rgba(34,197,94,.1)' : 'rgba(239,68,68,.1)';
+                const bdr = ok ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.3)';
+                const ico = ok ? 'fa-check-circle' : 'fa-times-circle';
+                resultEl.innerHTML = `<div style="background:${bg};border:1px solid ${bdr};border-radius:9px;padding:.7rem .9rem;font-size:.8rem;color:${col};display:flex;align-items:center;gap:7px"><i class="fas ${ico}" style="flex-shrink:0"></i><span>${msg}</span></div>`;
+            };
+
+            const creds = getCreds();
+            if (!current) { showResult('Please enter your current password', false); return; }
+            if (btoa(current) !== creds.password) { showResult('Current password is incorrect', false); return; }
+            if (!newPass && !newUser) { showResult('Enter a new username or new password to update', false); return; }
+            if (newPass && newPass.length < 6) { showResult('New password must be at least 6 characters', false); return; }
+            if (newPass && newPass !== confirm) { showResult('New passwords do not match', false); return; }
+            if (newPass && newPass === current) { showResult('New password must differ from current', false); return; }
+
+            const updated = { username: newUser || creds.username, password: newPass ? btoa(newPass) : creds.password };
+            localStorage.setItem(CREDS_KEY, JSON.stringify(updated));
+            setSession(updated.username);
+
+            const sidebarEl = document.getElementById('sidebarUsername');
+            if (sidebarEl) sidebarEl.textContent = updated.username;
+
+            ['pwdCurrent', 'pwdNew', 'pwdConfirm'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            const pu = document.getElementById('pwdNewUser'); if (pu) pu.value = '';
+            const bar = document.getElementById('pwdStrengthBar'); if (bar) bar.className = 'pwd-strength';
+            const lbl = document.getElementById('pwdStrengthLabel'); if (lbl) lbl.textContent = '';
+
+            showResult(`✅ Credentials updated! Username: <strong>${updated.username}</strong>`, true);
+            showToast('Password updated successfully! 🔐', 'success');
+        }
+
+        /* ── Refresh ── */
+        function refreshAll() {
+
+            loadLocalProducts();
+            updateDashboard();
+            renderProductsTable();
+            renderOrdersTable();
+            showToast('Data refreshed!', 'info');
+        }
+
+        /* ── Init ── */
+        window.addEventListener('load', () => {
+            /* Auth check */
+            if (isLoggedIn()) {
+                document.getElementById('loginScreen').classList.add('hide');
+                const user = getSessionUser();
+                document.getElementById('sidebarUsername').textContent = user;
+            } else {
+                /* Pre-fill username */
+                const unEl = document.getElementById('loginUser');
+                if (unEl) unEl.value = getCreds().username;
+                setTimeout(() => { if (unEl) unEl.focus(); }, 200);
+            }
+            loadLocalProducts();
+            updateDashboard();
+            renderProductsTable();
+            updatePendingBadge();
+            /* Load saved settings */
+            try {
+                const s = JSON.parse(localStorage.getItem('chandnimart_settings') || '{}');
+                if (s.upiId) document.getElementById('storeUpiId').value = s.upiId;
+                if (s.rzpKey) document.getElementById('storeRzpKey').value = s.rzpKey;
+                if (s.phone) document.getElementById('storePhone').value = s.phone;
+                if (s.deliveryCharge) document.getElementById('storeDelivery').value = s.deliveryCharge;
+            } catch (e) { }
+        });
+    </script>
+</body>
+
+</html>

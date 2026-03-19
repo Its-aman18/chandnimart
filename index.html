@@ -1,0 +1,4868 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#b5451b">
+  <meta name="description"
+    content="ChandniMart — Premium Beauty & Cosmetics Store in Ghughali, Maharajganj. Shop lipsticks, skincare, haircare & parlour supplies. Pay via UPI, QR or COD.">
+  <title>ChandniMart — Beauty & Cosmetics Store, Ghughali</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- ╔══════════════════════════════════════════════════════╗
+       ║  🔥 STEP 1 — PASTE YOUR FIREBASE CONFIG HERE        ║
+       ║  Go to: console.firebase.google.com                 ║
+       ║  → Project Settings → Your Apps → Web App           ║
+       ║  → Copy firebaseConfig and replace the values below ║
+       ║  ⚠️  SAME CONFIG AS admin.html                       ║
+       ╚══════════════════════════════════════════════════════╝ -->
+  <script type="module">
+    import { initializeApp }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",            /* 👈 PASTE HERE */
+      authDomain: "YOUR_PROJECT.firebaseapp.com", /* 👈 PASTE HERE */
+      projectId: "YOUR_PROJECT_ID",         /* 👈 PASTE HERE */
+      storageBucket: "YOUR_PROJECT.appspot.com",/* 👈 PASTE HERE */
+      messagingSenderId: "YOUR_SENDER_ID",          /* 👈 PASTE HERE */
+      appId: "YOUR_APP_ID"              /* 👈 PASTE HERE */
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    /* Saves every order to Firestore 'orders' collection
+       → Admin panel reads this in real-time               */
+    window._saveOrderToFirebase = async function (orderData) {
+      try {
+        const ref = await addDoc(collection(db, 'orders'), {
+          ...orderData,
+          createdAt: serverTimestamp(),
+          store: 'ChandniMart Ghughali'
+        });
+        console.log('✅ Order saved to Firebase:', ref.id);
+        return ref.id;
+      } catch (err) {
+        console.warn('Firebase save failed (check config):', err.message);
+        return null;   /* order still shows success even if Firebase is down */
+      }
+    };
+  </script>
+
+  <!-- ╔══════════════════════════════════════════════════════╗
+       ║  💳 STEP 2 — RAZORPAY (for UPI payments)            ║
+       ║  SDK is loaded below. Your key goes in the JS       ║
+       ║  section (search for RAZORPAY_KEY near line 900)    ║
+       ╚══════════════════════════════════════════════════════╝ -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --saffron: #e8602c;
+      --saffron-deep: #b5451b;
+      --gold: #d4a843;
+      --gold-light: #f0cc6e;
+      --rose: #c94070;
+      --cream: #fdf6ee;
+      --ivory: #fff9f3;
+      --dark: #1c0f08;
+      --text: #3d1f10;
+      --muted: #8a6250;
+      --shadow: rgba(232, 96, 44, .18);
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --razorpay: #072654
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      overflow-x: hidden
+    }
+
+    /* ── LOADING ── */
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, var(--saffron-deep), var(--dark));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity .9s, visibility .9s
+    }
+
+    .loading.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none
+    }
+
+    .load-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3rem;
+      color: var(--gold-light);
+      letter-spacing: 4px;
+      animation: loadPulse 1.6s ease-in-out infinite
+    }
+
+    .load-sub {
+      font-size: .72rem;
+      letter-spacing: 6px;
+      color: rgba(255, 255, 255, .5);
+      text-transform: uppercase;
+      margin-top: 6px
+    }
+
+    .load-bar {
+      width: 180px;
+      height: 2px;
+      background: rgba(255, 255, 255, .15);
+      border-radius: 2px;
+      margin-top: 28px;
+      overflow: hidden
+    }
+
+    .load-bar::after {
+      content: '';
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--gold-light);
+      animation: loadFill 1.6s ease forwards .3s
+    }
+
+    @keyframes loadPulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .6
+      }
+    }
+
+    @keyframes loadFill {
+      to {
+        width: 100%
+      }
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(253, 246, 238, .97);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(232, 96, 44, .12);
+      transition: box-shadow .3s
+    }
+
+    header.scrolled {
+      box-shadow: 0 4px 32px rgba(180, 69, 27, .13)
+    }
+
+    nav {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .85rem 5%
+    }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      cursor: pointer
+    }
+
+    .logo-mark {
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, var(--saffron), var(--gold));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 18px var(--shadow);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden
+    }
+
+    .logo-mark::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(255, 255, 255, .3) 60%, transparent 70%);
+      transform: translateX(-100%);
+      animation: shine 3s ease-in-out infinite
+    }
+
+    @keyframes shine {
+      to {
+        transform: translateX(200%)
+      }
+    }
+
+    .logo-mark i {
+      color: white;
+      font-size: 1.25rem;
+      z-index: 1
+    }
+
+    .logo-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--saffron-deep);
+      line-height: 1.1
+    }
+
+    .logo-tagline {
+      font-size: .6rem;
+      letter-spacing: 3px;
+      color: var(--gold);
+      font-weight: 600;
+      text-transform: uppercase
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none
+    }
+
+    .nav-links a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: .87rem;
+      font-weight: 500;
+      position: relative;
+      padding-bottom: 3px;
+      transition: color .3s;
+      cursor: pointer
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 1.5px;
+      background: var(--saffron);
+      transition: width .3s
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active-link {
+      color: var(--saffron)
+    }
+
+    .nav-links a:hover::after,
+    .nav-links a.active-link::after {
+      width: 100%
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: .7rem
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background: var(--ivory);
+      border: 1.5px solid rgba(232, 96, 44, .15);
+      border-radius: 50px;
+      padding: 7px 14px;
+      gap: 8px;
+      transition: all .3s
+    }
+
+    .search-bar:focus-within {
+      border-color: var(--saffron);
+      box-shadow: 0 0 0 3px rgba(232, 96, 44, .08)
+    }
+
+    .search-bar input {
+      border: none;
+      background: none;
+      outline: none;
+      font-family: 'Outfit', sans-serif;
+      font-size: .84rem;
+      color: var(--text);
+      width: 150px
+    }
+
+    .search-bar i {
+      color: var(--muted);
+      font-size: .84rem
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--ivory);
+      border: 1.5px solid rgba(232, 96, 44, .15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .3s;
+      position: relative
+    }
+
+    .icon-btn:hover {
+      background: var(--saffron);
+      border-color: var(--saffron)
+    }
+
+    .icon-btn:hover i {
+      color: white
+    }
+
+    .icon-btn i {
+      color: var(--saffron);
+      font-size: 1rem;
+      transition: color .3s
+    }
+
+    .cart-count {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--rose);
+      color: white;
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      font-size: .63rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .cart-count.pop {
+      animation: pop .3s ease
+    }
+
+    @keyframes pop {
+
+      0%,
+      100% {
+        transform: scale(1)
+      }
+
+      50% {
+        transform: scale(1.5)
+      }
+    }
+
+    .admin-nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: linear-gradient(135deg, var(--dark), #3a1208);
+      color: rgba(255, 255, 255, .85);
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: .78rem;
+      font-weight: 700;
+      border: 1.5px solid rgba(212, 168, 67, .3);
+      transition: all .3s;
+      white-space: nowrap
+    }
+
+    .admin-nav-btn i {
+      color: var(--gold-light);
+      font-size: .78rem
+    }
+
+    .admin-nav-btn:hover {
+      border-color: rgba(212, 168, 67, .7);
+      color: white;
+      transform: translateY(-1px)
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 6px;
+      background: none;
+      border: none
+    }
+
+    .hamburger span {
+      width: 24px;
+      height: 2.5px;
+      background: var(--saffron);
+      border-radius: 3px;
+      transition: all .35s cubic-bezier(.22, 1, .36, 1);
+      display: block
+    }
+
+    .hamburger.active span:nth-child(1) {
+      transform: translateY(7.5px) rotate(45deg)
+    }
+
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0)
+    }
+
+    .hamburger.active span:nth-child(3) {
+      transform: translateY(-7.5px) rotate(-45deg)
+    }
+
+    .mob-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 15, 8, .65);
+      backdrop-filter: blur(5px);
+      z-index: 1050;
+      opacity: 0;
+      visibility: hidden;
+      transition: all .35s
+    }
+
+    .mob-overlay.open {
+      opacity: 1;
+      visibility: visible
+    }
+
+    .mob-drawer {
+      position: fixed;
+      top: 0;
+      right: -320px;
+      width: 290px;
+      max-width: 85vw;
+      height: 100dvh;
+      background: var(--ivory);
+      z-index: 1060;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -8px 0 40px rgba(0, 0, 0, .2);
+      transition: right .4s cubic-bezier(.22, 1, .36, 1);
+      overflow-y: auto
+    }
+
+    .mob-drawer.open {
+      right: 0
+    }
+
+    .mob-header {
+      background: linear-gradient(135deg, var(--saffron-deep), var(--dark));
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0
+    }
+
+    .mob-header .mob-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      color: var(--gold-light);
+      font-weight: 700
+    }
+
+    .mob-close {
+      background: rgba(255, 255, 255, .15);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .mob-nav {
+      list-style: none;
+      padding: .8rem 0;
+      flex: 1
+    }
+
+    .mob-nav li {
+      border-bottom: 1px solid rgba(232, 96, 44, .07)
+    }
+
+    .mob-nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: .9rem 1.4rem;
+      color: var(--text);
+      text-decoration: none;
+      font-size: .9rem;
+      font-weight: 500;
+      transition: all .2s;
+      cursor: pointer
+    }
+
+    .mob-nav a .nav-ic {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(232, 96, 44, .08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .mob-nav a .nav-ic i {
+      color: var(--saffron);
+      font-size: .82rem
+    }
+
+    .mob-footer-info {
+      padding: 1.2rem 1.4rem;
+      border-top: 1px solid rgba(232, 96, 44, .1)
+    }
+
+    .mob-contact-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: .55rem
+    }
+
+    .mob-contact-line i {
+      color: var(--saffron);
+      width: 14px;
+      text-align: center
+    }
+
+    .mob-contact-line a {
+      color: var(--muted);
+      text-decoration: none
+    }
+
+    /* ── HERO ── */
+    .hero {
+      margin-top: 72px;
+      min-height: 88vh;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1600&q=80') center/cover no-repeat
+    }
+
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(100deg, rgba(28, 15, 8, .93) 0%, rgba(58, 26, 8, .86) 48%, rgba(28, 15, 8, .45) 100%)
+    }
+
+    .hero-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 50%, rgba(212, 168, 67, .08) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(232, 96, 44, .1) 0%, transparent 40%);
+      z-index: 1;
+      pointer-events: none
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 620px;
+      padding: 3rem 5%
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(212, 168, 67, .15);
+      border: 1px solid rgba(212, 168, 67, .35);
+      padding: 7px 16px;
+      border-radius: 50px;
+      margin-bottom: 1.5rem;
+      animation: fadeUp .7s ease .2s both
+    }
+
+    .hero-badge i {
+      color: var(--gold);
+      font-size: .75rem
+    }
+
+    .hero-badge span {
+      font-size: .72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      font-weight: 600
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 6vw, 4.8rem);
+      color: white;
+      line-height: 1.15;
+      margin-bottom: 1.4rem;
+      animation: fadeUp .7s ease .4s both
+    }
+
+    .hero h1 em {
+      color: var(--gold-light);
+      font-style: italic;
+      display: block
+    }
+
+    .hero-desc {
+      color: rgba(255, 255, 255, .65);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 2.2rem;
+      animation: fadeUp .7s ease .6s both;
+      max-width: 480px
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeUp .7s ease .8s both
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 2.5rem;
+      animation: fadeUp .7s ease 1s both
+    }
+
+    .hero-stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      line-height: 1
+    }
+
+    .hero-stat-label {
+      font-size: .7rem;
+      color: rgba(255, 255, 255, .5);
+      letter-spacing: 1px;
+      margin-top: 4px
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(28px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      padding: 13px 28px;
+      background: linear-gradient(135deg, var(--saffron), var(--saffron-deep));
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: .9rem;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .3s;
+      box-shadow: 0 6px 24px var(--shadow)
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 32px var(--shadow)
+    }
+
+    .btn-gold {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--gold), #c49030);
+      color: var(--dark);
+      font-weight: 700;
+      font-size: .88rem;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .3s;
+      text-decoration: none
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(212, 168, 67, .4)
+    }
+
+    /* ── MARQUEE ── */
+    .marquee-bar {
+      background: linear-gradient(135deg, var(--saffron-deep), var(--dark));
+      padding: 12px 0;
+      overflow: hidden
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 3rem;
+      animation: marquee 28s linear infinite;
+      white-space: nowrap
+    }
+
+    .marquee-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0
+    }
+
+    .marquee-item i {
+      color: var(--gold);
+      font-size: .7rem
+    }
+
+    .marquee-item span {
+      font-size: .75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .7);
+      font-weight: 500
+    }
+
+    @keyframes marquee {
+      to {
+        transform: translateX(-50%)
+      }
+    }
+
+    /* ── SECTION COMMON ── */
+    .section-wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 80px 5%
+    }
+
+    .sec-header {
+      text-align: center;
+      margin-bottom: 3.5rem
+    }
+
+    .sec-eyebrow {
+      display: inline-block;
+      font-size: .72rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--saffron);
+      font-weight: 600;
+      margin-bottom: .8rem
+    }
+
+    .sec-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      color: var(--dark);
+      line-height: 1.2
+    }
+
+    .sec-title span {
+      color: var(--saffron)
+    }
+
+    .sec-line {
+      width: 50px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--saffron), var(--gold));
+      margin: 1rem auto 0;
+      border-radius: 2px
+    }
+
+    .sec-subtitle {
+      color: var(--muted);
+      font-size: .92rem;
+      margin-top: .8rem;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7
+    }
+
+    /* ── CATEGORIES ── */
+    .cat-section {
+      background: var(--ivory)
+    }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1.2rem
+    }
+
+    .cat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 1.4rem .9rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all .35s cubic-bezier(.175, .885, .32, 1.275);
+      box-shadow: 0 3px 14px rgba(0, 0, 0, .05);
+      border: 2px solid transparent
+    }
+
+    .cat-card:hover,
+    .cat-card.active {
+      transform: translateY(-6px);
+      border-color: var(--saffron);
+      box-shadow: 0 12px 36px var(--shadow)
+    }
+
+    .cat-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(232, 96, 44, .1), rgba(212, 168, 67, .08));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto .8rem;
+      transition: all .35s
+    }
+
+    .cat-card:hover .cat-icon,
+    .cat-card.active .cat-icon {
+      background: linear-gradient(135deg, var(--saffron), var(--gold))
+    }
+
+    .cat-icon i {
+      color: var(--saffron);
+      font-size: 1.25rem;
+      transition: color .35s
+    }
+
+    .cat-card:hover .cat-icon i,
+    .cat-card.active .cat-icon i {
+      color: white
+    }
+
+    .cat-name {
+      font-weight: 600;
+      font-size: .82rem;
+      color: var(--text)
+    }
+
+    .cat-count {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-top: 3px
+    }
+
+    /* ── PRODUCTS ── */
+    .products-bg {
+      background: var(--cream)
+    }
+
+    .filter-sort-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+      flex-wrap: wrap
+    }
+
+    .res-count {
+      color: var(--muted);
+      font-size: .85rem;
+      margin-right: auto
+    }
+
+    .res-count strong {
+      color: var(--saffron)
+    }
+
+    .sort-sel {
+      padding: 9px 14px;
+      border: 2px solid rgba(232, 96, 44, .15);
+      border-radius: 50px;
+      font-family: 'Outfit', sans-serif;
+      font-size: .84rem;
+      color: var(--text);
+      background: white;
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 28px;
+      outline: none;
+      cursor: pointer
+    }
+
+    .sort-sel:focus {
+      border-color: var(--saffron)
+    }
+
+    .prod-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 1.5rem
+    }
+
+    .prod-card {
+      background: white;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, .06);
+      transition: all .4s cubic-bezier(.175, .885, .32, 1.275);
+      position: relative;
+      cursor: pointer
+    }
+
+    .prod-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 50px rgba(232, 96, 44, .18)
+    }
+
+    .prod-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 2;
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: .63rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase
+    }
+
+    .badge-sale {
+      background: #ef4444;
+      color: white
+    }
+
+    .badge-new {
+      background: #22c55e;
+      color: white;
+      animation: badgePulse 2s ease-in-out infinite
+    }
+
+    .badge-popular {
+      background: var(--gold);
+      color: var(--dark)
+    }
+
+    .badge-trending {
+      background: var(--rose);
+      color: white
+    }
+
+    @keyframes badgePulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .65
+      }
+    }
+
+    .wish-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 2;
+      width: 34px;
+      height: 34px;
+      background: rgba(255, 255, 255, .92);
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all .3s
+    }
+
+    .wish-btn:hover {
+      background: var(--rose)
+    }
+
+    .wish-btn:hover i {
+      color: white
+    }
+
+    .wish-btn i {
+      color: var(--rose);
+      font-size: .85rem;
+      transition: color .3s
+    }
+
+    .prod-img {
+      height: 210px;
+      background-size: cover;
+      background-position: center;
+      transition: transform .5s;
+      position: relative;
+      overflow: hidden
+    }
+
+    .prod-card:hover .prod-img {
+      transform: scale(1.05)
+    }
+
+    .prod-img-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(232, 96, 44, .85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity .4s
+    }
+
+    .prod-card:hover .prod-img-overlay {
+      opacity: 1
+    }
+
+    .prod-img-overlay button {
+      background: white;
+      color: var(--saffron);
+      border: none;
+      padding: 9px 20px;
+      border-radius: 50px;
+      font-family: 'Outfit', sans-serif;
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .3s
+    }
+
+    .prod-img-overlay button:hover {
+      background: var(--saffron);
+      color: white
+    }
+
+    .prod-body {
+      padding: 1.1rem
+    }
+
+    .prod-cat {
+      font-size: .68rem;
+      color: var(--saffron);
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: .35rem
+    }
+
+    .prod-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: .3rem;
+      line-height: 1.3
+    }
+
+    .prod-brand {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-bottom: .35rem;
+      font-style: italic
+    }
+
+    .prod-desc {
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: .9rem
+    }
+
+    .prod-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem
+    }
+
+    .prod-price-wrap {
+      display: flex;
+      flex-direction: column
+    }
+
+    .prod-price {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--saffron-deep)
+    }
+
+    .prod-old-price {
+      font-size: .72rem;
+      color: var(--muted);
+      text-decoration: line-through
+    }
+
+    .prod-save {
+      font-size: .65rem;
+      color: var(--green);
+      font-weight: 600
+    }
+
+    .add-to-cart {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--saffron), var(--gold));
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .3s;
+      flex-shrink: 0;
+      touch-action: manipulation
+    }
+
+    .add-to-cart:active {
+      transform: scale(.88)
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 4rem;
+      grid-column: 1/-1;
+      display: none
+    }
+
+    .no-results i {
+      font-size: 3.5rem;
+      color: rgba(232, 96, 44, .2);
+      display: block;
+      margin-bottom: 1rem
+    }
+
+    .no-results p {
+      color: var(--muted)
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      margin-top: 3rem;
+      flex-wrap: wrap
+    }
+
+    .page-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 2px solid rgba(232, 96, 44, .15);
+      background: white;
+      color: var(--text);
+      font-size: .88rem;
+      cursor: pointer;
+      transition: all .3s;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .page-btn.active {
+      background: linear-gradient(135deg, var(--saffron), var(--gold));
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 4px 16px var(--shadow)
+    }
+
+    .page-btn:disabled {
+      opacity: .4;
+      cursor: not-allowed
+    }
+
+    /* ── PARLOUR ── */
+    #parlour-visit {
+      background: linear-gradient(135deg, #1c0f08 0%, #3a1208 40%, #1c0f08 100%);
+      position: relative;
+      overflow: hidden
+    }
+
+    #parlour-visit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1560066984-138daaa7a70f?w=1200') center/cover no-repeat;
+      opacity: .18
+    }
+
+    #parlour-visit::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 50%, rgba(212, 168, 67, .15) 0%, transparent 70%);
+      pointer-events: none
+    }
+
+    .parlour-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 80px 5%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      position: relative;
+      z-index: 2
+    }
+
+    .parlour-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(212, 168, 67, .15);
+      border: 1px solid rgba(212, 168, 67, .4);
+      padding: 7px 16px;
+      border-radius: 50px;
+      margin-bottom: 1.4rem
+    }
+
+    .parlour-eyebrow i {
+      color: var(--gold);
+      font-size: .75rem
+    }
+
+    .parlour-eyebrow span {
+      font-size: .7rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      font-weight: 700
+    }
+
+    .parlour-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      color: white;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+      font-weight: 700
+    }
+
+    .parlour-heading strong {
+      display: block;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold), #e8a020);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: 1.15em
+    }
+
+    .parlour-desc {
+      color: rgba(255, 255, 255, .65);
+      font-size: 1rem;
+      line-height: 1.75;
+      margin-bottom: 2rem;
+      max-width: 460px
+    }
+
+    .parlour-services {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+      margin-bottom: 2.2rem
+    }
+
+    .parlour-tag {
+      padding: 6px 14px;
+      background: rgba(232, 96, 44, .12);
+      border: 1px solid rgba(232, 96, 44, .25);
+      border-radius: 50px;
+      font-size: .77rem;
+      color: rgba(255, 255, 255, .75);
+      font-weight: 500
+    }
+
+    .parlour-cta-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .btn-parlour-main {
+      padding: 14px 30px;
+      background: linear-gradient(135deg, var(--gold), #c49030);
+      color: var(--dark);
+      font-weight: 800;
+      font-size: .93rem;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      transition: all .3s;
+      box-shadow: 0 8px 32px rgba(212, 168, 67, .4)
+    }
+
+    .btn-parlour-main:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(212, 168, 67, .55)
+    }
+
+    .btn-parlour-call {
+      padding: 14px 26px;
+      background: linear-gradient(135deg, var(--saffron), var(--saffron-deep));
+      color: white;
+      font-weight: 700;
+      font-size: .9rem;
+      border-radius: 50px;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all .3s
+    }
+
+    .btn-parlour-call:hover {
+      opacity: .88;
+      transform: translateY(-3px)
+    }
+
+    .parlour-image-side {
+      position: relative
+    }
+
+    .parlour-deco-ring {
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      border: 2px solid rgba(212, 168, 67, .2);
+      pointer-events: none
+    }
+
+    .parlour-deco-ring::after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      border-radius: 50%;
+      border: 1px solid rgba(212, 168, 67, .15)
+    }
+
+    .parlour-img-frame {
+      width: 100%;
+      aspect-ratio: 4/5;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .5);
+      position: relative
+    }
+
+    .parlour-img-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .7s ease
+    }
+
+    .parlour-img-frame:hover img {
+      transform: scale(1.05)
+    }
+
+    .parlour-img-frame::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(28, 15, 8, .7) 0%, transparent 50%);
+      pointer-events: none
+    }
+
+    .parlour-img-badge {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, .1);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, .15);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 3
+    }
+
+    .parlour-img-badge-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--saffron), var(--gold));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .parlour-img-badge-icon i {
+      color: white;
+      font-size: 1.1rem
+    }
+
+    .parlour-img-badge-text strong {
+      display: block;
+      color: white;
+      font-size: .88rem;
+      font-weight: 700
+    }
+
+    .parlour-img-badge-text span {
+      color: rgba(255, 255, 255, .6);
+      font-size: .75rem
+    }
+
+    /* ── WHY US ── */
+    .why-bg {
+      background: linear-gradient(135deg, var(--dark), #2d1208)
+    }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.5rem
+    }
+
+    .why-card {
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 18px;
+      padding: 2rem;
+      text-align: center;
+      transition: all .4s
+    }
+
+    .why-card:hover {
+      background: rgba(255, 255, 255, .08);
+      transform: translateY(-6px)
+    }
+
+    .why-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(232, 96, 44, .2), rgba(212, 168, 67, .15));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.2rem
+    }
+
+    .why-icon i {
+      color: var(--gold);
+      font-size: 1.5rem
+    }
+
+    .why-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      color: white;
+      margin-bottom: .5rem
+    }
+
+    .why-card p {
+      font-size: .82rem;
+      color: rgba(255, 255, 255, .5);
+      line-height: 1.6
+    }
+
+    /* ── BRANDS ── */
+    .brands-bg {
+      background: var(--ivory)
+    }
+
+    .brands-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.1rem;
+      justify-content: center;
+      align-items: center
+    }
+
+    .brand-pill {
+      padding: 10px 22px;
+      background: white;
+      border: 2px solid rgba(232, 96, 44, .12);
+      border-radius: 50px;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all .3s;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .04)
+    }
+
+    .brand-pill:hover {
+      border-color: var(--saffron);
+      color: var(--saffron);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px var(--shadow)
+    }
+
+    /* ── CONTACT ── */
+    .contact-section {
+      background: var(--cream);
+      position: relative;
+      overflow: hidden
+    }
+
+    .contact-top-strip {
+      background: linear-gradient(135deg, var(--dark) 0%, #2d1208 100%);
+      padding: 0
+    }
+
+    .contact-strip-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      min-height: 420px
+    }
+
+    .contact-map-side {
+      position: relative;
+      overflow: hidden
+    }
+
+    .contact-map-side iframe {
+      width: 100%;
+      height: 100%;
+      min-height: 380px;
+      border: none;
+      display: block;
+      filter: grayscale(15%) contrast(1.1);
+      opacity: .85
+    }
+
+    .contact-map-side::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 60px;
+      background: linear-gradient(to right, transparent, #1c0f08);
+      pointer-events: none
+    }
+
+    .contact-info-strip {
+      padding: 3rem 3rem 3rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.2rem
+    }
+
+    .contact-strip-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      color: white;
+      line-height: 1.2;
+      margin-bottom: .3rem
+    }
+
+    .contact-strip-heading span {
+      color: var(--gold-light);
+      font-style: italic
+    }
+
+    .contact-strip-sub {
+      font-size: .88rem;
+      color: rgba(255, 255, 255, .5);
+      line-height: 1.6;
+      margin-bottom: .5rem
+    }
+
+    .contact-info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem
+    }
+
+    .contact-info-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: rgba(232, 96, 44, .15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .contact-info-icon i {
+      color: var(--saffron);
+      font-size: .95rem
+    }
+
+    .contact-info-text h5 {
+      font-size: .68rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--saffron);
+      font-weight: 700;
+      margin-bottom: 2px
+    }
+
+    .contact-info-text p,
+    .contact-info-text a {
+      font-size: .86rem;
+      color: rgba(255, 255, 255, .75);
+      text-decoration: none;
+      display: block;
+      line-height: 1.5;
+      transition: color .3s
+    }
+
+    .contact-info-text a:hover {
+      color: var(--gold-light)
+    }
+
+    .contact-strip-social {
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+      margin-top: .5rem
+    }
+
+    .csoc-btn {
+      padding: 9px 16px;
+      border-radius: 50px;
+      font-size: .78rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .3s;
+      border: none;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif
+    }
+
+    .csoc-ig {
+      background: linear-gradient(135deg, #e1306c, #833ab4);
+      color: white
+    }
+
+    .csoc-ig:hover {
+      opacity: .88;
+      transform: translateY(-2px)
+    }
+
+    .csoc-call {
+      background: var(--saffron);
+      color: white
+    }
+
+    .csoc-call:hover {
+      background: var(--saffron-deep);
+      transform: translateY(-2px)
+    }
+
+    .csoc-email {
+      background: var(--gold);
+      color: var(--dark)
+    }
+
+    .csoc-email:hover {
+      transform: translateY(-2px)
+    }
+
+    .contact-form-area {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 70px 5%;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 4rem;
+      align-items: start
+    }
+
+    .contact-form-card {
+      background: white;
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 12px 60px rgba(180, 69, 27, .1);
+      border: 1px solid rgba(232, 96, 44, .07);
+      position: relative
+    }
+
+    .contact-form-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--saffron), var(--gold), var(--rose));
+      border-radius: 24px 24px 0 0
+    }
+
+    .contact-form-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      color: var(--dark);
+      margin-bottom: .4rem
+    }
+
+    .contact-form-card .form-intro {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 1.6rem;
+      line-height: 1.6
+    }
+
+    .form-group {
+      margin-bottom: 1rem
+    }
+
+    .form-group label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 5px;
+      letter-spacing: .3px
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 2px solid rgba(232, 96, 44, .12);
+      border-radius: 11px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      background: #fdf9f5;
+      outline: none;
+      transition: border-color .3s;
+      -webkit-appearance: none
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: var(--saffron);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(232, 96, 44, .07)
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem
+    }
+
+    .form-actions {
+      display: flex;
+      gap: .8rem;
+      flex-wrap: wrap;
+      margin-top: 1.2rem
+    }
+
+    .form-actions .btn-primary {
+      flex: 1;
+      justify-content: center;
+      min-width: 130px;
+      padding: 13px 20px
+    }
+
+    .form-note {
+      font-size: .73rem;
+      color: var(--muted);
+      margin-top: .8rem;
+      display: flex;
+      align-items: center;
+      gap: 5px
+    }
+
+    .form-note i {
+      color: var(--green);
+      font-size: .75rem
+    }
+
+    .contact-quick-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem
+    }
+
+    .cq-card {
+      background: white;
+      border-radius: 18px;
+      padding: 1.4rem 1.6rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .06);
+      border: 1.5px solid rgba(232, 96, 44, .07);
+      transition: all .35s;
+      text-decoration: none;
+      display: block;
+      cursor: pointer
+    }
+
+    .cq-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--saffron);
+      box-shadow: 0 12px 36px var(--shadow)
+    }
+
+    .cq-card-head {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: .8rem
+    }
+
+    .cq-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .cq-card-icon.call {
+      background: linear-gradient(135deg, var(--saffron), var(--saffron-deep))
+    }
+
+    .cq-card-icon.ig {
+      background: linear-gradient(135deg, #e1306c, #833ab4)
+    }
+
+    .cq-card-icon.loc {
+      background: linear-gradient(135deg, var(--dark), #4a2010)
+    }
+
+    .cq-card-icon.pay {
+      background: linear-gradient(135deg, #072654, #1a4a9b)
+    }
+
+    .cq-card-icon i {
+      color: white;
+      font-size: 1.15rem
+    }
+
+    .cq-card-title {
+      font-weight: 700;
+      font-size: .92rem;
+      color: var(--dark)
+    }
+
+    .cq-card-sub {
+      font-size: .75rem;
+      color: var(--muted)
+    }
+
+    .cq-card-value {
+      font-size: .88rem;
+      color: var(--text);
+      font-weight: 500;
+      line-height: 1.5
+    }
+
+    .cq-card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(34, 197, 94, .1);
+      border: 1px solid rgba(34, 197, 94, .2);
+      color: var(--green);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 3px 9px;
+      border-radius: 50px;
+      margin-top: .5rem
+    }
+
+    .hours-card {
+      background: linear-gradient(135deg, var(--dark), #2d1208);
+      border-radius: 18px;
+      padding: 1.4rem 1.6rem;
+      border: 1px solid rgba(212, 168, 67, .15)
+    }
+
+    .hours-card .hours-title {
+      font-family: 'Cormorant Garamond', serif;
+      color: var(--gold-light);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .hours-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+      font-size: .82rem
+    }
+
+    .hours-row:last-child {
+      border-bottom: none
+    }
+
+    .hours-row .day {
+      color: rgba(255, 255, 255, .55)
+    }
+
+    .hours-row .time {
+      color: var(--gold-light);
+      font-weight: 600
+    }
+
+    .hours-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(34, 197, 94, .15);
+      color: var(--green);
+      font-size: .7rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 50px;
+      margin-top: .8rem
+    }
+
+    /* ── PAYMENT MODAL ── */
+    .pay-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 10, 5, .82);
+      backdrop-filter: blur(8px);
+      z-index: 3500;
+      opacity: 0;
+      visibility: hidden;
+      transition: all .35s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem
+    }
+
+    .pay-overlay.open {
+      opacity: 1;
+      visibility: visible
+    }
+
+    .pay-modal {
+      background: white;
+      border-radius: 28px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, .4);
+      transform: scale(.9) translateY(20px);
+      transition: transform .4s cubic-bezier(.175, .885, .32, 1.275)
+    }
+
+    .pay-overlay.open .pay-modal {
+      transform: scale(1) translateY(0)
+    }
+
+    .pay-modal-head {
+      background: linear-gradient(135deg, #072654, #1a3a7a);
+      padding: 1.4rem 1.6rem;
+      border-radius: 28px 28px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .pay-modal-head h3 {
+      color: white;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .pay-modal-head h3 i {
+      color: #60a5fa
+    }
+
+    .pay-modal-close {
+      background: rgba(255, 255, 255, .12);
+      border: none;
+      color: white;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .pay-modal-body {
+      padding: 1.8rem
+    }
+
+    .pay-order-strip {
+      background: linear-gradient(135deg, rgba(232, 96, 44, .06), rgba(212, 168, 67, .05));
+      border: 1.5px solid rgba(232, 96, 44, .12);
+      border-radius: 16px;
+      padding: 1.1rem 1.3rem;
+      margin-bottom: 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem
+    }
+
+    .pay-order-img {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0
+    }
+
+    .pay-order-details h4 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--dark)
+    }
+
+    .pay-order-details .pay-order-brand {
+      font-size: .72rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-bottom: 3px
+    }
+
+    .pay-order-details .pay-order-total {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--saffron-deep)
+    }
+
+    .pay-order-details .pay-order-qty {
+      font-size: .74rem;
+      color: var(--muted)
+    }
+
+    .pay-qty-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.4rem;
+      background: #fdf9f5;
+      border-radius: 12px;
+      padding: .8rem 1.1rem
+    }
+
+    .pay-qty-label {
+      font-size: .84rem;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .pay-qty-ctrl {
+      display: flex;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .pay-qty-ctrl button {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      border: 2px solid rgba(232, 96, 44, .2);
+      background: white;
+      color: var(--saffron);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all .2s
+    }
+
+    .pay-qty-ctrl button:hover {
+      background: var(--saffron);
+      color: white;
+      border-color: var(--saffron)
+    }
+
+    .pay-qty-ctrl span {
+      font-size: 1rem;
+      font-weight: 700;
+      min-width: 28px;
+      text-align: center;
+      color: var(--dark)
+    }
+
+    .pay-section-label {
+      font-size: .72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--saffron);
+      margin-bottom: .7rem;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .pay-input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 2px solid rgba(232, 96, 44, .15);
+      border-radius: 11px;
+      font-family: 'Outfit', sans-serif;
+      font-size: .9rem;
+      color: var(--text);
+      background: #fdf9f5;
+      outline: none;
+      margin-bottom: .8rem;
+      transition: border-color .3s
+    }
+
+    .pay-input:focus {
+      border-color: var(--saffron);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(232, 96, 44, .07)
+    }
+
+    .pay-input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .7rem
+    }
+
+    .pay-methods {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .6rem;
+      margin-bottom: 1.4rem
+    }
+
+    .pay-method-tab {
+      padding: .8rem .5rem;
+      border: 2px solid rgba(232, 96, 44, .15);
+      border-radius: 13px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .3s;
+      background: white
+    }
+
+    .pay-method-tab:hover {
+      border-color: var(--saffron)
+    }
+
+    .pay-method-tab i {
+      display: block;
+      font-size: 1.3rem;
+      margin-bottom: .35rem
+    }
+
+    .pay-method-tab span {
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--text);
+      display: block
+    }
+
+    .pay-method-tab small {
+      font-size: .62rem;
+      color: var(--muted)
+    }
+
+    .tab-upi i {
+      color: #5f259f
+    }
+
+    .tab-qr i {
+      color: #1a4a9b
+    }
+
+    .tab-cod i {
+      color: #22c55e
+    }
+
+    .pay-method-tab.active.tab-upi {
+      border-color: #5f259f;
+      background: rgba(95, 37, 159, .05)
+    }
+
+    .pay-method-tab.active.tab-qr {
+      border-color: #1a4a9b;
+      background: rgba(26, 74, 155, .05)
+    }
+
+    .pay-method-tab.active.tab-cod {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, .05)
+    }
+
+    .pay-panel {
+      display: none
+    }
+
+    .pay-panel.active {
+      display: block
+    }
+
+    .upi-apps {
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem
+    }
+
+    .upi-app-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: 2px solid rgba(232, 96, 44, .12);
+      border-radius: 50px;
+      background: white;
+      cursor: pointer;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--text);
+      transition: all .3s;
+      font-family: 'Outfit', sans-serif
+    }
+
+    .upi-app-btn:hover,
+    .upi-app-btn.selected {
+      border-color: var(--saffron);
+      background: rgba(232, 96, 44, .06);
+      color: var(--saffron)
+    }
+
+    .upi-id-box {
+      background: #f8f4ff;
+      border: 2px solid #e9d5ff;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem
+    }
+
+    .upi-id-box p {
+      font-size: .75rem;
+      color: #7c3aed;
+      font-weight: 600;
+      margin-bottom: 4px
+    }
+
+    .upi-id-val {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px
+    }
+
+    .upi-id-val span {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--dark);
+      font-family: monospace
+    }
+
+    .copy-btn {
+      padding: 6px 12px;
+      background: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: .72rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      transition: all .2s
+    }
+
+    .copy-btn.copied {
+      background: #22c55e
+    }
+
+    .qr-container {
+      text-align: center;
+      padding: 1rem 0
+    }
+
+    .qr-box {
+      display: inline-block;
+      background: white;
+      border: 3px solid rgba(7, 38, 84, .12);
+      border-radius: 20px;
+      padding: 1.2rem;
+      box-shadow: 0 8px 32px rgba(7, 38, 84, .1);
+      margin-bottom: 1rem
+    }
+
+    .qr-label {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-bottom: .3rem
+    }
+
+    .qr-amount {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--saffron-deep)
+    }
+
+    .qr-steps {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      margin-top: .8rem;
+      text-align: left;
+      background: #f8faff;
+      border-radius: 12px;
+      padding: .9rem 1rem
+    }
+
+    .qr-step {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      font-size: .78rem;
+      color: var(--text)
+    }
+
+    .qr-step-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--razorpay);
+      color: white;
+      font-size: .65rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .cod-info {
+      background: linear-gradient(135deg, rgba(34, 197, 94, .07), rgba(34, 197, 94, .03));
+      border: 2px solid rgba(34, 197, 94, .2);
+      border-radius: 14px;
+      padding: 1.2rem;
+      margin-bottom: 1rem
+    }
+
+    .cod-info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: .8rem;
+      margin-bottom: .7rem
+    }
+
+    .cod-info-row:last-child {
+      margin-bottom: 0
+    }
+
+    .cod-info-row i {
+      color: #22c55e;
+      margin-top: 2px;
+      flex-shrink: 0;
+      width: 16px
+    }
+
+    .cod-info-row p {
+      font-size: .82rem;
+      color: var(--text);
+      line-height: 1.5
+    }
+
+    .pay-divider {
+      border: none;
+      border-top: 1px solid rgba(232, 96, 44, .1);
+      margin: 1.2rem 0
+    }
+
+    .pay-total-final {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem
+    }
+
+    .pay-total-final span {
+      font-size: .9rem;
+      color: var(--muted)
+    }
+
+    .pay-total-final strong {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--saffron-deep)
+    }
+
+    .btn-pay-now {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all .3s;
+      letter-spacing: .3px
+    }
+
+    .btn-pay-razorpay {
+      background: linear-gradient(135deg, #072654, #1a4a9b);
+      color: white;
+      box-shadow: 0 8px 28px rgba(7, 38, 84, .35)
+    }
+
+    .btn-pay-razorpay:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 40px rgba(7, 38, 84, .45)
+    }
+
+    .btn-pay-cod {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      color: white;
+      box-shadow: 0 8px 28px rgba(22, 163, 74, .3)
+    }
+
+    .btn-pay-cod:hover {
+      transform: translateY(-3px)
+    }
+
+    .pay-secure-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: .8rem;
+      font-size: .72rem;
+      color: var(--muted)
+    }
+
+    .pay-secure-note i {
+      color: var(--green)
+    }
+
+    .razorpay-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: .5rem;
+      font-size: .7rem;
+      color: var(--muted)
+    }
+
+    .razorpay-badge span {
+      font-weight: 700;
+      color: var(--razorpay)
+    }
+
+    .pay-success {
+      text-align: center;
+      padding: 2.5rem 1.5rem
+    }
+
+    .pay-success .succ-icon {
+      font-size: 4rem;
+      color: var(--green);
+      display: block;
+      margin-bottom: 1rem;
+      animation: successPop .5s cubic-bezier(.175, .885, .32, 1.275)
+    }
+
+    @keyframes successPop {
+      from {
+        transform: scale(0)
+      }
+
+      to {
+        transform: scale(1)
+      }
+    }
+
+    .pay-success h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      color: var(--dark);
+      margin-bottom: .4rem
+    }
+
+    .pay-success p {
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.7
+    }
+
+    .pay-success-actions {
+      display: flex;
+      gap: .8rem;
+      margin-top: 1.4rem;
+      justify-content: center;
+      flex-wrap: wrap
+    }
+
+    /* ── BUY MODAL ── */
+    .buy-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 15, 8, .78);
+      backdrop-filter: blur(6px);
+      z-index: 3000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all .3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem
+    }
+
+    .buy-overlay.open {
+      opacity: 1;
+      visibility: visible
+    }
+
+    .buy-modal {
+      background: white;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 460px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .3);
+      transform: scale(.9);
+      transition: transform .3s cubic-bezier(.175, .885, .32, 1.275)
+    }
+
+    .buy-overlay.open .buy-modal {
+      transform: scale(1)
+    }
+
+    .buy-modal-head {
+      background: linear-gradient(135deg, var(--saffron-deep), var(--dark));
+      padding: 1.3rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 24px 24px 0 0
+    }
+
+    .buy-modal-head h3 {
+      font-family: 'Cormorant Garamond', serif;
+      color: white;
+      font-size: 1.3rem
+    }
+
+    .buy-modal-close {
+      background: rgba(255, 255, 255, .15);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .buy-modal-body {
+      padding: 1.5rem
+    }
+
+    .buy-prod-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      background: var(--cream);
+      border-radius: 14px;
+      padding: 1rem;
+      margin-bottom: 1.3rem
+    }
+
+    .buy-prod-img {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0
+    }
+
+    .buy-prod-info h4 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--dark)
+    }
+
+    .buy-prod-info .buy-price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--saffron-deep);
+      margin-top: 3px
+    }
+
+    .buy-qty-row-old {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      margin-bottom: 1.1rem
+    }
+
+    .buy-qty-ctrl-old {
+      display: flex;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .buy-qty-ctrl-old button {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 2px solid rgba(232, 96, 44, .2);
+      background: white;
+      color: var(--saffron);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem
+    }
+
+    .buy-qty-ctrl-old span {
+      font-size: 1rem;
+      font-weight: 700;
+      min-width: 28px;
+      text-align: center;
+      color: var(--dark)
+    }
+
+    .buy-divider {
+      border: none;
+      border-top: 1px solid rgba(232, 96, 44, .1);
+      margin: 1rem 0
+    }
+
+    .buy-actions {
+      display: flex;
+      flex-direction: column;
+      gap: .8rem
+    }
+
+    .buy-actions .btn-primary {
+      justify-content: center;
+      width: 100%;
+      font-size: 1rem;
+      padding: 14px
+    }
+
+    .btn-pay-main {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #072654, #1a4a9b);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .3s
+    }
+
+    .btn-pay-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(7, 38, 84, .4)
+    }
+
+    /* ── CART ── */
+    .cart-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 15, 8, .65);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all .3s
+    }
+
+    .cart-overlay.open {
+      opacity: 1;
+      visibility: visible
+    }
+
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: -110%;
+      width: min(420px, 100vw);
+      height: 100dvh;
+      background: var(--ivory);
+      z-index: 2001;
+      display: flex;
+      flex-direction: column;
+      transition: right .4s cubic-bezier(.22, 1, .36, 1);
+      box-shadow: -10px 0 60px rgba(0, 0, 0, .15)
+    }
+
+    .cart-drawer.open {
+      right: 0
+    }
+
+    .cart-head {
+      padding: 1.3rem 1.5rem;
+      background: linear-gradient(135deg, var(--saffron-deep), var(--dark));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0
+    }
+
+    .cart-head h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem
+    }
+
+    .cart-close-btn {
+      background: rgba(255, 255, 255, .15);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .cart-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.1rem;
+      -webkit-overflow-scrolling: touch
+    }
+
+    .cart-empty-msg {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted)
+    }
+
+    .cart-empty-msg i {
+      font-size: 3rem;
+      color: rgba(232, 96, 44, .2);
+      display: block;
+      margin-bottom: 1rem
+    }
+
+    .cart-item {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(232, 96, 44, .1)
+    }
+
+    .cart-item-img {
+      width: 58px;
+      height: 58px;
+      border-radius: 10px;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0
+    }
+
+    .cart-item-info {
+      flex: 1;
+      min-width: 0
+    }
+
+    .cart-item-name {
+      font-weight: 600;
+      font-size: .86rem;
+      color: var(--dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .cart-item-price {
+      color: var(--saffron);
+      font-weight: 700;
+      font-size: .88rem;
+      margin-top: 2px
+    }
+
+    .cart-item-qty {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 5px
+    }
+
+    .qty-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1.5px solid rgba(232, 96, 44, .25);
+      background: white;
+      color: var(--saffron);
+      cursor: pointer;
+      font-size: .8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s
+    }
+
+    .qty-btn:active {
+      background: var(--saffron);
+      color: white
+    }
+
+    .qty-num {
+      font-size: .84rem;
+      font-weight: 600;
+      min-width: 18px;
+      text-align: center
+    }
+
+    .cart-item-del {
+      background: #fff0ed;
+      border: none;
+      color: var(--saffron);
+      width: 29px;
+      height: 29px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: .78rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .3s
+    }
+
+    .cart-item-del:active {
+      background: var(--saffron);
+      color: white
+    }
+
+    .cart-foot {
+      padding: 1.3rem 1.5rem;
+      border-top: 2px solid rgba(232, 96, 44, .1);
+      flex-shrink: 0
+    }
+
+    .cart-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .5rem
+    }
+
+    .cart-total-row span:first-child {
+      color: var(--muted);
+      font-size: .87rem
+    }
+
+    .cart-total-row strong {
+      font-size: 1.3rem;
+      color: var(--saffron-deep)
+    }
+
+    .checkout-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #072654, #1a4a9b);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Outfit', sans-serif;
+      font-size: .93rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px
+    }
+
+    .checkout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(7, 38, 84, .3)
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--dark);
+      color: white;
+      padding: 11px 22px;
+      border-radius: 50px;
+      font-size: .86rem;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 5000;
+      transition: all .4s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 90vw;
+      text-align: center
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .toast i {
+      color: var(--gold);
+      flex-shrink: 0
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark);
+      color: rgba(255, 255, 255, .6);
+      padding: 4rem 5% 1.5rem
+    }
+
+    .footer-inner {
+      max-width: 1400px;
+      margin: 0 auto
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.2fr;
+      gap: 3rem;
+      margin-bottom: 3rem
+    }
+
+    .footer-brand .foot-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: .4rem
+    }
+
+    .footer-brand .foot-sub {
+      font-size: .65rem;
+      letter-spacing: 3px;
+      color: var(--saffron);
+      text-transform: uppercase;
+      margin-bottom: 1rem
+    }
+
+    .footer-brand p {
+      font-size: .83rem;
+      line-height: 1.7;
+      max-width: 280px
+    }
+
+    .foot-social {
+      display: flex;
+      gap: .65rem;
+      margin-top: 1.2rem;
+      flex-wrap: wrap
+    }
+
+    .foot-soc-link {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .06);
+      color: rgba(255, 255, 255, .55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: .9rem;
+      transition: all .3s
+    }
+
+    .foot-soc-link:hover {
+      background: var(--saffron);
+      color: white
+    }
+
+    .footer-col h4 {
+      color: white;
+      font-size: .87rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      letter-spacing: .5px
+    }
+
+    .foot-links {
+      list-style: none
+    }
+
+    .foot-links li {
+      margin-bottom: .5rem
+    }
+
+    .foot-links a {
+      color: rgba(255, 255, 255, .5);
+      text-decoration: none;
+      font-size: .82rem;
+      transition: color .3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer
+    }
+
+    .foot-links a:hover {
+      color: var(--gold-light)
+    }
+
+    .foot-links i {
+      font-size: .6rem;
+      color: var(--saffron)
+    }
+
+    .footer-contact .cont-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: .85rem;
+      font-size: .81rem
+    }
+
+    .footer-contact .cont-row i {
+      color: var(--saffron);
+      width: 14px;
+      text-align: center;
+      margin-top: 2px;
+      flex-shrink: 0
+    }
+
+    .footer-contact .cont-row a {
+      color: rgba(255, 255, 255, .55);
+      text-decoration: none;
+      transition: color .3s
+    }
+
+    .footer-contact .cont-row a:hover {
+      color: var(--gold-light)
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, .07);
+      padding-top: 1.5rem;
+      text-align: center;
+      font-size: .76rem;
+      color: rgba(255, 255, 255, .3)
+    }
+
+    .footer-bottom a {
+      color: rgba(255, 255, 255, .3);
+      text-decoration: none
+    }
+
+    /* ── FLOATING MOB CTA ── */
+    .mob-cta {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, var(--saffron-deep), var(--dark));
+      padding: 10px 14px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1400;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, .25);
+      gap: .5rem
+    }
+
+    .mob-cta a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: .82rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      justify-content: center;
+      white-space: nowrap
+    }
+
+    .mob-cta-sep {
+      width: 1px;
+      height: 22px;
+      background: rgba(255, 255, 255, .25)
+    }
+
+    .mob-cta-close {
+      background: rgba(255, 255, 255, .15);
+      border: none;
+      color: white;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .78rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .7s ease, transform .7s ease
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0)
+    }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:1080px) {
+      .contact-strip-inner {
+        grid-template-columns: 1fr
+      }
+
+      .contact-map-side {
+        min-height: 280px
+      }
+
+      .contact-map-side::after {
+        display: none
+      }
+
+      .contact-form-area {
+        grid-template-columns: 1fr;
+        gap: 2.5rem
+      }
+    }
+
+    @media(max-width:960px) {
+      .hamburger {
+        display: flex
+      }
+
+      .nav-links,
+      .search-bar {
+        display: none !important
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem
+      }
+
+      .mob-cta {
+        display: flex
+      }
+
+      body {
+        padding-bottom: 56px
+      }
+
+      .toast {
+        bottom: 76px
+      }
+
+      .parlour-inner {
+        grid-template-columns: 1fr;
+        gap: 2.5rem
+      }
+
+      .parlour-image-side {
+        max-width: 420px;
+        margin: 0 auto
+      }
+
+      .admin-nav-btn span {
+        display: none
+      }
+
+      .admin-nav-btn {
+        padding: 8px 10px;
+        border-radius: 12px
+      }
+    }
+
+    @media(max-width:640px) {
+      nav {
+        padding: .7rem 4%
+      }
+
+      .section-wrap,
+      .contact-form-area {
+        padding: 60px 4%
+      }
+
+      .hero-content {
+        padding: 2.5rem 4%
+      }
+
+      .hero-stats {
+        gap: 1.5rem
+      }
+
+      .cat-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr))
+      }
+
+      .prod-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem
+      }
+
+      .prod-img {
+        height: 165px
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr
+      }
+
+      .form-row {
+        grid-template-columns: 1fr
+      }
+
+      .contact-info-strip {
+        padding: 2rem 1.5rem
+      }
+
+      .pay-methods {
+        grid-template-columns: 1fr 1fr 1fr
+      }
+
+      .pay-input-row {
+        grid-template-columns: 1fr
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--cream)
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(232, 96, 44, .2);
+      border-radius: 3px
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--saffron)
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="load-logo">✦ ChandniMart</div>
+    <div class="load-sub">Beauty & Cosmetics</div>
+    <div class="load-bar"></div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+
+  <!-- MOB CTA -->
+  <div class="mob-cta" id="mobCta">
+    <a href="tel:+918953946893"><i class="fas fa-phone"></i> Call Now</a>
+    <div class="mob-cta-sep"></div>
+    <a onclick="toggleCart()" style="cursor:pointer"><i class="fas fa-shopping-bag"></i> Cart (<span
+        id="mobCartCount">0</span>)</a>
+    <button class="mob-cta-close" onclick="document.getElementById('mobCta').style.display='none'">✕</button>
+  </div>
+
+  <!-- HEADER -->
+  <header id="header">
+    <nav>
+      <a class="logo-wrap" onclick="scrollTo('home')">
+        <div class="logo-mark"><i class="fas fa-store"></i></div>
+        <div>
+          <div class="logo-name">ChandniMart</div>
+          <div class="logo-tagline">Ghughali • Cosmetic Store</div>
+        </div>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a onclick="scrollTo('home')" data-section="home">Home</a></li>
+        <li><a onclick="scrollTo('categories')" data-section="categories">Categories</a></li>
+        <li><a onclick="scrollTo('products')" data-section="products">Products</a></li>
+        <li><a onclick="scrollTo('parlour-visit')" data-section="parlour-visit"><strong>Beauty Parlour</strong></a></li>
+        <li><a onclick="scrollTo('offers')" data-section="offers">Offers</a></li>
+        <li><a onclick="scrollTo('contact')" data-section="contact">Contact Us</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Search products…" oninput="handleSearch()"
+            onkeydown="if(event.key==='Escape')clearSearch()">
+        </div>
+        <button class="icon-btn" onclick="toggleCart()" aria-label="Cart">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+        <a href="admin.html" class="admin-nav-btn" title="Admin Panel"><i
+            class="fas fa-shield-alt"></i><span>Admin</span></a>
+        <button class="hamburger" id="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MOBILE DRAWER -->
+  <div class="mob-overlay" id="mobOverlay" onclick="closeMenu()"></div>
+  <div class="mob-drawer" id="mobDrawer">
+    <div class="mob-header">
+      <span class="mob-logo">✦ ChandniMart</span>
+      <button class="mob-close" onclick="closeMenu()"><i class="fas fa-times"></i></button>
+    </div>
+    <ul class="mob-nav">
+      <li><a onclick="scrollTo('home');closeMenu()">
+          <div class="nav-ic"><i class="fas fa-home"></i></div>Home
+        </a></li>
+      <li><a onclick="scrollTo('categories');closeMenu()">
+          <div class="nav-ic"><i class="fas fa-th-large"></i></div>Categories
+        </a></li>
+      <li><a onclick="scrollTo('products');closeMenu()">
+          <div class="nav-ic"><i class="fas fa-shopping-bag"></i></div>Products
+        </a></li>
+      <li><a onclick="scrollTo('parlour-visit');closeMenu()" style="color:var(--saffron);font-weight:700">
+          <div class="nav-ic"><i class="fas fa-spa"></i></div><strong>Beauty Parlour</strong>
+        </a></li>
+      <li><a onclick="scrollTo('offers');closeMenu()">
+          <div class="nav-ic"><i class="fas fa-tag"></i></div>Offers
+        </a></li>
+      <li><a onclick="scrollTo('contact');closeMenu()">
+          <div class="nav-ic"><i class="fas fa-phone"></i></div>Contact Us
+        </a></li>
+    </ul>
+    <div class="mob-footer-info">
+      <div class="mob-contact-line"><i class="fas fa-map-marker-alt"></i>Ghughali, Maharajganj (273151)</div>
+      <div class="mob-contact-line"><i class="fas fa-phone"></i><a href="tel:+918953946893">+91 8953946893</a></div>
+      <div class="mob-contact-line"><i class="fab fa-instagram"></i><a
+          href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1"
+          target="_blank">@chandani_beauty_parlor</a></div>
+      <div class="mob-contact-line"><i class="fas fa-clock"></i>Open 24×7</div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section id="home">
+    <div class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-pattern"></div>
+      <div class="hero-content">
+        <div class="hero-badge"><i class="fas fa-map-marker-alt"></i><span>Ghughali, Maharajganj (UP)</span></div>
+        <h1>Your Favourite<em>Cosmetic Store</em></h1>
+        <p class="hero-desc">Premium cosmetics, skincare, oils, makeup & all parlour essentials — delivered to your door
+          or pick up in‑store. Pay via UPI, QR Code or Cash on Delivery. ₹40 delivery · Free above ₹500.</p>
+        <div class="hero-btns">
+          <a onclick="scrollTo('products')" class="btn-primary" style="cursor:pointer"><i
+              class="fas fa-shopping-bag"></i> Shop Now</a>
+          <a onclick="scrollTo('parlour-visit')" class="btn-gold" style="cursor:pointer"><i class="fas fa-spa"></i>
+            Beauty Parlour</a>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-num">300+</div>
+            <div class="hero-stat-label">Products</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">1500+</div>
+            <div class="hero-stat-label">Happy Customers</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">24×7</div>
+            <div class="hero-stat-label">Open Always</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-bar" aria-hidden="true">
+    <div class="marquee-track">
+      <div class="marquee-item"><i class="fas fa-truck"></i><span>₹40 Delivery · Free above ₹500</span></div>
+      <div class="marquee-item"><i class="fas fa-star"></i><span>100% Genuine Products</span></div>
+      <div class="marquee-item"><i class="fas fa-credit-card"></i><span>Secure Online Payment</span></div>
+      <div class="marquee-item"><i class="fas fa-qrcode"></i><span>Pay via UPI / QR Code</span></div>
+      <div class="marquee-item"><i class="fas fa-spa"></i><span>Parlour Supplies Available</span></div>
+      <div class="marquee-item"><i class="fas fa-tags"></i><span>Best Prices in Ghughali</span></div>
+      <div class="marquee-item"><i class="fas fa-store"></i><span>Walk-in Welcome 24×7</span></div>
+      <div class="marquee-item"><i class="fas fa-truck"></i><span>₹40 Delivery · Free above ₹500</span></div>
+      <div class="marquee-item"><i class="fas fa-star"></i><span>100% Genuine Products</span></div>
+      <div class="marquee-item"><i class="fas fa-credit-card"></i><span>Secure Online Payment</span></div>
+      <div class="marquee-item"><i class="fas fa-qrcode"></i><span>Pay via UPI / QR Code</span></div>
+      <div class="marquee-item"><i class="fas fa-spa"></i><span>Parlour Supplies Available</span></div>
+      <div class="marquee-item"><i class="fas fa-tags"></i><span>Best Prices in Ghughali</span></div>
+      <div class="marquee-item"><i class="fas fa-store"></i><span>Walk-in Welcome 24×7</span></div>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <section id="categories" class="cat-section">
+    <div class="section-wrap">
+      <div class="sec-header reveal">
+        <div class="sec-eyebrow">Browse by Category</div>
+        <h2 class="sec-title">Shop Our <span>Collections</span></h2>
+        <div class="sec-line"></div>
+        <p class="sec-subtitle">From daily skincare to bridal essentials — everything you need under one roof</p>
+      </div>
+      <div class="cat-grid" id="catGrid">
+        <div class="cat-card active" onclick="filterCat('all',this)">
+          <div class="cat-icon"><i class="fas fa-th"></i></div>
+          <div class="cat-name">All Products</div>
+          <div class="cat-count">All Items</div>
+        </div>
+        <div class="cat-card" onclick="filterCat('lipcare',this)">
+          <div class="cat-icon"><i class="fas fa-kiss-wink-heart"></i></div>
+          <div class="cat-name">Lip Care</div>
+          <div class="cat-count">Lipsticks & Gloss</div>
+        </div>
+        <div class="cat-card" onclick="filterCat('foundation',this)">
+          <div class="cat-icon"><i class="fas fa-fill-drip"></i></div>
+          <div class="cat-name">Foundation</div>
+          <div class="cat-count">BB, CC & Base</div>
+        </div>
+        <div class="cat-card" onclick="filterCat('eyemakeup',this)">
+          <div class="cat-icon"><i class="fas fa-eye"></i></div>
+          <div class="cat-name">Eye Makeup</div>
+          <div class="cat-count">Kajal, Liner & More</div>
+        </div>
+        <div class="cat-card" onclick="filterCat('skincare',this)">
+          <div class="cat-icon"><i class="fas fa-leaf"></i></div>
+          <div class="cat-name">Skincare</div>
+          <div class="cat-count">Serums & Creams</div>
+        </div>
+        <div class="cat-card" onclick="filterCat('haircare',this)">
+          <div class="cat-icon"><i class="fas fa-wind"></i></div>
+          <div class="cat-name">Hair Care</div>
+          <div class="cat-count">Shampoo, Oil & Mask</div>
+        </div>
+        <div class="cat-card" onclick="filterCat('suncare',this)">
+          <div class="cat-icon"><i class="fas fa-sun"></i></div>
+          <div class="cat-name">Sun Care</div>
+          <div class="cat-count">SPF & Tanning</div>
+        </div>
+        <div class="cat-card" onclick="filterCat('nailcare',this)">
+          <div class="cat-icon"><i class="fas fa-hand-sparkles"></i></div>
+          <div class="cat-name">Nail Care</div>
+          <div class="cat-count">Polish & Tools</div>
+        </div>
+        <div class="cat-card" onclick="filterCat('fragrance',this)">
+          <div class="cat-icon"><i class="fas fa-spray-can"></i></div>
+          <div class="cat-name">Fragrance</div>
+          <div class="cat-count">Perfume & Deo</div>
+        </div>
+        <div class="cat-card" onclick="filterCat('parlour',this)">
+          <div class="cat-icon"><i class="fas fa-spa"></i></div>
+          <div class="cat-name">Parlour Items</div>
+          <div class="cat-count">Professional Use</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="products" class="products-bg">
+    <div class="section-wrap">
+      <div class="sec-header reveal">
+        <div class="sec-eyebrow">Our Store</div>
+        <h2 class="sec-title">Featured <span>Products</span></h2>
+        <div class="sec-line"></div>
+      </div>
+      <div class="filter-sort-row">
+        <span class="res-count" id="resCount">Showing <strong>0</strong> products</span>
+        <div
+          style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(232,96,44,.08),rgba(212,168,67,.06));border:1.5px solid rgba(232,96,44,.18);border-radius:50px;padding:7px 16px;font-size:.78rem;font-weight:600;color:var(--saffron-deep)">
+          <i class="fas fa-truck" style="font-size:.8rem"></i><span>₹40 delivery · Free above ₹500</span>
+        </div>
+        <select class="sort-sel" id="sortSel" onchange="applySortAndRender()">
+          <option value="default">Default</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name-asc">Name: A–Z</option>
+          <option value="newest">Newest First</option>
+        </select>
+      </div>
+      <div class="prod-grid" id="prodGrid">
+        <div class="no-results" id="noResults"><i class="fas fa-search"></i>
+          <p>No products found. Try a different search or category.</p>
+        </div>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </section>
+
+  <!-- PARLOUR -->
+  <section id="parlour-visit">
+    <div class="parlour-inner">
+      <div class="parlour-text-side reveal">
+        <div class="parlour-eyebrow"><i class="fas fa-spa"></i><span>Beauty Parlour</span></div>
+        <h2 class="parlour-heading">Visit Our<strong>Chandani Beauty Parlour</strong></h2>
+        <p class="parlour-desc">Experience professional beauty treatments at <b>Chandani Beauty Parlour</b> — your
+          trusted destination for bridal makeup, facials, mehendi, waxing, and full beauty services in Ghughali.</p>
+        <div class="parlour-services">
+          <span class="parlour-tag">💄 Bridal Makeup</span><span class="parlour-tag">✨ Facials & Cleanup</span>
+          <span class="parlour-tag">🕌 Mehendi</span><span class="parlour-tag">💅 Nail Art</span>
+          <span class="parlour-tag">🧖 Waxing & Threading</span><span class="parlour-tag">💇 Hair Styling</span>
+          <span class="parlour-tag">🌸 Bleach & Detan</span><span class="parlour-tag">👰 Party Makeup</span>
+        </div>
+        <div class="parlour-cta-group">
+          <a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1" target="_blank"
+            rel="noopener" class="btn-parlour-main">
+            <i class="fab fa-instagram"></i><span>Visit Instagram</span><i class="fas fa-arrow-right"></i>
+          </a>
+          <a href="tel:+918953946893" class="btn-parlour-call"><i class="fas fa-phone"></i> Book Appointment</a>
+        </div>
+      </div>
+      <div class="parlour-image-side reveal">
+        <div class="parlour-deco-ring"></div>
+        <div class="parlour-img-frame">
+          <img src="https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600" alt="Chandani Beauty Parlour"
+            loading="lazy">
+          <div class="parlour-img-badge">
+            <div class="parlour-img-badge-icon"><i class="fas fa-spa"></i></div>
+            <div class="parlour-img-badge-text"><strong>Chandani Beauty
+                Parlour</strong><span>@chandani_beauty_parlor</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY US -->
+  <section class="why-bg">
+    <div class="section-wrap">
+      <div class="sec-header reveal">
+        <div class="sec-eyebrow" style="color:var(--gold)">Why Choose Us</div>
+        <h2 class="sec-title" style="color:white">The ChandniMart <span>Difference</span></h2>
+        <div class="sec-line"></div>
+      </div>
+      <div class="why-grid">
+        <div class="why-card reveal">
+          <div class="why-icon"><i class="fas fa-certificate"></i></div>
+          <h3>100% Genuine</h3>
+          <p>All products are authentic, sourced directly from trusted brands. No fakes, ever.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon"><i class="fas fa-truck"></i></div>
+          <h3>Fast Delivery</h3>
+          <p>Quick home delivery across Ghughali & nearby areas. ₹40 delivery, free above ₹500.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon"><i class="fas fa-shield-alt"></i></div>
+          <h3>Secure Payments</h3>
+          <p>Pay safely via Razorpay — UPI, QR Code, or Cash on Delivery. 100% secure checkout.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon"><i class="fas fa-spa"></i></div>
+          <h3>Parlour Supplies</h3>
+          <p>Professional-grade parlour items available — facials, wax, bleach kits & more.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon"><i class="fas fa-clock"></i></div>
+          <h3>Open 24×7</h3>
+          <p>Shop anytime — our store is always open for walk-ins and online orders.</p>
+        </div>
+        <div class="why-card reveal">
+          <div class="why-icon"><i class="fas fa-tags"></i></div>
+          <h3>Best Prices</h3>
+          <p>Competitive prices with regular offers and discounts for loyal customers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BRANDS -->
+  <section class="brands-bg" id="offers">
+    <div class="section-wrap">
+      <div class="sec-header reveal">
+        <div class="sec-eyebrow">Trusted Brands</div>
+        <h2 class="sec-title">Brands We <span>Carry</span></h2>
+        <div class="sec-line"></div>
+      </div>
+      <div class="brands-grid reveal">
+        <div class="brand-pill">Lakme</div>
+        <div class="brand-pill">Lotus</div>
+        <div class="brand-pill">Himalaya</div>
+        <div class="brand-pill">VLCC</div>
+        <div class="brand-pill">Biotique</div>
+        <div class="brand-pill">Everyuth</div>
+        <div class="brand-pill">Parachute</div>
+        <div class="brand-pill">Emami</div>
+        <div class="brand-pill">Bajaj</div>
+        <div class="brand-pill">Mamaearth</div>
+        <div class="brand-pill">WOW Skin</div>
+        <div class="brand-pill">Maybelline</div>
+        <div class="brand-pill">L'Oréal</div>
+        <div class="brand-pill">Dove</div>
+        <div class="brand-pill">TRESemmé</div>
+        <div class="brand-pill">Revlon</div>
+        <div class="brand-pill">Nykaa</div>
+        <div class="brand-pill">Fogg</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="contact-section">
+    <div class="contact-top-strip">
+      <div class="contact-strip-inner">
+        <div class="contact-map-side">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d28725.24386957964!2d83.53!3d27.15!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3996f4d1b5a1b5b1%3A0x1!2sGhughali%2C+Uttar+Pradesh!5e0!3m2!1sen!2sin!4v1699999999999!5m2!1sen!2sin"
+            allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            title="ChandniMart Location"></iframe>
+        </div>
+        <div class="contact-info-strip">
+          <div>
+            <h2 class="contact-strip-heading">Find Us &<span> Get in Touch</span></h2>
+            <p class="contact-strip-sub">Walk in anytime or reach out — we're always ready to help you look & feel your
+              best.</p>
+          </div>
+          <div class="contact-info-row">
+            <div class="contact-info-icon"><i class="fas fa-store"></i></div>
+            <div class="contact-info-text">
+              <h5>Store</h5>
+              <p>ChandniMart — Beauty & Cosmetics</p>
+            </div>
+          </div>
+          <div class="contact-info-row">
+            <div class="contact-info-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="contact-info-text">
+              <h5>Address</h5><a href="https://maps.google.com/?q=Ghughali,Maharajganj,Uttar+Pradesh+273151"
+                target="_blank" rel="noopener">Ghughali, Maharajganj, Uttar Pradesh — 273151</a>
+            </div>
+          </div>
+          <div class="contact-info-row">
+            <div class="contact-info-icon"><i class="fas fa-phone"></i></div>
+            <div class="contact-info-text">
+              <h5>Phone</h5><a href="tel:+918953946893">+91 8953946893</a>
+            </div>
+          </div>
+          <div class="contact-info-row">
+            <div class="contact-info-icon"><i class="fab fa-instagram"></i></div>
+            <div class="contact-info-text">
+              <h5>Instagram</h5><a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1"
+                target="_blank">@chandani_beauty_parlor</a>
+            </div>
+          </div>
+          <div class="contact-strip-social">
+            <a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1" target="_blank"
+              rel="noopener" class="csoc-btn csoc-ig"><i class="fab fa-instagram"></i> Instagram</a>
+            <a href="tel:+918953946893" class="csoc-btn csoc-call"><i class="fas fa-phone"></i> Call Now</a>
+            <a href="mailto:amangupt7373@gmail.com" class="csoc-btn csoc-email"><i class="fas fa-envelope"></i> Email
+              Us</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="contact-form-area">
+      <div class="contact-form-card reveal">
+        <h3>Send Us a Message</h3>
+        <p class="form-intro">Have a question or want to place an order? Fill in the form and we'll get back to you
+          quickly.</p>
+        <form onsubmit="sendForm(event)" novalidate>
+          <div class="form-row">
+            <div class="form-group"><label>Your Name *</label><input type="text" id="fname" placeholder="Full Name"
+                required autocomplete="name"></div>
+            <div class="form-group"><label>Phone *</label><input type="tel" id="fphone" placeholder="+91 XXXXX XXXXX"
+                required inputmode="tel"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Email Address</label><input type="email" id="femail"
+                placeholder="your@email.com"></div>
+            <div class="form-group"><label>Subject</label>
+              <select id="fsubject">
+                <option value="">— Select —</option>
+                <option>Product Enquiry</option>
+                <option>Place an Order</option>
+                <option>Parlour Appointment</option>
+                <option>Bulk Order / Wholesale</option>
+                <option>Complaint / Feedback</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label>Your Message *</label><textarea id="fmsg" placeholder="Tell us what you need…"
+              required></textarea></div>
+          <div class="form-actions"><button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Send
+              Message</button></div>
+          <p class="form-note"><i class="fas fa-lock"></i> Your information is safe with us.</p>
+        </form>
+      </div>
+      <div class="contact-quick-cards">
+        <a href="tel:+918953946893" class="cq-card reveal">
+          <div class="cq-card-head">
+            <div class="cq-card-icon call"><i class="fas fa-phone"></i></div>
+            <div>
+              <div class="cq-card-title">Call Us Directly</div>
+              <div class="cq-card-sub">Speak to our store team</div>
+            </div>
+          </div>
+          <div class="cq-card-value">+91 8953946893</div>
+          <div class="cq-card-badge"><i class="fas fa-circle"></i> Open 24×7</div>
+        </a>
+        <div class="cq-card reveal" onclick="scrollTo('products')" style="cursor:pointer">
+          <div class="cq-card-head">
+            <div class="cq-card-icon pay"><i class="fas fa-credit-card"></i></div>
+            <div>
+              <div class="cq-card-title">Secure Online Payment</div>
+              <div class="cq-card-sub">UPI · QR Code · COD</div>
+            </div>
+          </div>
+          <div class="cq-card-value">Pay safely via Razorpay — trusted by millions across India</div>
+          <div class="cq-card-badge"><i class="fas fa-shield-alt"></i> 100% Secure Checkout</div>
+        </div>
+        <a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1" target="_blank" rel="noopener"
+          class="cq-card reveal">
+          <div class="cq-card-head">
+            <div class="cq-card-icon ig"><i class="fab fa-instagram"></i></div>
+            <div>
+              <div class="cq-card-title">Instagram</div>
+              <div class="cq-card-sub">Follow for latest looks & offers</div>
+            </div>
+          </div>
+          <div class="cq-card-value">@chandani_beauty_parlor — Bridal looks, skincare tips & new arrivals</div>
+        </a>
+        <a href="https://maps.google.com/?q=Ghughali,Maharajganj,Uttar+Pradesh+273151" target="_blank" rel="noopener"
+          class="cq-card reveal">
+          <div class="cq-card-head">
+            <div class="cq-card-icon loc"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+              <div class="cq-card-title">Visit Our Store</div>
+              <div class="cq-card-sub">Walk-in welcome anytime</div>
+            </div>
+          </div>
+          <div class="cq-card-value">Ghughali, Maharajganj, Uttar Pradesh — 273151</div>
+          <div class="cq-card-badge"><i class="fas fa-directions"></i> Get Directions</div>
+        </a>
+        <div class="hours-card reveal">
+          <div class="hours-title"><i class="fas fa-clock"></i>Store Hours</div>
+          <div class="hours-row"><span class="day">Monday — Sunday</span><span class="time">Open All Day</span></div>
+          <div class="hours-row"><span class="day">Public Holidays</span><span class="time">Open All Day</span></div>
+          <div class="hours-row"><span class="day">Online Orders</span><span class="time">24 × 7</span></div>
+          <div class="hours-badge"><i class="fas fa-circle"></i> We Never Close!</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="foot-logo">✦ ChandniMart</div>
+          <div class="foot-sub">Beauty & Cosmetics Store</div>
+          <p>Your trusted beauty store in Ghughali — stocking premium cosmetics, skincare, makeup & parlour essentials.
+            ₹40 delivery, free above ₹500. Open 24×7.</p>
+          <div class="foot-social">
+            <a href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1" class="foot-soc-link"
+              target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="tel:+918953946893" class="foot-soc-link"><i class="fas fa-phone"></i></a>
+            <a href="mailto:amangupt7373@gmail.com" class="foot-soc-link"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul class="foot-links">
+            <li><a onclick="scrollTo('home')"><i class="fas fa-chevron-right"></i>Home</a></li>
+            <li><a onclick="scrollTo('categories')"><i class="fas fa-chevron-right"></i>Categories</a></li>
+            <li><a onclick="scrollTo('products')"><i class="fas fa-chevron-right"></i>Products</a></li>
+            <li><a onclick="scrollTo('parlour-visit')"><i class="fas fa-chevron-right"></i><strong
+                  style="color:var(--gold-light)">Beauty Parlour</strong></a></li>
+            <li><a onclick="scrollTo('offers')"><i class="fas fa-chevron-right"></i>Offers & Brands</a></li>
+            <li><a onclick="scrollTo('contact')"><i class="fas fa-chevron-right"></i>Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Categories</h4>
+          <ul class="foot-links">
+            <li><a onclick="filterCatAndGo('lipcare')"><i class="fas fa-chevron-right"></i>Lip Care</a></li>
+            <li><a onclick="filterCatAndGo('foundation')"><i class="fas fa-chevron-right"></i>Foundation</a></li>
+            <li><a onclick="filterCatAndGo('eyemakeup')"><i class="fas fa-chevron-right"></i>Eye Makeup</a></li>
+            <li><a onclick="filterCatAndGo('skincare')"><i class="fas fa-chevron-right"></i>Skincare</a></li>
+            <li><a onclick="filterCatAndGo('haircare')"><i class="fas fa-chevron-right"></i>Hair Care</a></li>
+            <li><a onclick="filterCatAndGo('parlour')"><i class="fas fa-chevron-right"></i>Parlour Items</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact footer-col">
+          <h4>Contact & Store</h4>
+          <div class="cont-row"><i class="fas fa-store"></i><span>ChandniMart, Ghughali</span></div>
+          <div class="cont-row"><i class="fas fa-map-marker-alt"></i><a
+              href="https://maps.google.com/?q=Ghughali,Maharajganj,UP+273151" target="_blank">Ghughali, Maharajganj, UP
+              273151</a></div>
+          <div class="cont-row"><i class="fas fa-phone"></i><a href="tel:+918953946893">+91 8953946893</a></div>
+          <div class="cont-row"><i class="fab fa-instagram"></i><a
+              href="https://www.instagram.com/chandani_beauty_parlor?igsh=ejdmMWFxOGM3NnI1"
+              target="_blank">@chandani_beauty_parlor</a></div>
+          <div class="cont-row"><i class="fas fa-clock"></i><span>Open 24×7 Always</span></div>
+          <div class="cont-row"><i class="fas fa-credit-card"></i><span>Razorpay · UPI · COD</span></div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 ChandniMart Beauty & Cosmetics, Ghughali, Maharajganj. All Rights Reserved. Made with <span
+            style="color:var(--saffron)">♥</span> in UP &nbsp;|&nbsp; <a href="tel:+918953946893">+91 8953946893</a>
+          &nbsp;|&nbsp; Payments secured by <strong style="color:#3b82f6">Razorpay</strong></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CART DRAWER -->
+  <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-head">
+      <h3><i class="fas fa-shopping-bag" style="margin-right:8px"></i>Your Cart</h3>
+      <button class="cart-close-btn" onclick="toggleCart()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-list" id="cartList">
+      <div class="cart-empty-msg"><i class="fas fa-shopping-bag"></i>
+        <p>Your cart is empty</p>
+      </div>
+    </div>
+    <div class="cart-foot">
+      <div class="cart-total-row"><span>Items Total</span><strong id="cartTotal">₹0</strong></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;font-size:.82rem">
+        <span style="color:var(--muted);display:flex;align-items:center;gap:5px"><i class="fas fa-truck"
+            style="color:var(--saffron);font-size:.75rem"></i> Delivery</span>
+        <span id="cartDelivery" style="font-weight:700;color:#22c55e">FREE 🎁</span>
+      </div>
+      <div
+        style="display:flex;justify-content:space-between;align-items:center;background:rgba(232,96,44,.06);border-radius:10px;padding:.6rem .9rem;margin-bottom:.9rem;border:1.5px solid rgba(232,96,44,.12)">
+        <span style="font-weight:700;font-size:.88rem;color:var(--text)">Grand Total</span>
+        <strong id="cartGrandTotal" style="font-size:1.25rem;color:var(--saffron-deep)">₹0</strong>
+      </div>
+      <button class="checkout-btn" onclick="checkoutCart()"><i class="fas fa-lock"></i> Pay Securely Now</button>
+    </div>
+  </div>
+
+  <!-- BUY MODAL -->
+  <div class="buy-overlay" id="buyOverlay">
+    <div class="buy-modal">
+      <div class="buy-modal-head">
+        <h3><i class="fas fa-shopping-bag" style="margin-right:8px"></i>Buy Now</h3>
+        <button class="buy-modal-close" onclick="closeBuyModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="buy-modal-body" id="buyModalBody"></div>
+    </div>
+  </div>
+
+  <!-- PAYMENT MODAL -->
+  <div class="pay-overlay" id="payOverlay">
+    <div class="pay-modal">
+      <div class="pay-modal-head">
+        <h3><i class="fas fa-lock"></i> Secure Checkout</h3>
+        <button class="pay-modal-close" onclick="closePayModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="pay-modal-body" id="payModalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════════
+       CHANDNIMART STORE — Full JavaScript
+       Perfectly synced with admin.html
+    ═══════════════════════════════════════════════════════════════ */
+
+    /* ╔════════════════════════════════════════════════════════╗
+       ║  ⚙️  STEP 2 — PASTE YOUR STORE CONFIG HERE            ║
+       ║  These must match what you set in admin.html Settings  ║
+       ╚════════════════════════════════════════════════════════╝ */
+    const STORE_UPI_ID = 'chandnimart@upi';       /* 👈 Your real UPI ID */
+    const RAZORPAY_KEY = 'rzp_test_YourKeyIDHere';/* 👈 From dashboard.razorpay.com */
+    const STORE_NAME = 'ChandniMart';
+    const STORE_PHONE = '8953946893';
+    const STORE_EMAIL = 'amangupt7373@gmail.com';
+    const DELIVERY_FEE = 40;                      /* ₹40 per order */
+    const FREE_DELIVERY_ABOVE = 500;                     /* Free above ₹500 */
+
+    /* ── Category labels — must match admin.html exactly ── */
+    const CAT_LABELS = {
+      lipcare: 'Lip Care', foundation: 'Foundation', eyemakeup: 'Eye Makeup',
+      skincare: 'Skincare', haircare: 'Hair Care', suncare: 'Sun Care',
+      nailcare: 'Nail Care', fragrance: 'Fragrance', parlour: 'Parlour Items'
+    };
+
+    /* ── Default products — IDENTICAL to admin.html DEFAULT_PRODUCTS ──
+       Admin panel syncs edits to localStorage → store reads here        */
+    const DEFAULT_PRODUCTS = [
+      { id: 1, cat: 'lipcare', brand: 'Lakme', name: '9to5 Matte Lipstick', desc: 'Long-stay matte finish in 30 bold shades. Comfortable, non-drying formula.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: 'popular' },
+      { id: 2, cat: 'lipcare', brand: 'Maybelline', name: 'SuperStay Matte Ink', desc: 'Transfer-proof liquid lipstick. Lasts up to 16 hours without touch-ups.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'trending' },
+      { id: 3, cat: 'lipcare', brand: "L'Oréal", name: 'Infallible Lip Colour', desc: '2-step colour + balm system for full-day colour with moisturised lips.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'sale' },
+      { id: 4, cat: 'lipcare', brand: 'Nykaa', name: 'Matte to Last Lip Crayon', desc: 'Bullet crayon for precise, velvety matte application.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'new' },
+      { id: 5, cat: 'lipcare', brand: 'Revlon', name: 'Super Lustrous Lip Gloss', desc: 'High-shine glossy formula with aloe vera & vitamin E.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400', badge: '' },
+      { id: 6, cat: 'lipcare', brand: 'Lakme', name: 'Lip Love Lip Balm SPF 15', desc: 'Tinted moisturising lip balm with SPF protection.', price: 179, oldPrice: 229, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'popular' },
+      { id: 7, cat: 'foundation', brand: 'Maybelline', name: 'Fit Me Matte Foundation', desc: 'Controls shine, blurs pores. Natural finish in 40+ shades.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1513379733131-47fc74b45fc7?w=400', badge: 'popular' },
+      { id: 8, cat: 'foundation', brand: 'Lakme', name: 'Perfecting Liquid Foundation', desc: 'Lightweight, buildable coverage with vitamin E. SPF 20.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400', badge: '' },
+      { id: 9, cat: 'foundation', brand: "L'Oréal", name: 'True Match Super-Blendable', desc: 'Micro-fine blending formula for all skin tones.', price: 699, oldPrice: 899, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'sale' },
+      { id: 10, cat: 'foundation', brand: 'Nykaa', name: 'Skin Tint BB Cream SPF 20', desc: '5-in-1 tinted moisturiser — hydrates, covers, protects & primes.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'new' },
+      { id: 11, cat: 'foundation', brand: 'Lotus', name: 'Ecostay Insta-Matte BB Cream', desc: 'Herbal BB cream with long-lasting matte finish.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400', badge: '' },
+      { id: 12, cat: 'foundation', name: 'Compact Powder (Pressed)', brand: 'Lakme', desc: 'Smooth-finish compact that blurs imperfections all day.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400', badge: 'popular' },
+      { id: 13, cat: 'eyemakeup', brand: 'Lakme', name: 'Eyeconic Kajal', desc: 'Intense black kajal with stay-proof formula. All-day wear.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: 'popular' },
+      { id: 14, cat: 'eyemakeup', brand: 'Maybelline', name: 'Colossal Kajal 12H', desc: 'Bold, smudge-proof kajal. Lasts 12 hours. 99% black intensity.', price: 219, oldPrice: 279, img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400', badge: 'trending' },
+      { id: 15, cat: 'eyemakeup', brand: 'Nykaa', name: '24 Shade Eyeshadow Palette', desc: 'Pigmented matte + shimmer shades for day-to-night looks.', price: 799, oldPrice: 1099, img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400', badge: 'new' },
+      { id: 16, cat: 'eyemakeup', brand: "L'Oréal", name: 'Voluminous Lash Paradise Mascara', desc: 'Ultra-volumising mascara for full, dramatic lashes.', price: 649, oldPrice: 849, img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400', badge: 'sale' },
+      { id: 17, cat: 'eyemakeup', brand: 'Lakme', name: 'Absolute Precision Eye Liner', desc: 'Micro-precision felt-tip liner for sharp cat-eye looks.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400', badge: '' },
+      { id: 18, cat: 'eyemakeup', brand: 'Swiss Beauty', name: 'Blush & Highlighter Duo', desc: 'Coral blush with champagne highlight — natural glow.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400', badge: 'popular' },
+      { id: 19, cat: 'skincare', brand: 'Himalaya', name: 'Neem Purifying Face Wash', desc: 'Anti-bacterial neem formula for pimple-free, clear skin.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'popular' },
+      { id: 20, cat: 'skincare', brand: 'Mamaearth', name: 'Vitamin C Face Serum', desc: '10% Vitamin C + turmeric for brightening, even-toned skin.', price: 499, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'trending' },
+      { id: 21, cat: 'skincare', brand: "Pond's", name: 'Super Light Gel Moisturiser', desc: 'Oil-free gel with hyaluronic acid for 72h deep hydration.', price: 279, oldPrice: 349, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'popular' },
+      { id: 22, cat: 'skincare', brand: 'Olay', name: 'Total Effects 7-in-1 Cream', desc: 'Fights 7 signs of ageing for visibly younger-looking skin.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400', badge: 'sale' },
+      { id: 23, cat: 'skincare', brand: 'WOW Skin', name: 'Niacinamide 10% Serum', desc: 'Pore-minimising serum that fades dark spots and blemishes.', price: 549, oldPrice: 699, img: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400', badge: 'new' },
+      { id: 24, cat: 'skincare', brand: 'Biotique', name: 'Bio Papaya Face Scrub', desc: 'Natural papaya scrub for radiant skin.', price: 179, oldPrice: 229, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400', badge: '' },
+      { id: 25, cat: 'skincare', brand: 'Everyuth', name: 'Walnut Apricot Scrub', desc: 'Classic scrub for deep pore cleansing and smooth skin.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=400', badge: 'popular' },
+      { id: 26, cat: 'skincare', brand: 'Lotus', name: 'Under Eye Brightening Cream', desc: 'Reduces dark circles & puffiness for brighter eyes.', price: 349, oldPrice: 449, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: '' },
+      { id: 27, cat: 'skincare', brand: 'Mamaearth', name: 'Night Repair Face Cream', desc: 'Retinol + bakuchiol night cream for skin repair.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=400', badge: 'new' },
+      { id: 28, cat: 'haircare', brand: 'Parachute', name: 'Advansed Coconut Hair Oil', desc: 'Pure coconut oil enriched with vitamin E for strong hair.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: 'popular' },
+      { id: 29, cat: 'haircare', brand: 'Bajaj', name: 'Almond Drops Hair Oil', desc: 'Enriched with almond extracts for thick hair growth.', price: 249, oldPrice: 299, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: '' },
+      { id: 30, cat: 'haircare', brand: 'TRESemmé', name: 'Keratin Smooth Shampoo', desc: 'Salon-smooth keratin shampoo — frizz control and glossy shine.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1515688594390-b649af70d282?w=400', badge: 'popular' },
+      { id: 31, cat: 'haircare', brand: 'Mamaearth', name: 'Onion Hair Fall Shampoo', desc: 'Red onion oil shampoo that controls hair fall.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'trending' },
+      { id: 32, cat: 'haircare', brand: 'Mamaearth', name: 'Banana & Honey Hair Mask', desc: 'Deep conditioning mask for soft, silky hair.', price: 499, oldPrice: 649, img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400', badge: 'new' },
+      { id: 33, cat: 'haircare', brand: 'WOW Skin', name: 'Anti-Frizz Hair Serum', desc: 'Instant smoothening serum that tames frizz.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400', badge: 'sale' },
+      { id: 34, cat: 'haircare', brand: 'Dove', name: 'Intense Repair Conditioner', desc: 'Keratin repair formula for breakage and dry hair.', price: 249, oldPrice: 319, img: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=400', badge: '' },
+      { id: 35, cat: 'suncare', brand: 'Lotus', name: 'Safe Sun UV Screen SPF 50', desc: 'Broad-spectrum PA+++ sunscreen with no white cast.', price: 399, oldPrice: 499, img: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400', badge: 'popular' },
+      { id: 36, cat: 'suncare', brand: 'Lakme', name: 'Sun Expert Ultra Matte SPF 40', desc: 'Matte finish sunscreen ideal for oily skin.', price: 349, oldPrice: 429, img: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=400', badge: '' },
+      { id: 37, cat: 'suncare', brand: 'Mamaearth', name: 'Hydragel SPF 50 Sunscreen', desc: 'Water-gel sunscreen with aloe vera — cooling & light.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1590736969955-71cc94901144?w=400', badge: 'new' },
+      { id: 38, cat: 'suncare', brand: 'Biotique', name: 'Bio Sandalwood SPF 50+', desc: 'Ayurvedic sunscreen with sandalwood. Protects and brightens.', price: 299, oldPrice: 379, img: 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400', badge: 'sale' },
+      { id: 39, cat: 'nailcare', brand: 'Lakme', name: 'True Wear Nail Colour', desc: '70-shade nail colour range with chip-resistant formula.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'popular' },
+      { id: 40, cat: 'nailcare', brand: 'Revlon', name: 'ColorStay Gel Envy Polish', desc: '2-step gel-like shine nail colour. Up to 11 days of wear.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'trending' },
+      { id: 41, cat: 'nailcare', brand: 'Nykaa', name: 'Matte Nail Paint Set (5pc)', desc: 'Set of 5 trending matte nail colours in earthy tones.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
+      { id: 42, cat: 'nailcare', brand: 'Generic', name: 'Nail Art Tools Kit', desc: 'Complete kit with dotting tools, brush set & stickers.', price: 249, oldPrice: 349, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: '' },
+      { id: 43, cat: 'fragrance', brand: 'Fogg', name: 'Fogg Black Collection EDP', desc: 'Woody oriental fragrance with rich oud and musk.', price: 449, oldPrice: 599, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'popular' },
+      { id: 44, cat: 'fragrance', brand: 'Engage', name: 'Engage W1 Perfume Body Spray', desc: 'Floral fruity scent with rose and peach notes.', price: 249, oldPrice: 299, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: '' },
+      { id: 45, cat: 'fragrance', brand: 'Dove', name: 'Original Deodorant Spray', desc: '48h anti-perspirant protection with mild fragrance.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'popular' },
+      { id: 46, cat: 'fragrance', brand: 'Yardley', name: 'English Lavender EDT', desc: 'Classic lavender fragrance for everyday use.', price: 349, oldPrice: 449, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: 'sale' },
+      { id: 47, cat: 'fragrance', brand: 'Wild Stone', name: 'Forest Spice Perfume', desc: 'Bold masculine scent with spicy and woody notes.', price: 299, oldPrice: 399, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: 'new' },
+      { id: 48, cat: 'parlour', brand: 'Rica', name: 'Wax Beans Kit — Stripless', desc: 'Professional stripless hot wax beans for hair removal.', price: 799, oldPrice: 999, img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=400', badge: 'popular' },
+      { id: 49, cat: 'parlour', brand: 'VLCC', name: 'Diamond Bleach Kit', desc: 'Premium diamond bleach with activator & cream for instant glow.', price: 199, oldPrice: 249, img: 'https://images.unsplash.com/photo-1491566102020-21838225c3c8?w=400', badge: '' },
+      { id: 50, cat: 'parlour', brand: 'O3+', name: 'Gold Facial Kit (6 Steps)', desc: 'Complete professional gold facial for deep cleansing & glow.', price: 599, oldPrice: 799, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'popular' },
+      { id: 51, cat: 'parlour', brand: 'Shahnaz Husain', name: 'Diamond Skin Radiance Kit', desc: 'Age-defying diamond kit with exfoliator, gel, mask & cream.', price: 899, oldPrice: 1199, img: 'https://images.unsplash.com/photo-1491571894929-eadcbeba3bfe?w=400', badge: 'sale' },
+      { id: 52, cat: 'parlour', brand: 'Fem', name: 'Natural Henna Mehendi Cones', desc: 'Ready-to-use natural henna cones — dark colour, easy design.', price: 149, oldPrice: 199, img: 'https://images.unsplash.com/photo-1598980704601-ceffa9d10bc6?w=400', badge: '' },
+      { id: 53, cat: 'parlour', brand: 'VLCC', name: 'Eyebrow Threading Kit', desc: 'Precision threading thread + shaping wax strips.', price: 299, oldPrice: 0, img: 'https://images.unsplash.com/photo-1583001831096-959a9f6c5b8f?w=400', badge: 'new' },
+      { id: 54, cat: 'parlour', brand: 'Lotus', name: 'Skin Whitening Detan Pack', desc: 'Instant detan face pack with kojic acid.', price: 249, oldPrice: 329, img: 'https://images.unsplash.com/photo-1595475884562-073c30d45670?w=400', badge: 'trending' },
+      { id: 55, cat: 'parlour', brand: 'Generic', name: 'Makeup Brush Set — 12 pcs', desc: 'Professional kabuki, contouring and blending brushes.', price: 999, oldPrice: 1499, img: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400', badge: 'sale' },
+    ];
+
+    /* ── Load: localStorage (admin edits) → defaults ── */
+    function loadProducts() {
+      try {
+        const raw = localStorage.getItem('chandnimart_products');
+        if (raw) { const p = JSON.parse(raw); if (Array.isArray(p) && p.length) return p; }
+      } catch (e) { }
+      return [...DEFAULT_PRODUCTS];
+    }
+
+    /* ── State ── */
+    let products = loadProducts();
+    let filtered = [...products];
+    let activeCat = 'all';
+    let cart = [];
+    let currentPage = 1;
+    let buyQty = 1;
+    let buyProduct = null;
+    const PER_PAGE = 12;
+    let payState = { product: null, qty: 1, cartItems: null, method: 'upi', selectedUpiApp: '', customerName: '', customerPhone: '', customerAddress: '' };
+
+    /* ── Delivery helpers ── */
+    const calcDelivery = s => s >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
+    const calcGrand = s => s + calcDelivery(s);
+
+    /* ── Smooth scroll ── */
+    function scrollTo(id) {
+      const el = document.getElementById(id);
+      if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' });
+    }
+
+    /* ════════════════════════════════
+       RENDER PRODUCTS
+    ════════════════════════════════ */
+    function renderProducts(items) {
+      const grid = document.getElementById('prodGrid');
+      const noRes = document.getElementById('noResults');
+      grid.querySelectorAll('.prod-card').forEach(c => c.remove());
+      const start = (currentPage - 1) * PER_PAGE;
+      const page = items.slice(start, start + PER_PAGE);
+      document.getElementById('resCount').innerHTML = `Showing <strong>${items.length}</strong> products`;
+      if (!items.length) { noRes.style.display = 'block'; renderPages(0); return; }
+      noRes.style.display = 'none';
+      page.forEach(p => {
+        const save = p.oldPrice ? p.oldPrice - p.price : 0;
+        const free = p.price >= FREE_DELIVERY_ABOVE;
+        const div = document.createElement('div');
+        div.className = 'prod-card';
+        div.innerHTML = `
+      ${p.badge ? `<div class="prod-badge badge-${p.badge}">${p.badge === 'sale' ? 'SALE' : p.badge === 'new' ? 'NEW' : p.badge === 'trending' ? '🔥 HOT' : '⭐ HOT'}</div>` : ''}
+      <button class="wish-btn" onclick="event.stopPropagation();wishlist('${p.name.replace(/'/g, "\\'")}')"><i class="far fa-heart"></i></button>
+      <div class="prod-img" style="background-image:url('${p.img}')">
+        <div class="prod-img-overlay"><button onclick="openBuyModal(${p.id})">Buy Now</button></div>
+      </div>
+      <div class="prod-body">
+        <div class="prod-cat">${CAT_LABELS[p.cat] || p.cat}</div>
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-brand">${p.brand || ''}</div>
+        <div class="prod-desc">${p.desc}</div>
+        <div class="prod-footer">
+          <div class="prod-price-wrap">
+            <div class="prod-price">₹${p.price.toLocaleString('en-IN')}</div>
+            ${p.oldPrice ? `<div class="prod-old-price">₹${p.oldPrice.toLocaleString('en-IN')}</div><div class="prod-save">Save ₹${save}</div>` : ''}
+            <div style="font-size:.63rem;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:3px">
+              <i class="fas fa-truck" style="font-size:.6rem;color:${free ? '#22c55e' : 'var(--muted)'}"></i>
+              ${free ? '<span style="color:#22c55e;font-weight:600">Free delivery</span>' : '<span>+₹40 delivery</span>'}
+            </div>
+          </div>
+          <button class="add-to-cart" onclick="addCart(${p.id})" aria-label="Add to cart"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>`;
+        grid.insertBefore(div, noRes);
+      });
+      renderPages(items.length);
+    }
+
+    function renderPages(total) {
+      const tp = Math.ceil(total / PER_PAGE);
+      const c = document.getElementById('pagination');
+      c.innerHTML = '';
+      if (tp <= 1) return;
+      const mkBtn = (html, page, disabled, active) => {
+        const b = document.createElement('button');
+        b.className = 'page-btn' + (active ? ' active' : '');
+        b.innerHTML = html;
+        b.disabled = disabled;
+        b.onclick = () => { currentPage = page; renderProducts(filtered); scrollTo('products'); };
+        c.appendChild(b);
+      };
+      mkBtn('<i class="fas fa-chevron-left"></i>', currentPage - 1, currentPage === 1, false);
+      for (let i = 1; i <= tp; i++) {
+        if (i === 1 || i === tp || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          mkBtn(i, i, false, i === currentPage);
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          const s = document.createElement('span');
+          s.style.cssText = 'display:flex;align-items:center;color:var(--muted);padding:0 4px';
+          s.textContent = '…';
+          c.appendChild(s);
+        }
+      }
+      mkBtn('<i class="fas fa-chevron-right"></i>', currentPage + 1, currentPage === tp, false);
+    }
+
+    /* ── Filter / Sort ── */
+    function filterCat(cat, el) {
+      activeCat = cat;
+      document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      currentPage = 1;
+      applyFilters(true);
+    }
+    function filterCatAndGo(cat) {
+      activeCat = cat;
+      const cats = ['all', 'lipcare', 'foundation', 'eyemakeup', 'skincare', 'haircare', 'suncare', 'nailcare', 'fragrance', 'parlour'];
+      document.querySelectorAll('.cat-card').forEach((c, i) => {
+        c.classList.toggle('active', cats[i] === cat);
+      });
+      currentPage = 1; applyFilters(false); scrollTo('products');
+    }
+    let _st;
+    function handleSearch() { clearTimeout(_st); _st = setTimeout(() => { currentPage = 1; applyFilters(false); }, 200); }
+    function clearSearch() { document.getElementById('searchInput').value = ''; applyFilters(false); }
+    function applyFilters(doScroll = false) {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      filtered = products.filter(p => {
+        const catOk = activeCat === 'all' || p.cat === activeCat;
+        const nameOk = !q || p.name.toLowerCase().includes(q) || (p.desc || '').toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q);
+        return catOk && nameOk;
+      });
+      applySort();
+      if (doScroll) setTimeout(() => scrollTo('products'), 120);
+    }
+    function applySortAndRender() { applySort(); }
+    function applySort() {
+      const s = document.getElementById('sortSel').value;
+      const a = [...filtered];
+      if (s === 'price-asc') a.sort((x, y) => x.price - y.price);
+      else if (s === 'price-desc') a.sort((x, y) => y.price - x.price);
+      else if (s === 'name-asc') a.sort((x, y) => x.name.localeCompare(y.name));
+      else if (s === 'newest') a.sort((x, y) => y.id - x.id);
+      filtered = a;
+      renderProducts(filtered);
+    }
+
+    /* ════════════════════════════════
+       BUY NOW MODAL
+    ════════════════════════════════ */
+    function openBuyModal(pid) {
+      buyProduct = products.find(p => p.id === pid);
+      if (!buyProduct) return;
+      buyQty = 1;
+      renderBuyModal();
+      document.getElementById('buyOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeBuyModal() {
+      document.getElementById('buyOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+      setTimeout(() => { document.getElementById('buyModalBody').innerHTML = ''; }, 300);
+    }
+    function renderBuyModal() {
+      const p = buyProduct;
+      const sub = p.price * buyQty;
+      const del = calcDelivery(sub);
+      const grand = sub + del;
+      document.getElementById('buyModalBody').innerHTML = `
+    <div class="buy-prod-row">
+      <div class="buy-prod-img" style="background-image:url('${p.img}')"></div>
+      <div class="buy-prod-info">
+        <h4>${p.name}</h4>
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:3px;font-style:italic">${p.brand || ''}</div>
+        <div class="buy-price">₹${p.price.toLocaleString('en-IN')}</div>
+        ${p.oldPrice ? `<div style="font-size:.73rem;color:var(--muted);text-decoration:line-through">₹${p.oldPrice.toLocaleString('en-IN')}</div><div style="font-size:.7rem;color:#22c55e;font-weight:600">Save ₹${p.oldPrice - p.price}</div>` : ''}
+      </div>
+    </div>
+    <div class="buy-qty-row-old">
+      <label style="font-size:.82rem;font-weight:600;color:var(--text);min-width:70px">Quantity</label>
+      <div class="buy-qty-ctrl-old">
+        <button onclick="changeBuyQty(-1)">−</button>
+        <span id="buyQtyDisp">${buyQty}</span>
+        <button onclick="changeBuyQty(1)">+</button>
+      </div>
+    </div>
+    <hr class="buy-divider">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+      <span style="font-size:.87rem;color:var(--muted)">Items Total</span>
+      <strong id="buySubTotal" style="color:var(--text)">₹${sub.toLocaleString('en-IN')}</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;font-size:.82rem">
+      <span style="color:var(--muted);display:flex;align-items:center;gap:5px"><i class="fas fa-truck" style="color:var(--saffron);font-size:.75rem"></i> Delivery</span>
+      <span id="buyDelCharge" style="font-weight:700;color:${del === 0 ? '#22c55e' : 'var(--saffron-deep)'}">${del === 0 ? 'FREE 🎁' : '₹' + del}</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--cream);border-radius:12px;padding:.7rem 1rem;margin-bottom:1rem;border:1.5px solid rgba(232,96,44,.12)">
+      <span style="font-weight:700;font-size:.88rem;color:var(--text)">Grand Total</span>
+      <strong id="buyGrandTotal" style="font-size:1.2rem;color:var(--saffron-deep)">₹${grand.toLocaleString('en-IN')}</strong>
+    </div>
+    <div class="buy-actions">
+      <button class="btn-pay-main" onclick="proceedToPayment()">
+        <i class="fas fa-lock"></i> Pay Securely — ₹<span id="buyPayAmt">${grand.toLocaleString('en-IN')}</span>
+      </button>
+      <button class="btn-primary" onclick="addCart(${p.id});closeBuyModal()" style="justify-content:center;width:100%">
+        <i class="fas fa-shopping-bag"></i> Add to Cart Instead
+      </button>
+    </div>
+    <p style="font-size:.71rem;color:var(--muted);text-align:center;margin-top:.8rem;display:flex;align-items:center;justify-content:center;gap:5px">
+      <i class="fas fa-shield-alt" style="color:#22c55e"></i> Secured by Razorpay · UPI · QR · COD Available
+    </p>`;
+    }
+    function changeBuyQty(d) {
+      buyQty = Math.max(1, buyQty + d);
+      const sub = buyProduct.price * buyQty;
+      const del = calcDelivery(sub);
+      const grand = sub + del;
+      document.getElementById('buyQtyDisp').textContent = buyQty;
+      document.getElementById('buySubTotal').textContent = '₹' + sub.toLocaleString('en-IN');
+      document.getElementById('buyGrandTotal').textContent = '₹' + grand.toLocaleString('en-IN');
+      document.getElementById('buyPayAmt').textContent = grand.toLocaleString('en-IN');
+      const dc = document.getElementById('buyDelCharge');
+      if (dc) { dc.textContent = del === 0 ? 'FREE 🎁' : '₹' + del; dc.style.color = del === 0 ? '#22c55e' : 'var(--saffron-deep)'; }
+    }
+    function proceedToPayment() {
+      closeBuyModal();
+      setTimeout(() => openPayModal(buyProduct, buyQty, 'product'), 350);
+    }
+    document.getElementById('buyOverlay').addEventListener('click', function (e) { if (e.target === this) closeBuyModal(); });
+
+    /* ════════════════════════════════
+       PAYMENT MODAL
+    ════════════════════════════════ */
+    function openPayModal(product, qty, mode) {
+      payState.product = product;
+      payState.qty = qty || 1;
+      payState.cartItems = mode === 'cart' ? [...cart] : null;
+      payState.method = 'upi';
+      payState.selectedUpiApp = '';
+      renderPayModal();
+      document.getElementById('payOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closePayModal() {
+      document.getElementById('payOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('payOverlay').addEventListener('click', function (e) { if (e.target === this) closePayModal(); });
+
+    function getOrderSubtotal() {
+      if (payState.cartItems) return payState.cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+      return payState.product.price * payState.qty;
+    }
+    function getOrderDesc() {
+      if (payState.cartItems) {
+        const n = payState.cartItems.map(i => `${i.name}×${i.qty}`).join(', ');
+        return n.length > 80 ? n.slice(0, 77) + '…' : n;
+      }
+      return `${payState.product.name} × ${payState.qty}`;
+    }
+
+    function renderPayModal() {
+      const sub = getOrderSubtotal();
+      const del = calcDelivery(sub);
+      const grand = sub + del;
+      const isCart = !!payState.cartItems;
+      const img = isCart ? (payState.cartItems[0]?.img || '') : payState.product.img;
+      const name = isCart ? `Cart Order (${payState.cartItems.length} items)` : payState.product.name;
+      const brand = isCart ? 'ChandniMart' : (payState.product.brand || '');
+
+      document.getElementById('payModalBody').innerHTML = `
+    <!-- Order strip -->
+    <div class="pay-order-strip">
+      <div class="pay-order-img" style="background-image:url('${img}')"></div>
+      <div class="pay-order-details">
+        <div class="pay-order-brand">${brand}</div>
+        <h4>${name}</h4>
+        ${!isCart ? `<div class="pay-order-qty" id="payQtyInfo">Qty: ${payState.qty}</div>` : ''}
+        <div class="pay-order-total" id="payOrderTotal">₹${sub.toLocaleString('en-IN')}</div>
+      </div>
+    </div>
+    ${!isCart ? `
+    <div class="pay-qty-row">
+      <span class="pay-qty-label">Quantity</span>
+      <div class="pay-qty-ctrl">
+        <button onclick="changePayQty(-1)">−</button>
+        <span id="payQtyNum">${payState.qty}</span>
+        <button onclick="changePayQty(1)">+</button>
+      </div>
+    </div>` : ''}
+    <!-- Customer details -->
+    <div class="pay-section-label"><i class="fas fa-user"></i> Your Details</div>
+    <input class="pay-input" id="payName"    placeholder="Full Name *"          value="${payState.customerName}"    oninput="payState.customerName=this.value">
+    <div class="pay-input-row">
+      <input class="pay-input" id="payPhone"  placeholder="Phone Number *"       inputmode="tel" value="${payState.customerPhone}" oninput="payState.customerPhone=this.value">
+      <input class="pay-input" id="payEmail"  placeholder="Email (optional)"     type="email">
+    </div>
+    <input class="pay-input" id="payAddress" placeholder="Delivery Address *"   value="${payState.customerAddress}" oninput="payState.customerAddress=this.value">
+    <!-- Payment method -->
+    <div class="pay-section-label" style="margin-top:.4rem"><i class="fas fa-credit-card"></i> Payment Method</div>
+    <div class="pay-methods">
+      <div class="pay-method-tab tab-upi active" onclick="selectPayMethod('upi',this)">
+        <i class="fas fa-mobile-alt"></i><span>UPI</span><small>PhonePe/GPay</small>
+      </div>
+      <div class="pay-method-tab tab-qr" onclick="selectPayMethod('qr',this)">
+        <i class="fas fa-qrcode"></i><span>QR Code</span><small>Scan & Pay</small>
+      </div>
+      <div class="pay-method-tab tab-cod" onclick="selectPayMethod('cod',this)">
+        <i class="fas fa-money-bill-wave"></i><span>COD</span><small>Pay on Delivery</small>
+      </div>
+    </div>
+    <!-- UPI Panel -->
+    <div class="pay-panel active" id="panel-upi">
+      <div class="pay-section-label" style="margin-bottom:.5rem"><i class="fas fa-mobile-alt"></i> Select UPI App</div>
+      <div class="upi-apps">
+        <button class="upi-app-btn" onclick="selectUpiApp('phonepe',this)">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.png/120px-PhonePe_Logo.png" style="width:20px;height:20px;border-radius:5px;object-fit:contain" alt="" onerror="this.style.display='none'"> PhonePe
+        </button>
+        <button class="upi-app-btn" onclick="selectUpiApp('gpay',this)">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/120px-Google_Pay_Logo.svg.png" style="width:20px;height:20px;border-radius:5px;object-fit:contain" alt="" onerror="this.style.display='none'"> Google Pay
+        </button>
+        <button class="upi-app-btn" onclick="selectUpiApp('paytm',this)">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Paytm_Logo_%28standalone%29.svg/120px-Paytm_Logo_%28standalone%29.svg.png" style="width:20px;height:20px;border-radius:5px;object-fit:contain" alt="" onerror="this.style.display='none'"> Paytm
+        </button>
+        <button class="upi-app-btn" onclick="selectUpiApp('other',this)">
+          <i class="fas fa-ellipsis-h" style="color:var(--saffron)"></i> Other UPI
+        </button>
+      </div>
+      <div class="upi-id-box">
+        <p>📲 Or pay directly to our UPI ID:</p>
+        <div class="upi-id-val">
+          <span id="upiIdDisplay">${STORE_UPI_ID}</span>
+          <button class="copy-btn" id="copyUpiBtn" onclick="copyUPI()"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+      </div>
+      <p style="font-size:.74rem;color:var(--muted)">
+        <i class="fas fa-info-circle" style="color:var(--saffron)"></i>
+        After payment, keep your UTR / transaction number ready for confirmation.
+      </p>
+    </div>
+    <!-- QR Panel -->
+    <div class="pay-panel" id="panel-qr">
+      <div class="qr-container">
+        <div class="qr-box">
+          <img src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=upi%3A%2F%2Fpay%3Fpa%3D${encodeURIComponent(STORE_UPI_ID)}%26pn%3D${encodeURIComponent(STORE_NAME)}%26am%3D${grand}%26cu%3DINR%26tn%3DChandniMart+Order&choe=UTF-8"
+               id="qrImage" alt="UPI QR Code" style="width:180px;height:180px;border-radius:10px"
+               onerror="this.parentElement.innerHTML='<div style=\'text-align:center;padding:1rem;color:var(--muted)\'><i class=\'fas fa-qrcode\' style=\'font-size:4rem;opacity:.3\'></i><p style=\'margin-top:.5rem;font-size:.8rem\'>Scan QR in any UPI app to pay</p></div>'">
+        </div>
+        <div class="qr-label">Scan with any UPI app to pay</div>
+        <div class="qr-amount" id="qrAmount">₹${grand.toLocaleString('en-IN')}</div>
+      </div>
+      <div class="qr-steps">
+        <div class="qr-step"><div class="qr-step-num">1</div><span>Open PhonePe / Google Pay / Paytm or any UPI app</span></div>
+        <div class="qr-step"><div class="qr-step-num">2</div><span>Tap "Scan & Pay" and scan the QR code above</span></div>
+        <div class="qr-step"><div class="qr-step-num">3</div><span>Confirm amount <strong>₹${grand.toLocaleString('en-IN')}</strong> and complete payment</span></div>
+        <div class="qr-step"><div class="qr-step-num">4</div><span>Click "Confirm Order" below after payment is done</span></div>
+      </div>
+    </div>
+    <!-- COD Panel -->
+    <div class="pay-panel" id="panel-cod">
+      <div class="cod-info">
+        <div class="cod-info-row"><i class="fas fa-check-circle"></i><p><strong>Cash on Delivery available</strong> across Ghughali & nearby areas</p></div>
+        <div class="cod-info-row"><i class="fas fa-truck"></i><p>Pay in cash when your order arrives at your doorstep</p></div>
+        <div class="cod-info-row"><i class="fas fa-phone"></i><p>Our team will call you on <strong>${payState.customerPhone || 'your number'}</strong> to confirm</p></div>
+        <div class="cod-info-row"><i class="fas fa-info-circle"></i><p>Free delivery on orders above ₹500 | Same-day delivery in Ghughali</p></div>
+      </div>
+    </div>
+    <hr class="pay-divider">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;font-size:.85rem">
+      <span style="color:var(--muted);display:flex;align-items:center;gap:6px"><i class="fas fa-truck" style="color:var(--saffron)"></i> Delivery</span>
+      <span style="font-weight:700;color:${del === 0 ? '#22c55e' : 'var(--saffron-deep)'}">${del === 0 ? 'FREE 🎁' : '₹' + del}</span>
+    </div>
+    <div class="pay-total-final">
+      <span>Grand Total</span>
+      <strong id="payFinalTotal">₹${grand.toLocaleString('en-IN')}</strong>
+    </div>
+    <button class="btn-pay-now btn-pay-razorpay" id="payNowBtn" onclick="initiatePayment()">
+      <i class="fas fa-lock"></i>
+      <span id="payBtnText">Pay ₹${grand.toLocaleString('en-IN')} via UPI</span>
+    </button>
+    <div class="pay-secure-note"><i class="fas fa-shield-alt"></i> 256-bit SSL encrypted · 100% secure checkout</div>
+    <div class="razorpay-badge">Powered by <span>Razorpay</span> · India's most trusted payment gateway</div>`;
+    }
+
+    function changePayQty(d) {
+      payState.qty = Math.max(1, payState.qty + d);
+      document.getElementById('payQtyNum').textContent = payState.qty;
+      const sub = getOrderSubtotal();
+      const del = calcDelivery(sub);
+      const grand = sub + del;
+      document.getElementById('payOrderTotal').textContent = '₹' + sub.toLocaleString('en-IN');
+      document.getElementById('payQtyInfo').textContent = 'Qty: ' + payState.qty;
+      document.getElementById('payFinalTotal').textContent = '₹' + grand.toLocaleString('en-IN');
+      updatePayButton();
+      const qr = document.getElementById('qrAmount');
+      if (qr) qr.textContent = '₹' + grand.toLocaleString('en-IN');
+    }
+
+    function selectPayMethod(method, el) {
+      payState.method = method;
+      document.querySelectorAll('.pay-method-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panel-' + method).classList.add('active');
+      updatePayButton();
+    }
+    function selectUpiApp(app, el) {
+      payState.selectedUpiApp = app;
+      document.querySelectorAll('.upi-app-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+    function updatePayButton() {
+      const grand = calcGrand(getOrderSubtotal());
+      const btn = document.getElementById('payNowBtn');
+      const txt = document.getElementById('payBtnText');
+      if (!btn) return;
+      if (payState.method === 'cod') {
+        btn.className = 'btn-pay-now btn-pay-cod';
+        txt.textContent = `Place COD Order — ₹${grand.toLocaleString('en-IN')}`;
+      } else {
+        btn.className = 'btn-pay-now btn-pay-razorpay';
+        txt.textContent = payState.method === 'qr'
+          ? `Confirm Order — ₹${grand.toLocaleString('en-IN')} (after QR payment)`
+          : `Pay ₹${grand.toLocaleString('en-IN')} via UPI`;
+      }
+    }
+    function copyUPI() {
+      navigator.clipboard.writeText(STORE_UPI_ID).then(() => {
+        const btn = document.getElementById('copyUpiBtn');
+        btn.classList.add('copied');
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<i class="fas fa-copy"></i> Copy'; }, 2500);
+      }).catch(() => showToast('UPI ID: ' + STORE_UPI_ID));
+    }
+
+    /* ════════════════════════════════
+       INITIATE PAYMENT
+    ════════════════════════════════ */
+    function initiatePayment() {
+      const name = document.getElementById('payName').value.trim();
+      const phone = document.getElementById('payPhone').value.trim();
+      const address = document.getElementById('payAddress').value.trim();
+      const email = document.getElementById('payEmail')?.value.trim() || STORE_EMAIL;
+      if (!name) { showToast('⚠️ Please enter your name'); document.getElementById('payName').focus(); return; }
+      if (!phone || phone.replace(/\D/g, '').length < 10) { showToast('⚠️ Enter a valid phone number'); document.getElementById('payPhone').focus(); return; }
+      if (!address) { showToast('⚠️ Please enter delivery address'); document.getElementById('payAddress').focus(); return; }
+      payState.customerName = name; payState.customerPhone = phone; payState.customerAddress = address;
+      if (payState.method === 'cod') { placeCODOrder(name, phone, address, email); return; }
+      if (payState.method === 'qr') { placeQROrder(name, phone, address, email); return; }
+      launchRazorpay(name, phone, email, address);
+    }
+
+    /* ── Razorpay launch ── */
+    function launchRazorpay(name, phone, email, address) {
+      const sub = getOrderSubtotal();
+      const grand = calcGrand(sub);
+      const ordId = 'ORD-' + Date.now().toString().slice(-7);
+      if (typeof Razorpay === 'undefined') { showToast('⚠️ Payment gateway not loaded. Please refresh.'); return; }
+      const options = {
+        key: RAZORPAY_KEY,
+        amount: grand * 100,
+        currency: 'INR',
+        name: STORE_NAME,
+        description: getOrderDesc(),
+        prefill: { name, email, contact: '91' + phone.replace(/\D/g, '') },
+        notes: { address, store: 'ChandniMart Ghughali' },
+        theme: { color: '#e8602c' },
+        modal: { ondismiss: () => showToast('Payment cancelled. You can try again.') },
+        handler: (resp) => finaliseOrder(ordId, resp.razorpay_payment_id || 'PAID', name, phone, address, email, grand, 'Razorpay UPI')
+      };
+      try {
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', r => showToast('❌ Payment failed: ' + r.error.description + '. Try COD.'));
+        rzp.open();
+      } catch (err) {
+        /* Key not yet configured — show helpful note */
+        const note = document.createElement('div');
+        note.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:.8rem 1rem;margin-top:.7rem;font-size:.79rem;color:#856404';
+        note.innerHTML = `⚙️ Razorpay key not configured yet. Replace <code>RAZORPAY_KEY</code> near line 900 in this file with your live key from <a href="https://dashboard.razorpay.com" target="_blank" style="color:#0066cc;font-weight:700">dashboard.razorpay.com →</a>`;
+        document.getElementById('payNowBtn')?.after(note);
+        showToast('💡 Add your Razorpay Key ID to enable live payments');
+      }
+    }
+
+    /* ── QR order ── */
+    function placeQROrder(name, phone, address, email) {
+      const grand = calcGrand(getOrderSubtotal());
+      const ordId = 'ORD-' + Date.now().toString().slice(-7);
+      finaliseOrder(ordId, 'QR-SCAN', name, phone, address, email, grand, 'UPI QR Code');
+    }
+
+    /* ── COD order ── */
+    function placeCODOrder(name, phone, address, email) {
+      const grand = calcGrand(getOrderSubtotal());
+      const ordId = 'COD-' + Date.now().toString().slice(-7);
+      finaliseOrder(ordId, 'COD', name, phone, address, email, grand, 'Cash on Delivery');
+    }
+
+    /* ════════════════════════════════
+       FINALISE ORDER
+       1. Build order object
+       2. Save to Firebase → admin.html sees it in real time
+       3. Send WhatsApp to store owner
+       4. Show success screen
+    ════════════════════════════════ */
+    function buildOrder(orderId, txnId, name, phone, address, email, grand, method) {
+      const sub = getOrderSubtotal();
+      const del = calcDelivery(sub);
+      const items = payState.cartItems
+        ? payState.cartItems.map(i => ({ name: i.name, brand: i.brand || '', qty: i.qty, price: i.price, subtotal: i.price * i.qty }))
+        : [{ name: payState.product.name, brand: payState.product.brand || '', qty: payState.qty, price: payState.product.price, subtotal: payState.product.price * payState.qty }];
+      return {
+        orderId, txnId, method,
+        status: method === 'Cash on Delivery' ? 'pending_cod' : method === 'UPI QR Code' ? 'pending_qr_confirm' : 'paid',
+        customer: { name, phone, address, email },
+        items, total: sub, deliveryCharge: del, freeDelivery: del === 0, grandTotal: grand
+      };
+    }
+
+    function buildOwnerWAMsg(order) {
+      const emoji = order.method === 'Cash on Delivery' ? '💵' : order.method === 'UPI QR Code' ? '📷' : '💳';
+      const status = order.method === 'Cash on Delivery' ? '🔴 COD — Collect cash on delivery'
+        : order.method === 'UPI QR Code' ? '🟡 QR — Verify payment received'
+          : '🟢 PAID — Razorpay confirmed';
+      const items = order.items.map(i => `  • ${i.name}${i.brand ? ' (' + i.brand + ')' : ''} × ${i.qty} = ₹${i.subtotal.toLocaleString('en-IN')}`).join('\n');
+      return `🛍️ *NEW ORDER — ChandniMart*
+━━━━━━━━━━━━━━━━━━━━
+📋 *Order ID:* ${order.orderId}
+${emoji} *Payment:* ${order.method}
+${status}
+━━━━━━━━━━━━━━━━━━━━
+👤 *Customer*
+• Name: ${order.customer.name}
+• Phone: ${order.customer.phone}
+• Address: ${order.customer.address}
+━━━━━━━━━━━━━━━━━━━━
+🧴 *Items*
+${items}
+━━━━━━━━━━━━━━━━━━━━
+💰 Items Total: ₹${order.total.toLocaleString('en-IN')}
+🚚 Delivery: ${order.freeDelivery ? 'FREE 🎁' : '₹' + order.deliveryCharge}
+💰 *Grand Total: ₹${order.grandTotal.toLocaleString('en-IN')}*
+${order.txnId && order.txnId !== 'COD' && order.txnId !== 'QR-SCAN' ? '🔑 TXN: ' + order.txnId : ''}
+━━━━━━━━━━━━━━━━━━━━
+⏰ ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })}`;
+    }
+
+    async function finaliseOrder(orderId, txnId, name, phone, address, email, grand, method) {
+      const order = buildOrder(orderId, txnId, name, phone, address, email, grand, method);
+      /* 1 — Firebase */
+      if (typeof window._saveOrderToFirebase === 'function') {
+        const fbId = await window._saveOrderToFirebase(order);
+        if (fbId) order.firebaseId = fbId;
+      }
+      /* 2 — WhatsApp to owner */
+      const waMsg = buildOwnerWAMsg(order);
+      const waUrl = 'https://wa.me/91' + STORE_PHONE + '?text=' + encodeURIComponent(waMsg);
+      const waWin = window.open(waUrl, '_blank', 'noopener,noreferrer');
+      if (!waWin || waWin.closed) window._pendingOwnerWA = waUrl;
+      /* 3 — Success screen */
+      showPaySuccess(order);
+    }
+
+    function showPaySuccess(order) {
+      const isCOD = order.method === 'Cash on Delivery';
+      const isQR = order.method === 'UPI QR Code';
+      if (payState.cartItems) { cart = []; renderCart(); }
+      document.getElementById('payModalBody').innerHTML = `
+    <div class="pay-success">
+      <i class="fas fa-check-circle succ-icon"></i>
+      <h3>${isCOD ? 'Order Placed! 🎉' : isQR ? 'Payment Recorded! 🎉' : 'Payment Successful! 🎉'}</h3>
+      <p style="margin-bottom:.6rem">
+        ${isCOD
+          ? `Hello <strong>${order.customer.name}</strong>! Your COD order is confirmed.<br>We'll call <strong>${order.customer.phone}</strong> to arrange delivery.`
+          : isQR
+            ? `Hello <strong>${order.customer.name}</strong>! Your order is recorded.<br>Please complete QR payment of <strong>₹${order.total.toLocaleString('en-IN')}</strong> if not done yet.`
+            : `Payment of <strong>₹${order.total.toLocaleString('en-IN')}</strong> received, <strong>${order.customer.name}</strong>!`}
+      </p>
+      <!-- Summary -->
+      <div style="background:#fdf6ee;border:1.5px solid rgba(232,96,44,.15);border-radius:14px;padding:1rem;margin:.6rem 0;text-align:left">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+          <span style="font-size:.72rem;letter-spacing:2px;color:var(--saffron);font-weight:700;text-transform:uppercase">Order Summary</span>
+          <span style="font-size:.72rem;color:var(--muted);font-family:monospace">${order.orderId}</span>
+        </div>
+        ${order.items.map(i => `
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:.3rem 0;border-bottom:1px solid rgba(232,96,44,.08)">
+            <span>${i.name} <span style="color:var(--muted)">×${i.qty}</span></span>
+            <span style="font-weight:700">₹${i.subtotal.toLocaleString('en-IN')}</span>
+          </div>`).join('')}
+        <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.4rem 0">
+          <span style="color:var(--muted)">Delivery</span>
+          <span style="color:${order.freeDelivery ? '#22c55e' : 'var(--text)'}">${order.freeDelivery ? 'FREE 🎁' : '₹' + order.deliveryCharge}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:700;padding:.3rem 0;border-top:2px solid rgba(232,96,44,.15)">
+          <span>Grand Total</span>
+          <span style="color:var(--saffron-deep)">₹${order.grandTotal.toLocaleString('en-IN')}</span>
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);text-align:left;display:flex;gap:6px;align-items:flex-start;margin:.4rem 0">
+        <i class="fas fa-map-marker-alt" style="color:var(--saffron);margin-top:2px;flex-shrink:0"></i>
+        <span><strong>Delivering to:</strong> ${order.customer.address}</span>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#15803d;font-size:.7rem;font-weight:700;padding:4px 12px;border-radius:50px;margin:.4rem 0">
+        <i class="fas fa-database"></i> Order saved to store records
+      </div><br>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.25);color:#128c7e;font-size:.7rem;font-weight:700;padding:4px 12px;border-radius:50px;margin:.3rem 0 .8rem">
+        <i class="fab fa-whatsapp"></i> Store notified via WhatsApp
+      </div>
+      ${window._pendingOwnerWA ? `
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:.7rem;margin-bottom:.8rem;font-size:.78rem;color:#856404">
+          <i class="fas fa-exclamation-triangle"></i> Pop-up was blocked.
+          <a href="${window._pendingOwnerWA}" target="_blank" rel="noopener" style="color:#0066cc;font-weight:700;margin-left:4px">Tap here to send WhatsApp →</a>
+        </div>` : ''}
+      <div class="pay-success-actions">
+        <button class="btn-primary" onclick="closePayModal();scrollTo('products')" style="min-width:130px">
+          <i class="fas fa-shopping-bag"></i> Shop More
+        </button>
+        <a href="tel:+918953946893" class="btn-gold" style="min-width:130px">
+          <i class="fas fa-phone"></i> Call Store
+        </a>
+      </div>
+      <p style="font-size:.72rem;color:var(--muted);margin-top:.8rem">
+        Need help? Call <a href="tel:+918953946893" style="color:var(--saffron)">+91 8953946893</a>
+      </p>
+    </div>`;
+      showToast(isCOD ? '📦 COD order placed! Store notified.' : '✅ Order confirmed! Store notified via WhatsApp.');
+      window._pendingOwnerWA = null;
+    }
+
+    /* ════════════════════════════════
+       CART
+    ════════════════════════════════ */
+    function addCart(pid) {
+      const p = products.find(x => x.id === pid);
+      if (!p) return;
+      const ex = cart.find(i => i.id === p.id);
+      if (ex) ex.qty++; else cart.push({ id: p.id, name: p.name, price: p.price, img: p.img, qty: 1 });
+      renderCart(); animBadge(); showToast('🛍️ ' + p.name + ' added to cart!');
+    }
+    function removeCart(id) { cart = cart.filter(i => i.id !== id); renderCart(); }
+    function changeQty(id, d) { const i = cart.find(c => c.id === id); if (!i) return; i.qty += d; if (i.qty <= 0) removeCart(id); else renderCart(); }
+    function animBadge() {
+      const n = cart.reduce((s, i) => s + i.qty, 0);
+      ['cartCount', 'mobCartCount'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = n; });
+      const b = document.getElementById('cartCount');
+      if (b) { b.classList.add('pop'); setTimeout(() => b.classList.remove('pop'), 300); }
+    }
+    function renderCart() {
+      const n = cart.reduce((s, i) => s + i.qty, 0);
+      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      const del = calcDelivery(total);
+      const grand = total + del;
+      ['cartCount', 'mobCartCount'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = n; });
+      document.getElementById('cartTotal').textContent = '₹' + total.toLocaleString('en-IN');
+      document.getElementById('cartGrandTotal').textContent = '₹' + grand.toLocaleString('en-IN');
+      const delEl = document.getElementById('cartDelivery');
+      if (delEl) {
+        delEl.textContent = del === 0 ? 'FREE 🎁' : '₹' + del;
+        delEl.style.color = del === 0 ? '#22c55e' : 'var(--saffron-deep)';
+      }
+      const list = document.getElementById('cartList');
+      if (!cart.length) { list.innerHTML = '<div class="cart-empty-msg"><i class="fas fa-shopping-bag"></i><p>Your cart is empty</p></div>'; return; }
+      /* Delivery progress bar */
+      const remaining = FREE_DELIVERY_ABOVE - total;
+      const progHTML = total < FREE_DELIVERY_ABOVE
+        ? `<div style="background:rgba(232,96,44,.07);border:1px solid rgba(232,96,44,.15);border-radius:10px;padding:.5rem .8rem;margin-bottom:.6rem;font-size:.76rem;color:var(--saffron)">
+         <div style="display:flex;justify-content:space-between;margin-bottom:.3rem">
+           <span>Add ₹${remaining.toLocaleString('en-IN')} more for <strong>FREE delivery</strong></span>
+           <span>${Math.round(total / FREE_DELIVERY_ABOVE * 100)}%</span>
+         </div>
+         <div style="height:4px;background:rgba(232,96,44,.15);border-radius:2px">
+           <div style="height:100%;width:${Math.min(100, total / FREE_DELIVERY_ABOVE * 100)}%;background:linear-gradient(90deg,var(--saffron),var(--gold));border-radius:2px;transition:width .4s"></div>
+         </div>
+       </div>` : `<div style="text-align:center;font-size:.78rem;color:#22c55e;margin-bottom:.5rem;font-weight:600">🎁 You unlocked FREE delivery!</div>`;
+      list.innerHTML = progHTML + cart.map(i => `
+    <div class="cart-item">
+      <div class="cart-item-img" style="background-image:url('${i.img}')"></div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${i.name}</div>
+        <div class="cart-item-price">₹${(i.price * i.qty).toLocaleString('en-IN')}</div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="changeQty(${i.id},-1)">−</button>
+          <span class="qty-num">${i.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${i.id},1)">+</button>
+        </div>
+      </div>
+      <button class="cart-item-del" onclick="removeCart(${i.id})"><i class="fas fa-trash"></i></button>
+    </div>`).join('');
+    }
+    function toggleCart() {
+      const ov = document.getElementById('cartOverlay');
+      const dr = document.getElementById('cartDrawer');
+      const open = dr.classList.contains('open');
+      ov.classList.toggle('open', !open); dr.classList.toggle('open', !open);
+      document.body.style.overflow = open ? '' : 'hidden';
+    }
+    function checkoutCart() {
+      if (!cart.length) { showToast('Your cart is empty!'); return; }
+      toggleCart();
+      setTimeout(() => openPayModal(null, null, 'cart'), 400);
+    }
+    function wishlist(name) { showToast('❤️ ' + name + ' added to wishlist!'); }
+
+    /* ── Contact form ── */
+    function sendForm(e) {
+      e.preventDefault();
+      const name = document.getElementById('fname').value.trim();
+      const phone = document.getElementById('fphone').value.trim();
+      const subject = document.getElementById('fsubject').value || 'Enquiry';
+      const msg = document.getElementById('fmsg').value.trim();
+      const sub = encodeURIComponent(subject + ' from ' + name + ' — ChandniMart');
+      const body = encodeURIComponent(`Name: ${name}\nPhone: ${phone}\nSubject: ${subject}\n\nMessage:\n${msg}`);
+      window.location.href = 'mailto:' + STORE_EMAIL + '?subject=' + sub + '&body=' + body;
+      showToast('✅ Thank you ' + name + '! Opening email…');
+      e.target.reset();
+    }
+
+    /* ── Toast ── */
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._t);
+      t._t = setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    /* ── Mobile menu ── */
+    function toggleMenu() {
+      const d = document.getElementById('mobDrawer');
+      const o = document.getElementById('mobOverlay');
+      const h = document.getElementById('hamburger');
+      if (d.classList.contains('open')) closeMenu();
+      else { d.classList.add('open'); o.classList.add('open'); h.classList.add('active'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeMenu() {
+      document.getElementById('mobDrawer').classList.remove('open');
+      document.getElementById('mobOverlay').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    /* ── Active nav ── */
+    function updateActiveNav() {
+      const secs = ['home', 'categories', 'products', 'parlour-visit', 'offers', 'contact'];
+      let cur = 'home';
+      secs.forEach(id => { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top <= 100) cur = id; });
+      document.querySelectorAll('#navLinks a[data-section]').forEach(a => a.classList.toggle('active-link', a.dataset.section === cur));
+    }
+
+    /* ── Admin sync: real-time product updates from admin panel ── */
+    window.addEventListener('storage', e => {
+      if (e.key === 'chandnimart_products' && e.newValue) {
+        try {
+          const u = JSON.parse(e.newValue);
+          if (Array.isArray(u) && u.length) {
+            products.length = 0; u.forEach(p => products.push(p));
+            filtered = [...products]; currentPage = 1; applyFilters(false);
+          }
+        } catch (err) { }
+      }
+    });
+    try {
+      const bc = new BroadcastChannel('chandnimart_sync');
+      bc.onmessage = e => {
+        if (e.data?.type === 'products_updated' && Array.isArray(e.data.products)) {
+          products.length = 0; e.data.products.forEach(p => products.push(p));
+          filtered = [...products]; currentPage = 1; applyFilters(false);
+          showToast('🔄 Products updated by admin!');
+        }
+      };
+    } catch (err) { }
+
+    /* ── Init ── */
+    window.addEventListener('load', () => {
+      setTimeout(() => document.getElementById('loading').classList.add('hide'), 1600);
+      filtered = [...products];
+      applyFilters(false);
+      updateActiveNav();
+    });
+    window.addEventListener('scroll', () => {
+      document.getElementById('header').classList.toggle('scrolled', window.scrollY > 20);
+      updateActiveNav();
+    }, { passive: true });
+    const revObs = new IntersectionObserver(entries =>
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: .1, rootMargin: '0px 0px -40px 0px' }
+    );
+    document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
+  </script>
+</body>
+
+</html>
